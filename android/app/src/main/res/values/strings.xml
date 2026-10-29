@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_today_info_desc">今日の時間割と、いま・次の授業までのカウントダウン</string>
+    <string name="widget_next_info_desc">いまの授業の残り時間と次の予定</string>
+    <string name="widget_tasks_info_desc">期限の近いタスクと授業準備</string>
+</resources>

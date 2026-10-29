@@ -1,0 +1,74 @@
+name: Android app
+
+on:
+  push:
+    branches: [main]
+    paths: ["android/**", ".github/workflows/android.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10.2"
+
+      - name: Signing key
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KS" ]; then
+            echo "$KS" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+          else
+            echo "::warning::ANDROID_KEYSTORE_B64 is not set; building with a temporary debug key (updates will not install over it)."
+          fi
+
+      - name: Build APK
+        working-directory: android
+        env:
+          KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: 1.0.${{ github.run_number }}
+        run: |
+          set -o pipefail
+          gradle --no-daemon --console=plain assembleRelease 2>&1 | tee "$RUNNER_TEMP/build.log"
+
+      - name: Publish build log
+        if: always()
+        run: |
+          tail -c 150000 "$RUNNER_TEMP/build.log" > /tmp/android-build.log 2>/dev/null || echo "no log" > /tmp/android-build.log
+          echo "${{ job.status }} run=${{ github.run_number }} sha=${{ github.sha }} signed=${{ env.KEYSTORE_FILE != '' }}" > /tmp/status.txt
+          cd "$RUNNER_TEMP" && rm -rf logs && mkdir logs && cd logs
+          git init -q && git checkout -q -b ci-logs
+          cp /tmp/android-build.log /tmp/status.txt .
+          git add -A
+          git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "build ${{ github.run_number }}"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" ci-logs
+
+      - name: Release
+        if: success()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-v${{ github.run_number }}
+          name: Fold Desk Android 1.0.${{ github.run_number }}
+          body: "スマホでこのページを開き、下の app-release.apk をダウンロードしてインストールしてください。"
+          files: android/app/build/outputs/apk/release/app-release.apk
+          make_latest: true
