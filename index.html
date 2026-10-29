@@ -2,7 +2,7 @@
 <html lang="ja"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src https://script.google.com https://script.googleusercontent.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src https://script.google.com https://script.googleusercontent.com https://api.github.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
@@ -670,6 +670,7 @@ function render(){
   v.scrollTop = st;
   if(changed) setTimeout(tick, 350); else tick();
   if(ui.pane && ui.paneLive && !$("#pane").contains(document.activeElement)) ui.paneLive();
+  pushSnapshot();
 }
 $("#view").addEventListener("scroll", e => e.target.classList.toggle("scrolled", e.target.scrollTop > 56), {passive:true});
 
@@ -986,7 +987,7 @@ function vToday(){
       <div class="date"><b class="num">${d.getMonth()+1}月${d.getDate()}日</b></div>
       <div class="now">${esc(nowLine)}<small>${esc(nowSub)}</small></div></div>${ring}</div>${modeSeg}${dayBar}</section>`;
   const head = `<div class="page-h"><h1>今日</h1><button class="icon-btn" data-act="settings" aria-label="通知と設定">${ico("bell")}</button></div>`;
-  const tip = !ls.get("fd-home-tip-off", false) && document.body.dataset.mode === "cover-p"
+  const tip = !NATIVE && !ls.get("fd-home-tip-off", false) && document.body.dataset.mode === "cover-p"
     ? `<div class="card span-all tip"><span class="ic">${ico("home")}</span><span class="main"><b>ホーム画面に置く</b><small>アプリのようにワンタップで開けます</small></span><button class="pill-btn accent" data-act="homeguide">方法</button><button class="icon-btn sm" data-act="tipoff" aria-label="閉じる">${ico("close")}</button></div>` : "";
   const m = document.body.dataset.mode;
   if(m === "main-l" && document.body.classList.contains("wide") && !document.body.classList.contains("pane-open"))
@@ -1387,8 +1388,8 @@ function settingsPane(){
         <div class="setrow"><span class="main"><b>放課後の予定の前</b><small>下校時刻より後の会議・行事</small></span>${sel("afterBefore", pref("afterBefore"), [[0,"なし"],[5,"5分前"],[10,"10分前"],[15,"15分前"],[30,"30分前"]])}</div>
         <div class="setrow"><span class="main"><b>朝のまとめ</b><small>その日はじめて開いたときに表示</small></span><button class="switch" role="switch" aria-checked="${!!pref("morning")}" data-pref-switch="morning" aria-label="朝のまとめ"></button></div>
       </div>
-      <div class="btns"><button class="btn" data-act="testnotify">${'通知を試す'}</button>${"Notification" in window && Notification.permission !== "granted" ? '<button class="btn" data-act="notifyperm">スマホの通知を許可</button>' : ''}</div>
-      <p class="hint" style="margin-top:8px">アプリを開いている間は画面上部に、裏に回っている間はスマホの通知でお知らせします。</p>
+      <div class="btns"><button class="btn" data-act="testnotify">${'通知を試す'}</button>${(NATIVE ? NATIVE.notifState() !== "granted" : ("Notification" in window && Notification.permission !== "granted")) ? '<button class="btn" data-act="notifyperm">スマホの通知を許可</button>' : ''}</div>
+      <p class="hint" style="margin-top:8px">${NATIVE ? "アプリを閉じていても、授業・予定の前にスマホへ通知します（開いている間は画面上部にお知らせ）。" : "アプリを開いている間は画面上部に、裏に回っている間はスマホの通知でお知らせします。"}</p>
 
       <div class="sec">スマホの通知</div>
       <div class="group" style="padding:12px 14px">
@@ -1419,12 +1420,18 @@ function settingsPane(){
       </div>
 
       <div class="sec">ホーム画面</div>
-      <button class="row" data-act="homeguide" style="grid-template-columns:auto 1fr auto"><span class="avatar" style="width:36px;height:36px">${ico("home")}</span><span class="main"><b>${standalone() ? "アプリとしてインストール済み" : "アプリとしてインストール"}</b><small>Fold8 の表紙画面・メイン画面に</small></span><span class="when">${ico("right")}</span></button>
+      ${NATIVE ? `<button class="row" data-act="widgetguide" style="grid-template-columns:auto 1fr auto"><span class="avatar" style="width:36px;height:36px">${ico("home")}</span><span class="main"><b>ウィジェットを置く</b><small>今日の時間割・いま／次・タスクと準備</small></span><span class="when">${ico("right")}</span></button>
+        <div class="setrow"><span class="main"><b>アプリのバージョン</b><small id="appver">1.0.${NATIVE_VER ? NATIVE_VER.code : "?"} ・ 確認中…</small></span><button class="chip" data-act="appupdate" id="appupd" hidden>更新する</button></div>`
+      : `<button class="row" data-act="homeguide" style="grid-template-columns:auto 1fr auto"><span class="avatar" style="width:36px;height:36px">${ico("home")}</span><span class="main"><b>${standalone() ? "アプリとしてインストール済み" : "アプリとしてインストール"}</b><small>Fold8 の表紙画面・メイン画面に</small></span><span class="when">${ico("right")}</span></button>
+        ${isAndroid ? `<div class="group" style="margin-top:8px">
+          <div class="setrow"><span class="main"><b>Android アプリ（ウィジェット付き）</b><small>ホーム画面に時間割・タスクのウィジェットを置けます</small></span><a class="chip accent" href="${RELEASES}" target="_blank" rel="noopener">ダウンロード</a></div>
+          <div class="setrow"><span class="main"><b>このスマホのアプリに接続</b><small>インストール後に押すと、アプリにこの接続を引き継ぎます</small></span><a class="chip accent" href="${esc(androidPairLink())}">接続</a></div></div>` : ""}`}
 
       <div class="sec">表示</div>
       <div class="seg" role="group" aria-label="外観">${[["auto","自動"],["light","ライト"],["dark","ダーク"]].map(([k,l]) => `<button type="button" data-theme-set="${k}" aria-pressed="${th===k}">${l}</button>`).join("")}</div>`;
   };
   openPane("", draw); draw();
+  if(NATIVE) checkAppUpdate().then(u => { const a = $("#appver"), b2 = $("#appupd"); if(a) a.textContent = `1.0.${NATIVE_VER.code} ・ ${u ? `新しい版 1.0.${u.n} があります` : "最新です"}`; if(b2 && u){ b2.hidden = false; b2.dataset.url = u.url; } });
   if(paired()) gcall("g.status").then(st => {
     const t = x => x ? new Date(x).toLocaleString("ja-JP", {month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit"}) : "まだ";
     const a = $("#g-last"), ai = $("#g-ai");
@@ -1626,6 +1633,9 @@ document.addEventListener("click", async (ev) => {
   if(d.act === "settings"){ settingsPane(); return; }
   if(d.act === "install"){ if(installEvt){ installEvt.prompt(); installEvt = null; } closePane(); return; }
   if(d.act === "syncnow"){ toast("同期しています…"); await store.pull("sync"); toast(syncState === "ok" ? "同期しました" : "同期できませんでした"); return; }
+  if(d.act === "notifyperm" && NATIVE){ NATIVE.requestNotifications(); return; }
+  if(d.act === "widgetguide"){ widgetGuide(); return; }
+  if(d.act === "appupdate"){ NATIVE && NATIVE.openExternal(b.dataset.url || RELEASES); return; }
   if(d.act === "notifyperm"){ try { const p = await Notification.requestPermission(); toast(p === "granted" ? "スマホの通知をオンにしました" : "通知は許可されませんでした"); } catch(e){} settingsPane(); return; }
   if(d.act === "unpair"){ if(b.dataset.armed){ ["fd-api","fd-token"].forEach(k => { try { localStorage.removeItem(k); } catch(e){} }); store.wipe(); try { await caches.delete("fd-private"); } catch(e){} location.reload(); } else { b.dataset.armed = "1"; b.textContent = "もう一度押す"; } return; }
   if(d.act === "homeguide"){ homeGuide(); return; }
@@ -2157,6 +2167,8 @@ function timesFromRows(rows){
 }
 const csvCell = v => { v = String(v ?? ""); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
 function downloadCSV(name, rows){
+  if(NATIVE){ const text = "\uFEFF" + rows.map(r => r.map(csvCell).join(",")).join("\r\n");
+    const ok = NATIVE.saveFile(name, "text/csv", btoa(unescape(encodeURIComponent(text)))); toast(ok ? `「ダウンロード」に ${name} を保存しました` : "保存できませんでした"); return; }
   const blob = new Blob(["﻿" + rows.map(r => r.map(csvCell).join(",")).join("\r\n")], {type:"text/csv"});
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
@@ -2193,6 +2205,68 @@ function csvLoaded(kind, rows){
     e.csv = null; e.tab = "times"; e.mode = Object.keys(r.off)[0] || "normal"; e.dirty = true; ttDraw();
     toast(`${r.n}件読み込みました。確認して保存してください${r.errs.length ? `（読めない行 ${r.errs.length}）` : ""}`);
   }
+}
+
+/* ================= Android app bridge ================= */
+const NATIVE = (() => { try { return window.FoldDeskNative && window.FoldDeskNative.isApp() ? window.FoldDeskNative : null; } catch(e){ return null; } })();
+const NATIVE_VER = (() => { try { return NATIVE ? JSON.parse(NATIVE.version()) : null; } catch(e){ return null; } })();
+const isAndroid = /Android/i.test(navigator.userAgent);
+const RELEASES = "https://github.com/carno-eng/fold-desk/releases/latest";
+if(NATIVE) document.documentElement.classList.add("native");
+/* what the home-screen widgets and native alarms need: 7 days of schedule, tasks, prep, reminders */
+function buildSnapshot(){
+  const t = todayS(), days = [];
+  for(let i = 0; i < 8; i++){
+    const d = addDays(t, i), wk = isWeekday(d), M = OFFICIAL[dayMode(d)] || OFFICIAL.normal;
+    const items = (dayItems(d) || []).map(x => x.type === "period"
+      ? {s:x.start, e:x.end, n:x.n, t:x.cancelled ? "なし" : (cellKind(x.cell) === "free" ? "空き" : x.cell.subject || ""), sub:x.cancelled ? cellText(x.base) : (x.cell.cls || ""), k:x.cancelled ? "cancel" : cellKind(x.cell), c:!!x.changed}
+      : {s:x.start, e:x.end, n:0, t:x.label || "", sub:x.kind || "", k:x.type === "block" ? "block" : x.type, c:x.type === "extra"});
+    days.push({date:d, label:md(d), mode:wk ? M.label : "", dismiss:wk ? M.dismiss : "", items});
+  }
+  const tasks = openTasks().filter(k => !k.due || k.due <= addDays(t, 14)).slice(0, 8).map(k => { const r = remain(k.due, false); return {id:k.id, title:k.title, label:r.t, warn:r.c === "warn"}; });
+  const pt = prepTarget(), pl = prepFor(pt);
+  const prep = {label:dayLabel(pt), items:pl.flatMap(p => p.open.map(o => `${p.u.subject} ${o.t}`)).slice(0, 8)};
+  const now = Date.now();
+  const reminders = reminderList(now, now + 2 * 864e5).slice(0, 40).map(r => ({key:r.key, at:r.at, title:r.title, body:[r.lead, r.body].filter(Boolean).join(" ・ ")}));
+  return {v:1, at:now, days, tasks, prep, reminders};
+}
+let snapT = 0;
+function pushSnapshot(now){
+  if(!NATIVE || !paired()) return;
+  clearTimeout(snapT);
+  const go2 = () => { try { NATIVE.setSnapshot(JSON.stringify(buildSnapshot())); } catch(e){} };
+  if(now) go2(); else snapT = setTimeout(go2, 1500);
+}
+window.__fdBack = () => {
+  const pk = $("#picker"); if(pk && pk.classList.contains("on")){ pk.classList.remove("on"); return true; }
+  if(ui.pane){ closePane(); return true; }
+  if(view !== "today"){ go("today"); return true; }
+  return false;
+};
+window.__fdNotif = ok => { toast(ok ? "スマホの通知をオンにしました" : "通知は許可されませんでした（Android の設定から変更できます）"); if(ui.pane) settingsPane(); };
+function androidPairLink(){
+  const p = btoa(unescape(encodeURIComponent(JSON.stringify({u:API.url, t:API.token})))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return `intent://pair?d=${p}#Intent;scheme=folddesk;package=io.github.carnoeng.folddesk;end`;
+}
+async function checkAppUpdate(){
+  if(!NATIVE_VER) return null;
+  try { const r = await fetch("https://api.github.com/repos/carno-eng/fold-desk/releases/latest", {cache:"no-store", credentials:"omit"});
+    const j = await r.json(); const n = +((String(j.tag_name || "").match(/android-v(\d+)/) || [])[1] || 0);
+    return n > NATIVE_VER.code ? {n, url:j.html_url} : null; } catch(e){ return null; }
+}
+function widgetGuide(){
+  openPane(`${paneHead("ホーム画面のウィジェット")}
+    <ol class="steps">
+      <li><span>ホーム画面（表紙画面でもメイン画面でも）の何もないところを<b>長押し</b>して、<b>「ウィジェット」</b>をタップします。</span></li>
+      <li><span>一覧から <b>Fold Desk</b> を選び、置きたいものを長押しして配置します。</span></li>
+    </ol>
+    <div class="group" style="margin-top:14px">
+      <div class="setrow"><span class="main"><b>今日の時間割</b><small>いまの授業の残り時間（カウントダウン）と、今日のコマの一覧。週末は次の授業日を表示</small></span></div>
+      <div class="setrow"><span class="main"><b>いま・次</b><small>小さなサイズ。いまの授業の残り時間か、次の予定まで</small></span></div>
+      <div class="setrow"><span class="main"><b>タスクと準備</b><small>期限の近いタスクと、次の授業日の準備物。「＋」でひとことで追加</small></span></div>
+    </div>
+    <p class="hint" style="margin-top:10px">ウィジェットは授業の区切りで自動で切り替わり、アプリを開かなくても2時間ごとに最新のデータへ更新されます。</p>
+    <div class="btns"><button class="btn primary" data-act="close">わかりました</button></div>`);
 }
 
 /* ================= Google integrations ================= */
@@ -2370,6 +2444,7 @@ addEventListener("appinstalled", () => { installEvt = null; toast("ホーム画�
 const standalone = () => matchMedia("(display-mode: standalone)").matches;
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").then(r => { swReg = r; }).catch(() => {});
 function sysNotify(r){
+  if(NATIVE) return;
   try {
     if(document.hidden && swReg && "Notification" in window && Notification.permission === "granted")
       swReg.showNotification(r.title, {body:[r.lead, r.body].filter(Boolean).join(" ・ "), icon:"icons/icon-192.png", badge:"icons/badge-96.png", tag:r.key || r.title, data:{go:r.go || "today"}});
@@ -2394,6 +2469,11 @@ if(paired()){
   addEventListener("online", () => store.pull());
 }
 if(location.hash === "#ask") setTimeout(() => askPane(), 400);
+if(NATIVE && location.hash === "#snapshot"){
+  const finish = () => { pushSnapshot(true); try { NATIVE.done(); } catch(e){} };
+  if(paired()) store.pull().then(finish, finish); else finish();
+}
+document.addEventListener("visibilitychange", () => { if(document.hidden) pushSnapshot(true); });
 addEventListener("hashchange", () => { if(location.hash.indexOf("#pair=") === 0 && readPairing()) location.reload(); if(location.hash === "#ask") askPane(); });
 })();
 </script>
