@@ -454,6 +454,10 @@ body:not([data-mode="cover-p"]) #toast{bottom:28px}
 #ccb.talk .ln{font-size:14.5px;font-weight:700;min-height:1.5em}
 #ccb .setrow .seg.mini button{padding:5px 9px}
 
+.ttrow{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.ttrow .pno{width:26px;font-size:16px;flex:none}
+.ttrow .input{padding:9px 10px;font-size:14.5px;min-width:0;flex:1}
+.ttrow input[type=time]{flex:1 1 0;max-width:130px}
 /* picker overlay (Drive / Contacts search) */
 #picker{position:fixed;inset:0;z-index:58;background:rgba(0,0,0,.3);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;padding:calc(40px + env(safe-area-inset-top,0px)) 12px 12px}
 #picker.on{display:flex;animation:fade .25s}
@@ -708,14 +712,15 @@ const OFFICIAL_DEFAULT = {
     upper:[TM("09:05","09:50"),TM("10:00","10:45"),TM("10:55","11:40"),TM("11:45","12:30"),TM("13:30","14:15"),TM("14:25","15:10")],
     blocks:[{label:"朝の会",...TM("08:30","08:40")},{label:"朝会",...TM("08:45","09:05")},{label:"給食・昼休み",...TM("12:30","13:30")}] }
 };
-let OFFICIAL = OFFICIAL_DEFAULT;
+let OFFICIAL = OFFICIAL_DEFAULT, SCHOOL = null;
 function applySchool(c){
+  SCHOOL = c || null;
   OFFICIAL = c && c.official && c.official.normal ? c.official : OFFICIAL_DEFAULT;
   AREAS = c && Array.isArray(c.areas) && c.areas.length ? c.areas : AREAS_DEFAULT;
   EKINDS = c && Array.isArray(c.ekinds) && c.ekinds.length ? c.ekinds : EKINDS_DEFAULT;
 }
 const MODES = ["normal","short","assembly"];
-const bandOf = c => /^[3-6]-/.test((c && c.cls) || "") ? "upper" : "low";
+const bandOf = c => { const g = String((c && c.cls) || "").match(/^([0-9])-/); return g && upperGrades().includes(g[1]) ? "upper" : "low"; };
 const dayMode = (s = todayS()) => (S.days && S.days[s]) || "normal";
 const isWeekday = s => { const w = parse(s).getDay(); return w >= 1 && w <= 5; };
 const getOv = s => S.overrides.find(o => o.id === s) || null;
@@ -726,7 +731,7 @@ function dayItems(dateS){
   const M = OFFICIAL[dayMode(dateS)], ov = getOv(dateS) || {}, items = [];
   if(weekday){
     const row = tt().grid[DAYKEYS[wd-1]] || [];
-    for(let i = 0; i < 5; i++){
+    for(let i = 0, np = NP(); i < np; i++){
       const o = ov.cells && ov.cells[i], base = row[i] || {};
       const cell = o && !o.cancel ? o : base;
       const t = M[bandOf(cell)][i] || (o && !o.cancel ? (M.low[i] || M.upper[i]) : null);
@@ -872,7 +877,7 @@ function dayCard(dateS){
     const k = x.cancelled ? "free" : cellKind(x.cell), ahead = mins(x.end) > nowMin();
     const sug = !ui.edit && k === "free" && !x.cancelled && freeTasks.length && ahead ? `<div class="suggest">${freeTasks.map(y => `<button class="chip accent" data-open-task="${y.id}">${esc(y.title)}</button>`).join("")}</div>` : "";
     const prog = !ui.edit && !x.cancelled && k !== "free" && x.cell.kind !== "meeting" && !NOPROG.test(x.cell.subject||'') ? (() => { const sb = x.cell.subject, lp = lastProg(sb, x.cell.cls); const po = prepOpen(lp); return `<div class="suggest"><button class="chip ${behind(sb, x.cell.cls)>0?'warn':lp?'accent':''}" data-progress="${esc(pkey(sb, x.cell.cls))}">${lp ? '前回 '+esc(progLabel(lp)) : '進度を記録'}</button>${po.length ? `<button class="chip warn" data-prep-day="${dateS}">準備 ${po.length}</button>` : (lp && (lp.prep||[]).length ? `<span class="chip muted">準備OK</span>` : '')}</div>`; })() : '';
-    const name = x.cancelled ? `<span class="chip warn mini">なし</span><s>${esc(cellText(x.base))}</s>` : `${k==='free' ? '空きコマ' : esc(x.cell.subject)}${x.cell.cls ? `<small>${esc(x.cell.cls)}${bandOf(x.cell)==='upper'?'（4年の時程）':''}</small>` : ''}`;
+    const name = x.cancelled ? `<span class="chip warn mini">なし</span><s>${esc(cellText(x.base))}</s>` : `${k==='free' ? '空きコマ' : esc(x.cell.subject)}${x.cell.cls ? `<small>${esc(x.cell.cls)}${bandOf(x.cell)==='upper'?'（高学年の時程）':''}</small>` : ''}`;
     const badge = x.changed && !x.cancelled ? `<span class="chip warn mini">変更</span>` : '';
     const right = ui.edit ? `<button class="chip" data-ov-cell="${dateS}:${x.n-1}">変更</button>` : `<span class="tm">${x.start}<br>${x.end}</span>`;
     const past = isT && !ui.edit && !isNow && !ahead;
@@ -916,7 +921,7 @@ function extraForm(dateS, idx, preset){
     <form data-form="extra" data-date="${dateS}" data-idx="${editing ? +idx : ''}">
       <div class="field"><label for="x-title">内容</label><input id="x-title" name="title" required value="${esc(x.title)}" placeholder="例：学年打ち合わせ、2-1 補教、来客対応" autofocus></div>
       <div class="frow"><div class="field"><label for="x-kind">種類</label><select id="x-kind" name="kind">${XKINDS.map(k => opt(k, x.kind)).join("")}</select></div>
-        <div class="field"><label for="x-per">時間</label><select id="x-per" name="period"><option value="">時刻で指定</option>${[1,2,3,4,5].map(n => opt(String(n), String(x.period||""), `${n}時間目`)).join("")}</select></div></div>
+        <div class="field"><label for="x-per">時間</label><select id="x-per" name="period"><option value="">時刻で指定</option>${Array.from({length:NP()}, (_, i) => i + 1).map(n => opt(String(n), String(x.period||""), `${n}時間目`)).join("")}</select></div></div>
       <div class="frow"><div class="field"><label for="x-start">開始</label><input id="x-start" type="time" name="start" value="${esc(x.start)}"></div>
         <div class="field"><label for="x-end">終了</label><input id="x-end" type="time" name="end" value="${esc(x.end)}"></div></div>
       <div class="field"><label for="x-note">メモ</label><input id="x-note" name="note" value="${esc(x.note)}"></div>
@@ -995,7 +1000,7 @@ function vTT(){
   const G = tt(), t = todayS(), st = currentState(), N = OFFICIAL.normal.low;
   const ds = weekDates(ui.week);
   const head = `<tr><th></th>${ds.map((s,i) => { const m = dayMode(s); return `<th class="${s===t?'today':''}">${["月","火","水","木","金"][i]}<small class="num">${md(s).replace(/\(.\)/,'')}</small>${m!=="normal"?`<span class="chip mini ${m==='short'?'warn':''}">${OFFICIAL[m].label}</span>`:''}</th>`; }).join("")}</tr>`;
-  const rows = [0,1,2,3,4].map(pi => `<tr><td class="pn"><b>${pi+1}</b><small>${N[pi].start}</small></td>${DAYKEYS.map((dk, di) => {
+  const rows = Array.from({length:NP()}, (_, i) => i).map(pi => `<tr><td class="pn"><b>${pi+1}</b><small>${((N[pi] || OFFICIAL.normal.upper[pi] || {}).start) || ""}</small></td>${DAYKEYS.map((dk, di) => {
       const s = ds[di], base = (G.grid[dk]||[])[pi] || {}, o = ((getOv(s)||{}).cells||{})[pi];
       const c = o && !o.cancel ? o : base, cancelled = !!(o && o.cancel);
       const k = cancelled ? "free" : cellKind(c), isToday = s === t;
@@ -1006,13 +1011,14 @@ function vTT(){
   const counts = {joho:0, class:0, meeting:0, free:0};
   DAYKEYS.forEach(dk => (G.grid[dk]||[]).forEach(c => counts[cellKind(c)]++));
   const nChanged = ds.reduce((a,s) => a + Object.keys(((getOv(s)||{}).cells)||{}).length + (((getOv(s)||{}).extra)||[]).length, 0);
-  return `<div class="page-h"><h1>時間割</h1><span class="daynav"><button class="icon-btn" data-week="-1" aria-label="前の週">${ico("left")}</button><button class="chip" data-week="0" aria-pressed="${ui.week===0}">今週</button><button class="icon-btn" data-week="1" aria-label="次の週">${ico("right")}</button></span><button class="pill-btn" data-act="periods">時程表</button></div>
+  return `<div class="page-h"><h1>時間割</h1><span class="daynav"><button class="icon-btn" data-week="-1" aria-label="前の週">${ico("left")}</button><button class="chip" data-week="0" aria-pressed="${ui.week===0}">今週</button><button class="icon-btn" data-week="1" aria-label="次の週">${ico("right")}</button></span><button class="pill-btn" data-act="periods">時程表</button><button class="pill-btn accent" data-tt-open>${ico("tt")}登録・編集</button></div>
+    ${DAYKEYS.every(dk => !(G.grid[dk] || []).some(c => c && c.subject)) ? `<div class="card tip" style="margin-bottom:14px"><span class="ic">${ico("tt")}</span><span class="main"><b>時間割を登録しましょう</b><small>手で入れるか、Excel・スプレッドシートの表（CSV）から読み込めます</small></span><button class="pill-btn accent" data-tt-open>登録</button></div>` : ""}
     ${nChanged ? `<p class="hint" style="margin:-6px 0 10px">この週は ${nChanged} か所の変更があります（オレンジの点）。</p>` : ''}
     <div class="tt-wrap"><table class="tt">${head}${rows}</table></div>
     <div class="legend"><span><i style="background:linear-gradient(150deg,var(--accent-2),var(--accent))"></i>情報探究 ${counts.joho}</span>
       <span><i style="background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)"></i>1年の授業 ${counts.class}</span><span><i style="background:var(--meet-soft)"></i>会議 ${counts.meeting}</span>
       <span><i style="box-shadow:inset 0 0 0 1.5px var(--line)"></i>空き ${counts.free}</span><span><i class="dotkey"></i>その日だけ変更</span></div>
-    <p class="empty" style="margin-top:6px">コマをタップすると「この日だけ変える」か「毎週の時間割を変える」を選べます。左の時刻は1・2年の通常時程です。</p>
+    <p class="empty" style="margin-top:6px">コマをタップすると「この日だけ変える」か「毎週の時間割を変える」を選べます。左の時刻は通常時程です。まとめて直すときは「登録・編集」から。</p>
     <div class="page-h" style="padding-top:28px;margin-bottom:12px"><h1 style="font-size:24px">授業の進度</h1><button class="pill-btn" data-progress="new">${ico("plus")}教科を追加</button></div>
     ${(() => { const us = teachUnits(), groups = [["1年（担任）", us.filter(u => !u.cls)], ["情報探究", us.filter(u => u.cls && JOHO.test(u.subject))], ["そのほか", us.filter(u => u.cls && !JOHO.test(u.subject))]].filter(g => g[1].length);
       return groups.map(([g, xs]) => `<div class="sec">${g}</div><div class="pgrid">${xs.map(u => { const lp = lastProg(u.subject, u.cls), b = behind(u.subject, u.cls);
@@ -1103,7 +1109,7 @@ function openPane(html, live){
   schedule();
   setTimeout(() => { const f = $("#pane [autofocus]"); if(f && document.body.dataset.mode !== "cover-p") f.focus(); }, 60);
 }
-function closePane(){ ui.pane = null; ui.paneLive = null; document.body.classList.remove("pane-open"); schedule(); }
+function closePane(){ ttEd = null; ui.pane = null; ui.paneLive = null; document.body.classList.remove("pane-open"); schedule(); }
 const paneHead = (t, extra="") => `<div class="pane-h"><h2>${esc(t)}</h2>${extra}<button class="icon-btn" data-act="close" aria-label="閉じる">${ico("close")}</button></div>`;
 const opt = (v, cur, l) => `<option value="${esc(v)}" ${v===cur?'selected':''}>${esc(l ?? v)}</option>`;
 const AREAS_DEFAULT = ["担任","校務","授業","研修","プライベート"]; let AREAS = AREAS_DEFAULT;
@@ -1207,9 +1213,9 @@ function periodsForm(){
     const rows = [...M.low.map((t,i) => t ? {n:i+1, ...t, u:M.upper[i]} : null).filter(Boolean)];
     const extra = M.upper.map((t,i) => (!M.low[i] && t) ? {n:i+1, start:"—", end:"", u:t} : null).filter(Boolean);
     return `<div class="sec">${M.label}時程　<span style="font-weight:500;letter-spacing:0">下校 ${M.dismiss}</span></div>
-      <dl class="kv" style="grid-template-columns:auto 1fr auto">${[...rows, ...extra].map(r => `<dt>${r.n}時間目</dt><dd class="num">${r.start}${r.end?'–'+r.end:''}</dd><dd class="num" style="color:var(--muted);font-size:12.5px">${r.u && (r.u.start!==r.start) ? `4年 ${r.u.start}–${r.u.end}` : ''}</dd>`).join("")}
+      <dl class="kv" style="grid-template-columns:auto 1fr auto">${[...rows, ...extra].map(r => `<dt>${r.n}時間目</dt><dd class="num">${r.start}${r.end?'–'+r.end:''}</dd><dd class="num" style="color:var(--muted);font-size:12.5px">${r.u && (r.u.start!==r.start) ? `高学年 ${r.u.start}–${r.u.end}` : ''}</dd>`).join("")}
       ${M.blocks.map(b => `<dt>${esc(b.label)}</dt><dd class="num">${b.start}–${b.end}</dd><dd></dd>`).join("")}</dl>`; };
-  openPane(`${paneHead("時程表（1・2年）")}<p class="empty" style="margin-top:0">2026年度 授業時程のお知らせから登録しています。その日の時程は「今日」の上部で切り替えられます。</p>${MODES.map(tbl).join("")}`);
+  openPane(`${paneHead("時程表")}<p class="empty" style="margin-top:0">その日の時程は「今日」の上部で切り替えられます。</p>${MODES.map(tbl).join("")}<div class="btns"><button class="btn primary" data-tt-open="times">授業時間を編集</button></div>`);
 }
 
 function progressPane(key){
@@ -1400,6 +1406,9 @@ function settingsPane(){
         <div class="setrow"><span class="main"><b>動き</b></span><div class="seg mini" role="group" aria-label="動きの量">${[["active","よく動く"],["normal","ふつう"],["calm","じっと"]].map(([k,l]) => `<button type="button" data-cc-level="${k}" aria-pressed="${concierge.cfg.level===k}">${l}</button>`).join("")}</div></div>
       </div>
 
+      <div class="sec">時間割</div>
+      <div class="group"><div class="setrow"><span class="main"><b>時間割と授業時間</b><small>手で編集・CSV やスプレッドシートから読み込み</small></span><button class="chip accent" data-tt-open>開く</button></div></div>
+
       <div class="sec">Google 連携</div>
       <div class="group">
         <div class="setrow"><span class="main"><b>カレンダー</b><small>取り込むカレンダーを選ぶ（共有された学校のカレンダーも）</small></span><button class="chip accent" data-gcal-pick>選ぶ</button></div>
@@ -1501,7 +1510,7 @@ async function saveAsk(){
     const date = x.date || todayS();
     if(x.type === "task") await put("tasks", null, {title:x.title||"", due:x.due||"", priority:x.priority||"mid", area:x.area||"", status:"todo", note:x.note||"", personIds:[], createdAt:new Date().toISOString()});
     else if(x.type === "event") await put("events", null, {title:x.title||"", date, time:x.time||"", endTime:x.endTime||"", kind:x.kind||"", place:x.place||"", note:x.note||""});
-    else if(x.type === "change" && +x.period >= 1 && +x.period <= 5){ const ov = cloneOv(date); ov.cells[+x.period - 1] = x.cancel ? {cancel:true, note:x.note||""} : {subject:x.subject||"", cls:x.cls||"", kind:"class", note:x.note||""}; await saveOv(date, ov); }
+    else if(x.type === "change" && +x.period >= 1 && +x.period <= NP()){ const ov = cloneOv(date); ov.cells[+x.period - 1] = x.cancel ? {cancel:true, note:x.note||""} : {subject:x.subject||"", cls:x.cls||"", kind:"class", note:x.note||""}; await saveOv(date, ov); }
     else if(x.type === "extra"){ if(!x.period && !x.start) x.start = "16:10"; const ov = cloneOv(date); ov.extra.push({title:x.title||"", kind:x.kind||"会議", period:x.period ? +x.period : null, start:x.start||"", end:x.end||"", note:x.note||""}); await saveOv(date, ov); }
     else if(x.type === "progress" && x.subject) await put("progress", null, {subject:x.subject, cls:x.cls||"", unit:x.unit||"", lesson:x.lesson ? +x.lesson : null, page:String(x.page||""), done:x.done||"", next:x.next||"", prep:x.prep||[], prepDone:[], date});
     else await put("memos", null, {text:x.text || x.title || "", done:false, createdAt:new Date().toISOString()});
@@ -1572,6 +1581,34 @@ document.addEventListener("click", async (ev) => {
       if(done && t.gcalId){ gcalDelete(t.gcalId); put("tasks", t.id, {...t, status:"done", gcalId:""}).catch(() => {}); }
       if(done){ const left = openTasks().length; toast(left ? `完了。残り ${left} 件` : "すべて完了しました"); concierge.say(left ? "おつかれさまです！" : "全部おわりました！すごい！", "joy", 2600); } } return; }
   if(d.act === "ccart"){ const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/webp,image/png"; inp.onchange = () => inp.files[0] && uploadConciergeArt(inp.files[0]).then(() => settingsPane()); inp.click(); return; }
+  if(d.ttOpen !== undefined && b.matches("[data-tt-open]")){ ttSetupPane(d.ttOpen || "grid"); return; }
+  if(ttEd && b.closest("#pane")){
+    const e = ttEd;
+    if(d.ttTab){ e.tab = d.ttTab; e.csv = null; ttDraw(); return; }
+    if(d.ttDay){ e.day = d.ttDay; ttDraw(); return; }
+    if(d.ttMode){ e.mode = d.ttMode; ttDraw(); return; }
+    if(b.matches("[data-tt-addrow]")){ DAYKEYS.forEach(dk => e.grid[dk].push({})); e.dirty = true; ttDraw(); return; }
+    if(b.matches("[data-tt-delrow]")){ e.grid[e.day].pop(); e.dirty = true; ttDraw(); return; }
+    if(b.matches("[data-tt-copyday]")){ if(b.dataset.armed){ DAYKEYS.forEach(dk => e.grid[dk] = clone(e.grid[e.day])); e.dirty = true; ttDraw(); toast("全曜日にコピーしました"); } else { b.dataset.armed = "1"; b.textContent = "もう一度押すとコピー"; } return; }
+    const M = e.off[e.mode];
+    if(b.matches("[data-tt-addp]")){ const last = [...M.low].reverse().find(Boolean); const st = last ? plusMin(last.end, 5) : "08:45"; M.low.push({start:st, end:plusMin(st, 45)}); if(M.upper.length) M.upper.push({start:st, end:plusMin(st, 45)}); e.dirty = true; ttDraw(); return; }
+    if(b.matches("[data-tt-delp]")){ M.low.pop(); if(M.upper.length > M.low.length) M.upper.length = Math.max(M.low.length, 0); e.dirty = true; ttDraw(); return; }
+    if(d.ttNullp !== undefined && b.matches("[data-tt-nullp]")){ M.low[+d.ttNullp] = null; e.dirty = true; ttDraw(); return; }
+    if(d.ttRevive !== undefined && b.matches("[data-tt-revive]")){ const i = +d.ttRevive, prev = M.low.slice(0, i).reverse().find(Boolean); const st = prev ? plusMin(prev.end, 5) : "08:45"; M.low[i] = {start:st, end:plusMin(st, 45)}; e.dirty = true; ttDraw(); return; }
+    if(b.matches("[data-tt-addb]")){ (M.blocks = M.blocks || []).push({label:"", start:"", end:""}); ttDraw(); return; }
+    if(d.ttDelb !== undefined && b.matches("[data-tt-delb]")){ M.blocks.splice(+d.ttDelb, 1); e.dirty = true; ttDraw(); return; }
+    if(b.matches("[data-tt-upper]")){ e.showUpper = b.getAttribute("aria-checked") !== "true"; if(e.showUpper && !(M.upper || []).length) M.upper = clone(M.low); if(!e.showUpper) MODES.forEach(m => { if(e.off[m]) e.off[m].upper = clone(e.off[m].low); }); e.dirty = true; ttDraw(); return; }
+    if(b.matches("[data-tt-addup]")){ const last = [...M.upper].reverse().find(Boolean); const st = last ? plusMin(last.end, 5) : "08:45"; M.upper.push({start:st, end:plusMin(st, 45)}); e.dirty = true; ttDraw(); return; }
+    if(b.matches("[data-tt-save]")){ b.disabled = true; try { await ttSave(); } finally { b.disabled = false; } return; }
+    if(d.csvExport){ d.csvExport === "grid" ? exportTT() : exportTimes(); return; }
+    if(d.csvPaste){ e.csv = {kind:d.csvPaste, paste:true}; ttDraw(); setTimeout(() => $("#csvtext") && $("#csvtext").focus(), 60); return; }
+    if(b.matches("[data-csv-read]")){ csvLoaded(e.csv.kind, parseCSV($("#csvtext").value)); return; }
+    if(d.csvFile){ const kind = d.csvFile, inp = document.createElement("input"); inp.type = "file"; inp.accept = ".csv,.tsv,.txt,text/csv,text/plain";
+      inp.onchange = async () => { const f = inp.files[0]; if(!f) return; if(f.size > 1e6){ toast("ファイルが大きすぎます"); return; } csvLoaded(kind, parseCSV(await decodeFile(f))); }; inp.click(); return; }
+    if(d.csvSheet){ const kind = d.csvSheet;
+      picker("スプレッドシートから", "ファイル名で検索", q => gcall("g.drive", {q, mime:"sheet"}), x => `<span class="main"><b>${esc(x.title)}</b><small>スプレッドシート · ${esc(x.modified)}</small></span>`,
+        async x => { toast("読み込んでいます…"); try { const rows = await gcall("g.sheet", {id:x.id}); csvLoaded(kind, (rows || []).map(r => r.map(c => String(c).trim())).filter(r => r.some(Boolean))); } catch(err){ toast("読み込めませんでした"); } }); return; }
+  }
   if(b.matches("[data-drive-attach]")){ const f = b.closest("form");
     picker("ドライブから添付", "ファイル名で検索", q => gcall("g.drive", {q}), x => `<span class="main"><b>${esc(x.title)}</b><small>${mimeLabel(x.mime)} · ${esc(x.modified)}</small></span>`,
       x => { const arr = safeFiles(f.files.value); if(!arr.some(y => y.url === x.url)) arr.push({title:x.title, url:x.url}); f.files.value = JSON.stringify(arr); f.querySelector(".fileschips").innerHTML = fileChips(arr); }); return; }
@@ -1660,6 +1697,9 @@ $("#fab").addEventListener("click", () => ui.pane ? closePane() : addPane());
 document.addEventListener("change", e => { const p = e.target.dataset && e.target.dataset.pref; if(p) putPrefs({[p]: +e.target.value}); });
 $("#scrim").addEventListener("click", closePane);
 addEventListener("keydown", e => { if(e.key === "Escape" && ui.pane) closePane(); });
+const ttInput = ev => { const t = ev.target; if(ttEd && t.dataset && t.dataset.tt){ ttSet(t.dataset.tt, t.value); if(t.tagName === "SELECT" && t.value === "free"){ const pth = t.dataset.tt.replace(/\.kind$/, ""); ttSet(pth + ".subject", ""); ttSet(pth + ".cls", ""); ttDraw(); } } };
+document.addEventListener("change", ttInput);
+document.addEventListener("input", ttInput);
 document.addEventListener("input", e => { if(e.target.id === "pq"){ ui.peopleQ = e.target.value; const pos = e.target.selectionStart; render(); const n = $("#pq"); if(n){ n.focus(); n.setSelectionRange(pos,pos); } } });
 
 async function findOrCreateOrg(name){
@@ -1713,7 +1753,7 @@ document.addEventListener("submit", async (ev) => {
         toast("記録しました"); return; }
       case "cell": {
         const [dk, pi] = f.dataset.cell.split(":"); const T = JSON.parse(JSON.stringify(tt()));
-        T.grid[dk] = T.grid[dk] || [{},{},{},{},{}];
+        T.grid[dk] = T.grid[dk] || [];
         T.grid[dk][+pi] = v.kind === "free" || !v.subject.trim() ? {} : {subject:v.subject.trim(), cls:v.cls.trim(), kind:v.kind};
         await putTT(T); break; }
       case "ovcell": {
@@ -1954,6 +1994,206 @@ const concierge = (() => {
   apply(); raf = requestAnimationFrame(step);
   return { close(){ closeBubble(); }, talkNow(){ const st = tstate(); st.last = 0; tsave(st); idleSince = 0; talk(); }, say, react, setCfg, get cfg(){ return cfg; }, think(on){ thinking = on; if(on) react("think"); else play("idle"); }, home(){ tgt = pickTarget(); } };
 })();
+
+/* ================= timetable & class-time editor (+ CSV / Google Sheets import) ================= */
+const DAYJP = ["月","火","水","木","金"];
+const MODEJP = {normal:"通常", short:"短縮", assembly:"朝会"};
+const upperGrades = () => { const u = SCHOOL && SCHOOL.upperGrades; return Array.isArray(u) ? u.map(String) : ["3","4","5","6"]; };
+const NP = () => Math.max(1, (OFFICIAL.normal && OFFICIAL.normal.low || []).length, ...DAYKEYS.map(dk => (tt().grid[dk] || []).length));
+const clone = o => JSON.parse(JSON.stringify(o));
+const HM = /^([01]?\d|2[0-3]):[0-5]\d$/;
+const normHM = s => { s = String(s || "").trim().replace(/[：]/g, ":").replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 65248)); const m = s.match(/^(\d{1,2})[:時](\d{2})/); return m ? `${pad(+m[1])}:${m[2]}` : (/^\d{3,4}$/.test(s) ? `${pad(+s.slice(0, -2))}:${s.slice(-2)}` : ""); };
+let ttEd = null;
+function ttSetupPane(tab){
+  ttEd = {tab: tab || "grid", day: "mon", mode: "normal", grid: clone(tt().grid || {}), off: clone(OFFICIAL), upper: upperGrades().join(","), csv: null, dirty: false};
+  DAYKEYS.forEach(dk => { ttEd.grid[dk] = ttEd.grid[dk] || []; while(ttEd.grid[dk].length < NP()) ttEd.grid[dk].push({}); });
+  openPane("", ttDraw); ttDraw();
+}
+function ttDraw(){
+  const e = ttEd; if(!e) return;
+  const tabs = `<div class="seg" role="group" aria-label="設定の種類">${[["grid","時間割"],["times","授業時間"],["csv","CSV・シート"]].map(([k,l]) => `<button type="button" data-tt-tab="${k}" aria-pressed="${e.tab===k}">${l}</button>`).join("")}</div>`;
+  let body = "";
+  if(e.tab === "grid"){
+    const rows = e.grid[e.day];
+    const subs = [...new Set(["国語","算数","生活","音楽","図画工作","体育","道徳","学級活動","特別活動","英語","情報探究","総合", ...DAYKEYS.flatMap(dk => e.grid[dk].map(c => c && c.subject).filter(Boolean))])];
+    body = `<div class="seg mini" role="group" aria-label="曜日" style="margin-bottom:12px;display:flex">${DAYKEYS.map((dk, i) => `<button type="button" data-tt-day="${dk}" aria-pressed="${e.day===dk}" style="flex:1">${DAYJP[i]}</button>`).join("")}</div>
+      <datalist id="ttsubs">${subs.map(x => `<option value="${esc(x)}">`).join("")}</datalist>
+      ${rows.map((c, i) => { c = c || {}; const k = c.subject ? (c.kind || "class") : "free";
+        return `<div class="ttrow"><span class="pno num">${i+1}</span>
+          <input class="input" list="ttsubs" placeholder="空き" value="${esc(c.subject)}" data-tt="grid.${e.day}.${i}.subject" aria-label="${i+1}時間目 教科">
+          <input class="input" placeholder="クラス" value="${esc(c.cls)}" data-tt="grid.${e.day}.${i}.cls" aria-label="${i+1}時間目 クラス" style="max-width:86px">
+          <select class="input" data-tt="grid.${e.day}.${i}.kind" aria-label="${i+1}時間目 種類" style="max-width:88px">${opt("class", k, "授業")}${opt("meeting", k, "会議")}${opt("free", k, "空き")}</select></div>`; }).join("")}
+      <div class="editfoot"><button type="button" class="pill-btn" data-tt-addrow>${ico("plus")}時限を足す</button>${rows.length > 1 ? `<button type="button" class="pill-btn danger" data-tt-delrow>最後の時限を消す</button>` : ""}<button type="button" class="pill-btn" data-tt-copyday>この曜日を全曜日にコピー</button></div>
+      <p class="hint" style="margin-top:10px">クラスは他学年・他クラスの授業のときだけ入れます（例：4-2）。自分のクラスなら空欄で大丈夫です。</p>`;
+  } else if(e.tab === "times"){
+    const M = e.off[e.mode] = e.off[e.mode] || {label:MODEJP[e.mode], dismiss:"", low:[], upper:[], blocks:[]};
+    const showUp = !!e.showUpper || (M.upper || []).some((t, i) => t && (!M.low[i] || t.start !== M.low[i].start || t.end !== M.low[i].end));
+    body = `<div class="seg mini" role="group" aria-label="時程" style="margin-bottom:12px;display:flex">${MODES.map(k => `<button type="button" data-tt-mode="${k}" aria-pressed="${e.mode===k}" style="flex:1">${MODEJP[k]}</button>`).join("")}</div>
+      <div class="frow"><div class="field"><label>この時程の名前</label><input class="input" value="${esc(M.label)}" data-tt="off.${e.mode}.label"></div>
+        <div class="field"><label>下校</label><input class="input" type="time" value="${esc(M.dismiss)}" data-tt="off.${e.mode}.dismiss"></div></div>
+      <div class="sec" style="margin-top:4px">授業</div>
+      ${M.low.map((t, i) => `<div class="ttrow"><span class="pno num">${i+1}</span>${t === null ? `<span class="hint" style="flex:1">この時程ではなし</span><button type="button" class="chip" data-tt-revive="${i}">戻す</button>` :
+        `<input class="input" type="time" value="${esc(t.start)}" data-tt="off.${e.mode}.low.${i}.start" aria-label="${i+1}時間目 開始"><span>–</span><input class="input" type="time" value="${esc(t.end)}" data-tt="off.${e.mode}.low.${i}.end" aria-label="${i+1}時間目 終了"><button type="button" class="chip" data-tt-nullp="${i}" title="この時程ではなし">なし</button>`}</div>`).join("")}
+      <div class="editfoot"><button type="button" class="pill-btn" data-tt-addp>${ico("plus")}時限を足す</button>${M.low.length > 1 ? `<button type="button" class="pill-btn danger" data-tt-delp>最後の時限を消す</button>` : ""}</div>
+      <div class="sec">休み時間・HR など</div>
+      ${(M.blocks || []).map((b, i) => `<div class="ttrow"><input class="input" value="${esc(b.label)}" placeholder="名前" data-tt="off.${e.mode}.blocks.${i}.label" style="min-width:0"><input class="input" type="time" value="${esc(b.start)}" data-tt="off.${e.mode}.blocks.${i}.start"><span>–</span><input class="input" type="time" value="${esc(b.end)}" data-tt="off.${e.mode}.blocks.${i}.end"><button type="button" class="icon-btn sm" data-tt-delb="${i}" aria-label="消す">${ico("close")}</button></div>`).join("")}
+      <div class="editfoot"><button type="button" class="pill-btn" data-tt-addb>${ico("plus")}追加</button></div>
+      <div class="sec">高学年の時程（任意）</div>
+      <div class="setrow" style="border-top:0"><span class="main"><b>学年によって授業時間が違う</b><small>他学年の授業に出るとき、その学年の時刻で表示します</small></span><button type="button" class="switch" role="switch" aria-checked="${showUp}" data-tt-upper aria-label="学年で時程が違う"></button></div>
+      ${showUp ? `<div class="field"><label>この時程を使う学年（カンマ区切り）</label><input class="input" value="${esc(e.upper)}" data-tt="upper" placeholder="3,4,5,6"></div>
+        ${(M.upper.length ? M.upper : M.low).map((t, i) => `<div class="ttrow"><span class="pno num">${i+1}</span>${t === null || t === undefined ? `<span class="hint" style="flex:1">なし</span>` : `<input class="input" type="time" value="${esc(t.start)}" data-tt="off.${e.mode}.upper.${i}.start"><span>–</span><input class="input" type="time" value="${esc(t.end)}" data-tt="off.${e.mode}.upper.${i}.end">`}</div>`).join("")}
+        <div class="editfoot"><button type="button" class="pill-btn" data-tt-addup>${ico("plus")}高学年の時限を足す</button></div>` : ""}`;
+  } else {
+    body = `<p class="empty" style="margin-top:0">Excel やスプレッドシートで作った表をまとめて読み込めます。読み込んだ内容は「時間割」「授業時間」のタブで確認してから保存します。</p>
+      <div class="card" style="box-shadow:none;background:var(--surface-2);margin-bottom:12px"><h3>時間割</h3>
+        <p class="hint" style="margin:0 0 8px">形式は2通りOK：①表の形（1行目に 月,火,水,木,金、1列目に時限。セルは「国語」「情報探究 4-2」）②1行1コマ（曜日,時限,教科,クラス,種類）</p>
+        <div class="acts" style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="chip accent" data-csv-file="grid">ファイルから</button><button type="button" class="chip accent" data-csv-sheet="grid">スプレッドシートから</button><button type="button" class="chip" data-csv-paste="grid">貼り付け</button><button type="button" class="chip" data-csv-export="grid">今の時間割を書き出す</button></div></div>
+      <div class="card" style="box-shadow:none;background:var(--surface-2);margin-bottom:12px"><h3>授業時間</h3>
+        <p class="hint" style="margin:0 0 8px">列：時程,種類,名前,開始,終了,学年帯　例「通常,授業,1,08:45,09:30」「通常,休み,中休み,10:20,10:40」「通常,下校,,14:50,」。学年帯に「高」と書くと高学年用になります。</p>
+        <div class="acts" style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="chip accent" data-csv-file="times">ファイルから</button><button type="button" class="chip accent" data-csv-sheet="times">スプレッドシートから</button><button type="button" class="chip" data-csv-paste="times">貼り付け</button><button type="button" class="chip" data-csv-export="times">今の授業時間を書き出す</button></div></div>
+      ${e.csv && e.csv.paste ? `<div class="field"><label>${e.csv.kind === "grid" ? "時間割" : "授業時間"}を貼り付け（スプレッドシートからのコピーもOK）</label><textarea id="csvtext" style="min-height:140px;font-family:var(--f-num)"></textarea><div class="btns"><button type="button" class="btn primary" data-csv-read>読み込む</button></div></div>` : ""}
+      ${e.csv && e.csv.result ? e.csv.result : ""}`;
+  }
+  const saveBar = e.tab === "csv" ? "" : `<div class="btns" style="position:sticky;bottom:calc(-28px - env(safe-area-inset-bottom,0px));background:var(--surface);padding:10px 0 calc(28px + env(safe-area-inset-bottom,0px));margin:12px 0 calc(-28px - env(safe-area-inset-bottom,0px));box-shadow:0 -12px 16px -12px rgba(0,0,0,.12);z-index:2"><button type="button" class="btn primary" data-tt-save>${e.tab === "grid" ? "時間割を保存" : "授業時間を保存"}</button><button type="button" class="btn" data-act="close">閉じる</button></div>`;
+  $("#pane").innerHTML = `${paneHead("時間割と授業時間")}${tabs}${body}${saveBar}`;
+}
+function ttSet(path, val){
+  const ks = path.split("."); let o = ttEd;
+  for(let i = 0; i < ks.length - 1; i++){ const k = ks[i]; if(o[k] === undefined || o[k] === null) o[k] = /^\d+$/.test(ks[i+1]) ? [] : {}; o = o[k]; }
+  o[ks[ks.length - 1]] = val; ttEd.dirty = true;
+}
+async function ttSave(){
+  const e = ttEd;
+  if(e.tab === "grid"){
+    const grid = {};
+    DAYKEYS.forEach(dk => { grid[dk] = e.grid[dk].map(c => { c = c || {}; const sub = (c.subject || "").trim(); return !sub || c.kind === "free" || sub === "空き" ? {} : {subject:sub, cls:(c.cls || "").trim(), kind:c.kind === "meeting" ? "meeting" : "class"}; });
+      while(grid[dk].length && !grid[dk][grid[dk].length - 1].subject && grid[dk].length > (OFFICIAL.normal.low || []).length) grid[dk].pop(); });
+    await putTT({...(S.tt || {}), grid}); toast("時間割を保存しました"); concierge.react("joy"); e.dirty = false; return;
+  }
+  const off = clone(e.off), bad = [];
+  MODES.forEach(m => { const M = off[m]; if(!M) return;
+    M.label = (M.label || MODEJP[m]).trim(); M.dismiss = normHM(M.dismiss) || M.dismiss || "";
+    const fix = (t, where) => { if(!t) return null; const st = normHM(t.start), en = normHM(t.end); if(!st || !en || st >= en){ bad.push(`${MODEJP[m]} ${where}`); } return {start:st || t.start, end:en || t.end}; };
+    M.low = (M.low || []).map((t, i) => fix(t, `${i+1}時間目`));
+    M.upper = (M.upper && M.upper.length ? M.upper : M.low).map((t, i) => t ? fix(t, `高学年 ${i+1}時間目`) : null);
+    M.blocks = (M.blocks || []).filter(b => b && (b.label || b.start)).map(b => ({label:(b.label || "休み").trim(), ...(fix(b, b.label || "休み") || {})}));
+  });
+  if(bad.length){ toast(`時刻を確認してください：${bad.slice(0, 3).join("、")}`); return; }
+  const ug = String(e.upper || "").split(/[,、\s]+/).map(x => x.replace(/[^0-9]/g, "")).filter(Boolean);
+  await db.doc("config/school").set({...(SCHOOL || {}), official:off, upperGrades:ug});
+  toast("授業時間を保存しました"); concierge.react("joy"); e.dirty = false;
+}
+
+/* ---------- CSV ---------- */
+function parseCSV(text){
+  text = String(text || "").replace(/^﻿/, "").replace(/\r\n?/g, "\n");
+  const first = text.split("\n").find(l => l.trim()) || "";
+  const dl = first.includes("\t") ? "\t" : (first.split(";").length > first.split(",").length ? ";" : ",");
+  const rows = []; let row = [], cell = "", q = false;
+  for(let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if(q){ if(ch === '"'){ if(text[i+1] === '"'){ cell += '"'; i++; } else q = false; } else cell += ch; continue; }
+    if(ch === '"' && cell === "") q = true;
+    else if(ch === dl){ row.push(cell); cell = ""; }
+    else if(ch === "\n"){ row.push(cell); rows.push(row); row = []; cell = ""; }
+    else cell += ch;
+  }
+  row.push(cell); rows.push(row);
+  return rows.map(r => r.map(c => String(c).trim())).filter(r => r.some(Boolean));
+}
+async function decodeFile(file){
+  const buf = await file.arrayBuffer();
+  try { return new TextDecoder("utf-8", {fatal:true}).decode(buf); } catch(e){}
+  try { return new TextDecoder("shift_jis").decode(buf); } catch(e){ return new TextDecoder().decode(buf); }
+}
+const DAYMAP = {"月":"mon","火":"tue","水":"wed","木":"thu","金":"fri","mon":"mon","tue":"tue","wed":"wed","thu":"thu","fri":"fri"};
+const dayKeyOf = s => { s = String(s || "").trim().toLowerCase(); return DAYMAP[s.slice(0, 1)] || DAYMAP[s.slice(0, 3)] || null; };
+const numOf = s => { const m = String(s || "").replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 65248)).match(/\d+/); return m ? +m[0] : 0; };
+function splitCell(txt){
+  txt = String(txt || "").trim(); if(!txt || /^(空き|空|-|ー|―|なし)$/.test(txt)) return {};
+  let m = txt.match(/^(.+?)[\s　]*[（(]\s*([0-9０-９]+\s*[-－ー]\s*[0-9０-９]+)\s*[）)]$/) || txt.match(/^(.+?)[\s　]+([0-9０-９]+\s*[-－ー]\s*[0-9０-９]+)$/);
+  const sub = (m ? m[1] : txt).trim(), cls = m ? m[2].replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 65248)).replace(/\s|[－ー]/g, x => x.trim() ? "-" : "") : "";
+  return {subject:sub, cls, kind:/(会議|部会|主任会|職員会|打ち合わせ|打合せ|研修)/.test(sub) ? "meeting" : "class"};
+}
+function ttFromRows(rows){
+  const grid = {}; DAYKEYS.forEach(dk => grid[dk] = []); const errs = []; let n = 0, merge = false;
+  const head = rows[0] || [];
+  if(head.some(h => /曜日|^day$/i.test(h))){                       // 1行1コマ（書いたコマだけ上書き）
+    merge = true;
+    const ix = k => head.findIndex(h => k.test(h));
+    const iD = ix(/曜日|day/i), iP = ix(/時限|校時|period|時間目/i), iS = ix(/教科|科目|subject|内容/i), iC = ix(/クラス|学級|class/i), iK = ix(/種類|kind/i);
+    rows.slice(1).forEach((r, li) => { const dk = dayKeyOf(r[iD]), p = numOf(r[iP]);
+      if(!dk || !p || p > 10){ errs.push(`${li + 2}行目`); return; }
+      const c = splitCell(r[iS]); if(iC >= 0 && r[iC]) c.cls = r[iC]; if(iK >= 0 && r[iK]) c.kind = /会議|meeting/i.test(r[iK]) ? "meeting" : /空|free/i.test(r[iK]) ? "free" : "class";
+      grid[dk][p - 1] = c.kind === "free" ? {} : c; if(c.subject) n++; });
+  } else {                                                           // 表の形
+    const cols = head.map(dayKeyOf);
+    if(!cols.some(Boolean)){ errs.push("1行目に 月,火,水,木,金 が見つかりません"); }
+    rows.slice(1).forEach((r, li) => { const p = numOf(r[0]); if(!p || p > 10){ if(r.some(Boolean)) errs.push(`${li + 2}行目`); return; }
+      cols.forEach((dk, ci) => { if(!dk) return; const c = splitCell(r[ci]); grid[dk][p - 1] = c; if(c.subject) n++; }); });
+  }
+  if(!merge) DAYKEYS.forEach(dk => { for(let i = 0; i < grid[dk].length; i++) grid[dk][i] = grid[dk][i] || {}; });
+  return {grid, n, errs, merge};
+}
+function timesFromRows(rows){
+  const head = rows[0] || [], hasHead = head.some(h => /時程|種類|開始/.test(h));
+  const ix = (k, d) => { const i = head.findIndex(h => k.test(h)); return hasHead && i >= 0 ? i : d; };
+  const iM = ix(/時程|mode/i, 0), iT = ix(/種類|type/i, 1), iN = ix(/名前|時限|name/i, 2), iS = ix(/開始|start/i, 3), iE = ix(/終了|end/i, 4), iB = ix(/学年帯|band/i, 5);
+  const off = {}, errs = []; let n = 0;
+  const modeOf = s => { s = String(s || ""); return /短縮|short/i.test(s) ? "short" : /朝会|assembly/i.test(s) ? "assembly" : /通常|normal|^$/i.test(s) ? "normal" : null; };
+  (hasHead ? rows.slice(1) : rows).forEach((r, li) => {
+    const m = modeOf(r[iM]); if(!m){ errs.push(`${li + (hasHead ? 2 : 1)}行目（時程名）`); return; }
+    const M = off[m] = off[m] || {label:MODEJP[m], dismiss:"", low:[], upper:[], blocks:[]};
+    const ty = String(r[iT] || ""), st = normHM(r[iS]), en = normHM(r[iE]);
+    if(/下校/.test(ty)){ M.dismiss = st || en; n++; return; }
+    if(/授業|時限|校時|class/i.test(ty) || (!ty && numOf(r[iN]))){
+      const p = numOf(r[iN]); if(!p || !st || !en){ errs.push(`${li + (hasHead ? 2 : 1)}行目`); return; }
+      (/高|upper/i.test(r[iB] || "") ? M.upper : M.low)[p - 1] = {start:st, end:en}; n++; return; }
+    if(!st || !en){ errs.push(`${li + (hasHead ? 2 : 1)}行目`); return; }
+    M.blocks.push({label:r[iN] || ty || "休み", start:st, end:en}); n++;
+  });
+  Object.values(off).forEach(M => { for(let i = 0; i < M.low.length; i++) if(!M.low[i]) M.low[i] = null; for(let i = 0; i < M.upper.length; i++) if(!M.upper[i]) M.upper[i] = M.low[i] || null; if(!M.upper.length) M.upper = M.low.slice(); });
+  return {off, n, errs};
+}
+const csvCell = v => { v = String(v ?? ""); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
+function downloadCSV(name, rows){
+  const blob = new Blob(["﻿" + rows.map(r => r.map(csvCell).join(",")).join("\r\n")], {type:"text/csv"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+function exportTT(){
+  const g = (ttEd && ttEd.grid) || tt().grid, n = Math.max(...DAYKEYS.map(dk => (g[dk] || []).length), 1);
+  downloadCSV("時間割.csv", [["", ...DAYJP], ...Array.from({length:n}, (_, i) => [String(i + 1), ...DAYKEYS.map(dk => { const c = (g[dk] || [])[i] || {}; return c.subject ? c.subject + (c.cls ? " " + c.cls : "") : ""; })])]);
+}
+function exportTimes(){
+  const off = (ttEd && ttEd.off) || OFFICIAL, rows = [["時程","種類","名前","開始","終了","学年帯"]];
+  MODES.forEach(m => { const M = off[m]; if(!M) return; const L = M.label || MODEJP[m];
+    (M.low || []).forEach((t, i) => t && rows.push([L, "授業", String(i + 1), t.start, t.end, ""]));
+    (M.upper || []).forEach((t, i) => { const lo = (M.low || [])[i]; if(t && (!lo || lo.start !== t.start || lo.end !== t.end)) rows.push([L, "授業", String(i + 1), t.start, t.end, "高"]); });
+    (M.blocks || []).forEach(b => rows.push([L, "休み", b.label, b.start, b.end, ""]));
+    if(M.dismiss) rows.push([L, "下校", "", M.dismiss, "", ""]); });
+  downloadCSV("授業時間.csv", rows);
+}
+function csvLoaded(kind, rows){
+  const e = ttEd; if(!e) return;
+  if(kind === "grid"){
+    const r = ttFromRows(rows);
+    if(!r.n){ e.csv = {kind, result:`<p class="empty">時間割として読み取れませんでした。${r.errs.slice(0, 3).join("、")}</p>`}; ttDraw(); return; }
+    DAYKEYS.forEach(dk => {
+      if(r.merge) r.grid[dk].forEach((c, i) => { if(c === undefined) return; while(e.grid[dk].length <= i) e.grid[dk].push({}); e.grid[dk][i] = c; });
+      else if(r.grid[dk].length) e.grid[dk] = r.grid[dk];
+      while(e.grid[dk].length < NP()) e.grid[dk].push({});
+    });
+    e.csv = null; e.tab = "grid"; e.dirty = true; ttDraw();
+    toast(`${r.n}コマ読み込みました。確認して保存してください${r.errs.length ? `（読めない行 ${r.errs.length}）` : ""}`);
+  } else {
+    const r = timesFromRows(rows);
+    if(!r.n){ e.csv = {kind, result:`<p class="empty">授業時間として読み取れませんでした。${r.errs.slice(0, 3).join("、")}</p>`}; ttDraw(); return; }
+    Object.keys(r.off).forEach(m => { const M = r.off[m], cur = e.off[m] || {}; e.off[m] = {...cur, ...M, label:cur.label || M.label, dismiss:M.dismiss || cur.dismiss || "", blocks:M.blocks.length ? M.blocks : (cur.blocks || [])}; });
+    e.csv = null; e.tab = "times"; e.mode = Object.keys(r.off)[0] || "normal"; e.dirty = true; ttDraw();
+    toast(`${r.n}件読み込みました。確認して保存してください${r.errs.length ? `（読めない行 ${r.errs.length}）` : ""}`);
+  }
+}
 
 /* ================= Google integrations ================= */
 const gcall = (op, args = {}, t = 60000) => call({op, args}, t).then(j => j.result);

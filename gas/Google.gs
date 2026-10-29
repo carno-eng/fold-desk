@@ -18,7 +18,8 @@ function google_(op, a){
     case "g.gmail": return scanGmail(true);
     case "g.contacts": return searchContacts_(String(a.q || ""));
     case "g.saveContact": return saveContact_(a.person || {});
-    case "g.drive": return searchDrive_(String(a.q || ""));
+    case "g.drive": return searchDrive_(String(a.q || ""), a.mime === "sheet");
+    case "g.sheet": return readSheet_(String(a.id || ""));
     case "g.syncAll": syncGoogleTasks(); scanGmail(false); importCalendar(); return gStatus_();
   }
   throw coded_("bad_request");
@@ -213,10 +214,17 @@ function saveContact_(p){
 }
 
 /* ---------- Drive ---------- */
-function searchDrive_(q){
+function readSheet_(id){
+  if(!/^[A-Za-z0-9_-]{20,80}$/.test(id)) throw coded_("bad_request");
+  const sh = SpreadsheetApp.openById(id).getSheets()[0];
+  const rng = sh.getDataRange();
+  if(rng.getNumRows() > 400 || rng.getNumColumns() > 30) throw coded_("too_large");
+  return rng.getDisplayValues();
+}
+function searchDrive_(q, sheetsOnly){
   q = q.replace(/['\\]/g, " ").trim();
   if(!q || q.length > 60) return [];
-  const it = DriveApp.searchFiles(`title contains '${q}' and trashed = false`);
+  const it = DriveApp.searchFiles(`title contains '${q}' and trashed = false` + (sheetsOnly ? " and mimeType = 'application/vnd.google-apps.spreadsheet'" : ""));
   const out = [];
   while(it.hasNext() && out.length < 12){
     const f = it.next();
