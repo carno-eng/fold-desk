@@ -31,8 +31,9 @@ function setup(){
   Logger.log("OK. 次に「デプロイ → 新しいデプロイ → ウェブアプリ」を行い、そのあと pair() を実行してください。");
 }
 function pair(){
-  const url = ScriptApp.getService().getUrl();
-  if(!url) throw new Error("先にウェブアプリとしてデプロイしてください。");
+  const url = (P.getProperty("WEBAPP_URL") || ScriptApp.getService().getUrl() || "").trim();
+  if(!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(url))
+    throw new Error("ウェブアプリの URL（…/exec）が取れませんでした。「デプロイ → デプロイを管理」でウェブアプリの URL をコピーし、「プロジェクトの設定 → スクリプト プロパティ」に WEBAPP_URL という名前で保存してから、もう一度 pair() を実行してください。今の値: " + url);
   if(APP_URL.indexOf("http") !== 0) throw new Error("APP_URL が未設定です。");
   const payload = Utilities.base64EncodeWebSafe(JSON.stringify({u:url, t:P.getProperty("TOKEN")}), Utilities.Charset.UTF_8).replace(/=+$/, "");
   const link = APP_URL + "#pair=" + payload;

@@ -2334,6 +2334,7 @@ async function uploadConciergeArt(file){
   catch(e){ toast("登録できませんでした"); }
 }
 
+let pairError = "";
 /* pairing: the link mailed by pair() carries the endpoint + token in the #fragment (never sent to any server) */
 function readPairing(){
   const m = location.hash.match(/^#pair=([A-Za-z0-9_-]+)/);
@@ -2341,7 +2342,8 @@ function readPairing(){
   try {
     const j = JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g, "+").replace(/_/g, "/")))));
     if(j.u && j.t){ ls.set("fd-api", j.u); ls.set("fd-token", j.t); }
-  } catch(e){}
+    if(!/\/exec$/.test(j.u || "")) pairError = "接続リンクの URL が本番用（…/exec）ではありませんでした。Apps Script でスクリプト プロパティ WEBAPP_URL を設定して、pair() をもう一度実行してください。";
+  } catch(e){ pairError = "接続リンクを読み取れませんでした。メールのボタンをもう一度開いてください。"; }
   history.replaceState(null, "", location.pathname + "#today");
   return true;
 }
@@ -2349,7 +2351,7 @@ function setupView(){
   return `<div class="setup">
     <div class="logo big" aria-hidden="true"></div>
     <h1>Fold Desk</h1>
-    <p class="lead">${syncState === "auth" ? "接続の合言葉が無効になりました。新しい接続リンクで、もう一度つないでください。" : syncState === "locked" ? "接続の失敗が続いたため、10分間ロックしています。" : "最初に、あなたの Google アカウントの保管場所とつなぎます。"}</p>
+    ${pairError ? `<p class="lead" style="color:var(--warn);font-weight:700">${esc(pairError)}</p>` : ""}<p class="lead">${syncState === "auth" ? "接続の合言葉が無効になりました。新しい接続リンクで、もう一度つないでください。" : syncState === "locked" ? "接続の失敗が続いたため、10分間ロックしています。" : "最初に、あなたの Google アカウントの保管場所とつなぎます。"}</p>
     <div class="card" style="text-align:left">
       <ol class="steps"><li><span>Apps Script で <b>pair()</b> を実行すると、自分宛てに接続リンクのメールが届きます。</span></li>
       <li><span>このスマホでメールのボタンを開くと、自動で接続されます。</span></li>
