@@ -2049,7 +2049,7 @@ function ttDraw(){
         <p class="hint" style="margin:0 0 8px">形式は2通りOK：①表の形（1行目に 月,火,水,木,金、1列目に時限。セルは「国語」「情報探究 4-2」）②1行1コマ（曜日,時限,教科,クラス,種類）</p>
         <div class="acts" style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="chip accent" data-csv-file="grid">ファイルから</button><button type="button" class="chip accent" data-csv-sheet="grid">スプレッドシートから</button><button type="button" class="chip" data-csv-paste="grid">貼り付け</button><button type="button" class="chip" data-csv-export="grid">今の時間割を書き出す</button></div></div>
       <div class="card" style="box-shadow:none;background:var(--surface-2);margin-bottom:12px"><h3>授業時間</h3>
-        <p class="hint" style="margin:0 0 8px">列：時程,種類,名前,開始,終了,学年帯　例「通常,授業,1,08:45,09:30」「通常,休み,中休み,10:20,10:40」「通常,下校,,14:50,」。学年帯に「高」と書くと高学年用になります。</p>
+        <p class="hint" style="margin:0 0 8px">列：時程,種類,名前,開始,終了,学年帯　例「通常,授業,1,08:45,09:30」「通常,休み,中休み,10:25,10:45」「通常,下校,,15:00,」。学年帯に「高」と書くと高学年用になります。</p>
         <div class="acts" style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="chip accent" data-csv-file="times">ファイルから</button><button type="button" class="chip accent" data-csv-sheet="times">スプレッドシートから</button><button type="button" class="chip" data-csv-paste="times">貼り付け</button><button type="button" class="chip" data-csv-export="times">今の授業時間を書き出す</button></div></div>
       ${e.csv && e.csv.paste ? `<div class="field"><label>${e.csv.kind === "grid" ? "時間割" : "授業時間"}を貼り付け（スプレッドシートからのコピーもOK）</label><textarea id="csvtext" style="min-height:140px;font-family:var(--f-num)"></textarea><div class="btns"><button type="button" class="btn primary" data-csv-read>読み込む</button></div></div>` : ""}
       ${e.csv && e.csv.result ? e.csv.result : ""}`;
