@@ -40,7 +40,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    testOptions { unitTests { isIncludeAndroidResources = true } }
+    testOptions { unitTests { isIncludeAndroidResources = true; all { it.testLogging { showStandardStreams = true } } } }
 }
 
 dependencies {

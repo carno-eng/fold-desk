@@ -59,6 +59,11 @@ class WidgetShots {
     }
 
     private fun shot(name: String, rv: RemoteViews, wDp: Int, hDp: Int) {
+        try { shot0(name, rv, wDp, hDp) } catch (e: Throwable) {
+            var t: Throwable? = e; while (t != null) { println("SHOT $name: ${t.javaClass.name}: ${t.message}"); t.stackTrace.take(6).forEach { println("   at $it") }; t = t.cause }
+        }
+    }
+    private fun shot0(name: String, rv: RemoteViews, wDp: Int, hDp: Int) {
         val d = c.resources.displayMetrics.density
         val host = FrameLayout(c)
         val v = rv.apply(c, host)
