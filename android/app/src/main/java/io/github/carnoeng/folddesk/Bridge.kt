@@ -40,6 +40,20 @@ class Bridge(
 
     @JavascriptInterface fun takeActions(): String = Store.takeActions(ctx)
 
+    /* calendars on this phone */
+    @JavascriptInterface fun calState(): String = if (DeviceCal.granted(ctx)) "granted" else "none"
+    @JavascriptInterface fun requestCalendar() { main.post { activity?.askCalendar() } }
+    @JavascriptInterface fun calList(): String = DeviceCal.calendars(ctx)
+    @JavascriptInterface fun calEvents(from: String, days: Int, ids: String): String = DeviceCal.events(ctx, from, days, ids)
+    @JavascriptInterface fun calAdd(calId: String, json: String): Boolean = calId.toLongOrNull()?.let { DeviceCal.add(ctx, it, json) } ?: false
+    @JavascriptInterface fun openCalEvent(eventId: String) {
+        val id = eventId.toLongOrNull() ?: return
+        main.post { try { ctx.startActivity(Intent(Intent.ACTION_VIEW, android.content.ContentUris.withAppendedId(android.provider.CalendarContract.Events.CONTENT_URI, id)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) { } }
+    }
+
+    /* business cards: take or pick a photo, read it on the phone */
+    @JavascriptInterface fun scanCard(source: String) { main.post { activity?.scanCard(source == "camera") } }
+
     @JavascriptInterface fun done() { main.post { onDone?.invoke() } }
 
     /** Concierge art (kept only on this device). Returns its size so the web app knows whether to resend. */

@@ -38,6 +38,32 @@ class MainActivity : ComponentActivity() {
         try { startActivity(i) } catch (_: Exception) { try { startActivity(Intent(android.app.WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER)) } catch (_: Exception) { } }
     }
 
+    private val calPerm = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { r ->
+        val ok = r[Manifest.permission.READ_CALENDAR] == true
+        web.evaluateJavascript("window.__fdCal && window.__fdCal(${if (ok) "true" else "false"})", null)
+    }
+    fun askCalendar() { calPerm.launch(arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)) }
+
+    private var cardUri: Uri? = null
+    private fun cardResult(json: String) { web.evaluateJavascript("window.__fdCard && window.__fdCard(" + org.json.JSONObject.quote(json) + ")", null) }
+    private val takeCard = registerForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
+        val u = cardUri
+        if (ok && u != null) { cardResult("{\"busy\":true}"); CardScan.read(this, u) { r -> cardResult(r); try { java.io.File(cacheDir, "card").listFiles()?.forEach { it.delete() } } catch (_: Exception) { } } }
+        else cardResult("{\"cancel\":true}")
+    }
+    private val pickCard = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { u ->
+        if (u != null) { cardResult("{\"busy\":true}"); CardScan.read(this, u) { r -> cardResult(r) } } else cardResult("{\"cancel\":true}")
+    }
+    fun scanCard(camera: Boolean) {
+        if (camera) {
+            val dir = java.io.File(cacheDir, "card").apply { mkdirs() }
+            val f = java.io.File(dir, "card-${System.currentTimeMillis()}.jpg")
+            val u = androidx.core.content.FileProvider.getUriForFile(this, "$packageName.files", f)
+            cardUri = u
+            try { takeCard.launch(u) } catch (_: Exception) { cardResult("{\"cancel\":true}") }
+        } else pickCard.launch(androidx.activity.result.PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
+
     private val notifPerm = registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
         web.evaluateJavascript("window.__fdNotif && window.__fdNotif(${if (ok) "true" else "false"})", null)
     }

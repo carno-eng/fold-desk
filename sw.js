@@ -1,5 +1,5 @@
 /* Fold Desk service worker: caches only the public app shell. Personal data never passes through here. */
-const VERSION = "fd-shell-v9";
+const VERSION = "fd-shell-v10";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "icons/badge-96.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {

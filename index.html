@@ -1164,13 +1164,14 @@ function dupNote(e){
     ${rm.length ? `<p class="hint" style="padding:0 14px 12px;margin:0">「1つにする」で、${esc(rm.map(evSrc).join("・"))}の分を削除します（場所・メモは残す方に移します）。Google・学校のカレンダーは変わりません。</p>` : ""}</div>`;
 }
 function schoolEventPane(e){
-  openPane(`${paneHead("学校の予定")}
+  openPane(`${paneHead(e.account === "学校" ? "学校の予定" : "予定")}
     <div class="group"><div class="setrow"><span class="main"><b>${esc(e.title)}</b><small>${esc([md(e.date), e.time ? e.time + (e.endTime ? "–" + e.endTime : "") : "終日", e.place].filter(Boolean).join(" · "))}</small></span><span class="chip mini accent">学校</span></div></div>
-    ${dupNote(e)}<p class="hint" style="margin-top:10px">学校の Google アカウントのカレンダー${e.calendar ? `「${esc(e.calendar)}」` : ""}の予定です。このスマホに表示しているだけで、個人のアカウントには保存していません。変更は学校の Google カレンダーで行ってください。</p>
-    <div class="btns"><button class="btn primary" data-act="close">閉じる</button></div>`);
+    ${dupNote(e)}${e.device ? `<p class="hint" style="margin-top:10px">スマホのカレンダー${e.calendar ? `「${esc(e.calendar)}」` : ""}（${esc(e.account)}）の予定です。表示しているだけで、Fold Desk のデータには保存していません。変更はカレンダーのアプリで行ってください。</p>`
+      : `<p class="hint" style="margin-top:10px">学校の Google アカウントのカレンダー${e.calendar ? `「${esc(e.calendar)}」` : ""}の予定です。このスマホに表示しているだけで、個人のアカウントには保存していません。変更は学校の Google カレンダーで行ってください。</p>`}
+    <div class="btns">${e.device && e.eid ? `<button class="btn" data-dev-open="${esc(String(e.eid))}">カレンダーで開く</button>` : ""}<button class="btn primary" data-act="close">閉じる</button></div>`);
 }
 function eventForm(e = {}){
-  if(e.school){ schoolEventPane(e); return; }
+  if(e.school || e.ro){ schoolEventPane(e); return; }
   openPane(`${paneHead(e.id ? "予定" : "新しい予定")}
     <form data-form="event" data-id="${esc(e.id||"")}">${dupNote(e)}
       <div class="field"><label for="e-title">予定</label><input id="e-title" name="title" required value="${esc(e.title)}" autofocus></div>
@@ -1455,6 +1456,9 @@ function settingsPane(){
         <div class="setrow"><span class="main"><b>今すぐ同期</b><small id="g-last">連絡先・ドライブは各画面から使えます</small></span><button class="chip accent" data-g-sync>同期</button></div>
       </div>
 
+      ${devCalAvail() ? `<div class="sec">スマホのカレンダー</div>
+      <div class="group">${devCalOn() ? `<div class="setrow"><span class="main"><b>表示中</b><small>${esc(devStatus())}</small></span><button class="chip accent" data-devcal-pick>選ぶ</button></div>`
+        : `<div class="setrow"><span class="main"><b>スマホのカレンダーを表示</b><small>このスマホに追加した Google アカウント（学校のアカウントも）のカレンダーをそのまま表示します。予定はスマホの外に出ません</small></span><button class="chip accent" data-devcal-on>使う</button></div>`}</div>` : ""}
       <div class="sec">学校の Google アカウント</div>
       <div class="group">${schoolPaired() ? `
         <div class="setrow"><span class="main"><b>接続済み</b><small id="s-last">${esc(schoolStatusText())}</small></span><button class="chip accent" data-school-sync>取り込む</button></div>
@@ -1602,6 +1606,57 @@ ${memo.text.slice(0,4000)}`;
     $("#pane .pane-h h2").textContent += "（確認して保存）";
   } catch(e){ aiFail(e); } finally { concierge.think(false); }
 }
+function cardPick(){
+  openPane(`${paneHead("名刺を読み取る")}
+    <p class="empty" style="margin-top:0">名刺の文字はこのスマホの中で読み取ります。写真はどこにも保存・送信しません。読み取ったら、内容を確認してから保存できます。</p>
+    <div class="btns"><button class="btn primary" data-card-src="camera">撮影する</button><button class="btn" data-card-src="pick">写真から選ぶ</button></div>
+    <p class="hint" style="margin-top:10px">明るい場所で、名刺が画面いっぱいになるように撮るときれいに読めます。</p>`);
+}
+/* turn the text read from a card into person fields (works without AI) */
+function parseCard(r){
+  const L = (r.lines || []).map(l => ({t:String(l.t || "").replace(/\s+/g, " ").trim(), h:+l.h || 0})).filter(l => l.t);
+  const N = t => t.normalize("NFKC");
+  const all = L.map(l => N(l.t)).join("\n");
+  const email = (all.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/) || [""])[0];
+  const phones = [];
+  L.forEach(l => { const t = N(l.t); if(/fax|ファクス|ファックス/i.test(t)) return;
+    (t.match(/(\+81[\s-]?)?0\d{1,4}[\s\-‐ー()]{0,2}\d{1,4}[\s\-‐ー()]{0,2}\d{3,4}/g) || []).forEach(x => { const dg = x.replace(/\D/g, "").replace(/^81/, "0");
+      if(dg.length >= 10 && dg.length <= 11) phones.push({x:x.trim(), mobile:/^0[789]0/.test(dg), tel:/tel|電話|携帯|mobile|直通/i.test(t)}); }); });
+  const phone = ((phones.find(p => p.mobile) || phones.find(p => p.tel) || phones[0]) || {}).x || "";
+  const ORG = /(株式会社|有限会社|合同会社|社団法人|財団法人|学校法人|NPO|学園|学校|小学校|中学校|高等学校|高校|大学|研究所|協会|委員会|センター|事務所|役所|役場|Inc\.?|Co\.,?\s?Ltd|Corporation|Corp\.?|LLC|㈱|\(株\))/i;
+  const ROLE = /(代表|取締役|社長|会長|部長|課長|係長|主任|主幹|主事|教諭|校長|教頭|園長|理事|室長|所長|センター長|マネージャー|マネジャー|リーダー|ディレクター|エンジニア|コンサルタント|担当|スペシャリスト|講師|教授|准教授|助教|研究員|営業|Manager|Director|Engineer|CEO|CTO|COO|President|Officer|Lead|Specialist)/i;
+  const contact = t => /@|https?:|www\.|tel|fax|電話|携帯|mobile|e-?mail|メール|〒/i.test(t) || /\d{2,4}[-‐]\d{2,4}[-‐]\d{3,4}/.test(N(t));
+  const org = (L.find(l => ORG.test(l.t) && !contact(l.t) && l.t.length <= 40) || {}).t || "";
+  const role = (L.find(l => ROLE.test(l.t) && !contact(l.t) && l.t !== org && l.t.length <= 30) || {}).t || "";
+  const cjk = /[㐀-鿿々]/;
+  const cand = L.filter(l => !contact(l.t) && l.t !== org && !ORG.test(l.t) && !/\d/.test(l.t) && cjk.test(l.t))
+    .map(l => ({...l, core:l.t.replace(ROLE, "").replace(/[\s・　]+/g, " ").trim()}))
+    .filter(l => { const n = l.core.replace(/\s/g, ""); return n.length >= 2 && n.length <= 10; })
+    .sort((a, b) => b.h - a.h);
+  const name = cand.length ? cand[0].core : "";
+  const kana = (L.find(l => /^[぀-ゟ゠-ヿー\s・]{3,24}$/.test(l.t) && !ROLE.test(l.t)) || {}).t || "";
+  const note = L.filter(l => /〒|都|道|府|県/.test(l.t) && /\d|丁目|番地|市|区|町/.test(l.t) && !contact(l.t.replace("〒", "")) || /〒/.test(l.t) || /https?:|www\./i.test(l.t)).map(l => l.t).join("\n");
+  return {name, kana, org, role, email, phone, about:"", note};
+}
+window.__fdCard = async str => {
+  let r; try { r = JSON.parse(str); } catch(e){ return; }
+  if(r.cancel) return;
+  if(r.busy){ openPane(`${paneHead("名刺を読み取り中")}<p class="thinking">名刺の文字を読んでいます…</p>`); concierge.think(true); return; }
+  if(!r.ok || !String(r.text || "").trim()){ concierge.think(false);
+    openPane(`${paneHead("名刺を読み取る")}<p class="empty" style="margin-top:0">文字を読み取れませんでした。明るい場所で、名刺が画面いっぱいになるように撮ってみてください。</p><div class="btns"><button class="btn primary" data-card-src="camera">もう一度撮る</button><button class="btn" data-act="close">やめる</button></div>`); return; }
+  let p = parseCard(r);
+  if(paired()) try {
+    const ai = await sample.json(`次の文字は名刺の写真から読み取ったものです（読み取りの誤りを含むことがあります）。書かれている情報を整理し、次の形のJSONのみで返してください。読めない項目は空文字。
+{"name":"","kana":"","org":"","role":"","email":"","phone":"","about":"名刺から分かる仕事内容を1文で"}
+
+${String(r.text).slice(0, 3000)}`, {modelTier:"quick"});
+    if(ai && typeof ai === "object"){ const keep = {}; ["name", "kana", "org", "role", "email", "phone", "about"].forEach(k => { if(ai[k] && String(ai[k]).trim()) keep[k] = String(ai[k]).trim().slice(0, 200); }); p = {...p, ...keep}; }
+  } catch(e){}
+  concierge.think(false);
+  personForm({...p, met:"名刺", lastContact:todayS()});
+  $("#pane .pane-h h2").textContent = "名刺の内容（確認して保存）";
+  concierge.say("名刺、読み取ったよ！確認してね", "joy", 2600);
+};
 async function cardScan(file){
   openPane(`${paneHead("名刺を読み取り中")}<p class="thinking">名刺の文字を読んでいます…</p>`); concierge.think(true);
   try {
@@ -1633,6 +1688,8 @@ document.addEventListener("click", async (ev) => {
   if(d.act === "add"){ addPane(); return; }
   if(d.act === "search"){ searchPane(); return; }
   if(d.act === "periods"){ periodsForm(); return; }
+  if(d.act === "card" && NATIVE && NATIVE.scanCard){ cardPick(); return; }
+  if(d.cardSrc){ NATIVE && NATIVE.scanCard(d.cardSrc); return; }
   if(d.act === "card"){ const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*"; inp.onchange = () => inp.files[0] && cardScan(inp.files[0]); inp.click(); return; }
   if(d.add){ addPane(d.add); return; }
   if(d.toggle){ const t = S.tasks.find(x => x.id === d.toggle); if(t){ const done = t.status !== "done";
@@ -1681,6 +1738,12 @@ document.addEventListener("click", async (ev) => {
     catch(e){ b.disabled = false; toast("保存できませんでした"); } return; }
   if(b.matches("[data-gcal-pick]")){ calendarsPane(); return; }
   if(b.matches("[data-school-guide]")){ schoolGuide(); return; }
+  if(b.matches("[data-devcal-on]")){ const n = FDN(); if(n) n.requestCalendar(); return; }
+  if(b.matches("[data-devcal-pick]")){ devCalPane(); return; }
+  if(d.devOpen){ const n = FDN(); if(n) n.openCalEvent(d.devOpen); return; }
+  if(d.devcalToggle){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); const c = devCfg(); c.on[d.devcalToggle] = on; ls.set("fd-devcal", c); refreshDevice(); return; }
+  if(d.devlab){ const i = d.devlab.lastIndexOf("|"), a = d.devlab.slice(0, i), l = d.devlab.slice(i + 1); const c = devCfg(); c.label[a] = l; ls.set("fd-devcal", c);
+    b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); refreshDevice(); return; }
   if(d.dupClean){ const e = S.events.find(x => x.id === d.dupClean); if(!e) return; const rm = dupRemovable(e); b.disabled = true;
     try {
       if(!e.school){ const fill = {}; ["place", "note", "time", "endTime", "kind"].forEach(k => { if(!e[k]){ const v = rm.map(x => x[k]).find(Boolean); if(v) fill[k] = v; } });
@@ -1806,6 +1869,11 @@ document.addEventListener("submit", async (ev) => {
         if(rec.phone || old.gcalId){ const g = await gcalSyncTask({...rec, id:tid}); if(g !== (old.gcalId||"")) await put("tasks", tid, {...rec, gcalId:g}); }
         break; }
       case "event": {
+        if(String(v.dest || "").indexOf("dev:") === 0 && !id){
+          const ok = FDN() && FDN().calAdd(v.dest.slice(4), JSON.stringify({title:v.title.trim(), date:v.date, time:v.time, endTime:v.endTime || "", place:v.place || "", note:v.note || "", remindMin:v.remindMin > 0 ? +v.remindMin : (pref("eventBefore") || 10)}));
+          if(ok){ toast("学校のカレンダーに入れました"); setTimeout(refreshDevice, 1500); ui.calMonth = v.date.slice(0,7); ui.calSel = v.date; closePane(); return; }
+          toast("カレンダーに入れられませんでした"); if(btn) btn.disabled = false; return;
+        }
         if(v.dest === "school" && !id){
           try { await scall({op:"add", ev:{title:v.title.trim(), date:v.date, time:v.time, endTime:v.endTime || "", place:v.place || "", note:v.note || "", remindMin:v.remindMin > 0 ? +v.remindMin : (pref("eventBefore") || 10)}});
             toast("学校の Google カレンダーに入れました"); refreshSchool(true); ui.calMonth = v.date.slice(0,7); ui.calSel = v.date; closePane(); return; }
@@ -2421,8 +2489,8 @@ function fileChips(files, removable = true){ return safeFiles(files).map((f, i) 
 function filesField(files){ return `<div class="field"><label>添付（Google ドライブ）</label><input type="hidden" name="files" value="${esc(JSON.stringify(safeFiles(files)))}"><div class="suggest fileschips">${fileChips(files)}</div>
   <div><button type="button" class="chip accent" data-drive-attach style="margin-top:6px">${ico("plus")} ドライブから添付</button></div></div>`; }
 function googleRow(e){
-  if(!e.id && !e.calId && schoolPaired()) return `<div class="field"><label for="e-dest">入れる先</label><select id="e-dest" name="dest">
-      <option value="">このアプリだけ</option><option value="google">個人の Google カレンダーにも</option><option value="school">学校の Google カレンダー</option></select>
+  if(!e.id && !e.calId && (schoolPaired() || devWritable().length)) return `<div class="field"><label for="e-dest">入れる先</label><select id="e-dest" name="dest">
+      <option value="">このアプリだけ</option><option value="google">個人の Google カレンダーにも</option>${schoolPaired() ? '<option value="school">学校の Google カレンダー</option>' : ""}${devWritable().map(c => `<option value="dev:${esc(String(c.id))}">学校：${esc(c.name === c.account ? "メインのカレンダー" : c.name)}</option>`).join("")}</select>
       <p class="hint" style="margin-top:6px">「学校」を選ぶと学校のカレンダーにだけ入れ、個人のアカウントには保存しません。</p></div><input type="hidden" name="google" value="">`;
   return googleRow0(e);
 }
@@ -2449,6 +2517,20 @@ function schoolStatusText(){
   if(!c.at) return "まだ取り込んでいません";
   const d = new Date(c.at); return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())} に取り込み ・ ${schoolEvents().filter(e => e.date >= todayS()).length}件`;
 }
+function devStatus(){ const on = devCals.filter(devIsOn).length; return `${on}個のカレンダー ・ これからの予定 ${devEv.filter(e => e.date >= todayS()).length}件`; }
+function devCalPane(){
+  refreshDevice();
+  const accts = [...new Set(devCals.map(c => c.account))];
+  openPane(`${paneHead("スマホのカレンダー")}
+    <p class="empty" style="margin-top:0">オンにしたカレンダーの予定を表示します。個人の Google は「Google 連携」でも取り込んでいるので、最初はオフにしています（オンにしても同じ予定は1つにまとめます）。祝日や「休業日」などの終日予定は授業なしの日になります。</p>
+    ${accts.length ? accts.map(a => `<div class="sec" style="margin:14px 0 6px;display:flex;align-items:center;gap:8px"><span style="flex:1;overflow:hidden;text-overflow:ellipsis">${esc(a || "このスマホ")}</span>
+        <span class="seg mini" role="group" aria-label="このアカウントの扱い">${["個人", "学校"].map(l => `<button type="button" data-devlab="${esc(a)}|${l}" aria-pressed="${devLabel(a) === l}">${l}</button>`).join("")}</span></div>
+      <div class="group">${devCals.filter(c => c.account === a).map(c => `<div class="setrow"><span class="dot" style="background:${esc(c.color || "#999")};width:12px;height:12px"></span><span class="main"><b>${esc(c.name === c.account ? "メインのカレンダー" : c.name)}</b><small>${c.write ? "書き込みできる" : "見るだけ"}</small></span><button class="switch" role="switch" aria-checked="${devIsOn(c)}" data-devcal-toggle="${esc(String(c.id))}" aria-label="${esc(c.name)}"></button></div>`).join("")}</div>`).join("")
+      : `<p class="empty">カレンダーが見つかりませんでした。</p>`}
+    <p class="hint" style="margin-top:12px">学校のアカウントが一覧にないとき：スマホの「設定 → アカウントとバックアップ → アカウント管理 → アカウントを追加 → Google」で学校のアカウントを追加し、そのアカウントの「カレンダー」の同期をオンにしてください。</p>
+    <div class="btns"><button class="btn primary" data-act="close">完了</button></div>`);
+}
+window.__fdCal = ok => { if(ok){ refreshDevice(); toast("スマホのカレンダーを表示します"); devCalPane(); } else toast("カレンダーへのアクセスが許可されませんでした（Android の設定から変更できます）"); };
 function schoolCalendarsPane(){
   openPane(`${paneHead("学校のカレンダー")}<p class="thinking">読み込んでいます…</p>`);
   scall({op:"calendars"}).then(j => {
@@ -2459,6 +2541,7 @@ function schoolCalendarsPane(){
 function schoolGuide(){
   const src = "https://github.com/carno-eng/fold-desk/tree/main/gas/school";
   openPane(`${paneHead("学校のアカウントを追加")}
+    ${devCalAvail() ? `<div class="group" style="margin-bottom:12px"><div class="setrow"><span class="main"><b>Android アプリならもっと簡単です</b><small>スマホに学校のアカウントを追加して、「スマホのカレンダー」をオンにするだけで表示できます（Apps Script は不要）。パソコンの Web 版でも見たいときだけ、下の手順を行ってください。</small></span><button class="chip accent" data-devcal-${devCalOn() ? "pick" : "on"}>${devCalOn() ? "選ぶ" : "使う"}</button></div></div>` : ""}
     <p class="empty" style="margin-top:0">学校のアカウントの中に、<b>カレンダーだけ</b>を扱う小さな Apps Script を作ります。メール・連絡先・ドライブには触れません。学校の予定はこのスマホに直接届き、個人の Google には保存されません。</p>
     <ol class="steps">
       <li><span><b>学校のアカウント</b>でパソコンから <b>script.google.com</b> を開き、「新しいプロジェクト」を作ります（名前は「Fold Desk 学校」など）。</span></li>
@@ -2605,7 +2688,7 @@ function schoolEvents(){
 let evDups = {};
 const evKey = t => String(t || "").normalize("NFKC").toLowerCase().replace(/【[^】]*】|\[[^\]]*\]/g, "").replace(/[\s・･、。,.\-ー―〜~()（）\[\]【】「」『』:：]/g, "");
 function mergeEvents(){
-  const all = personalEvents.concat(schoolEvents());
+  const all = personalEvents.concat(schoolEvents(), devEv);
   evDups = {};
   if(S.prefs && S.prefs.mergeEvents === false){ S.events = all; return; }
   const rank = e => (e.school ? 0 : e.calId ? 30 : 20) + (e.time ? 2 : 0) + (e.place ? 1 : 0);
@@ -2627,6 +2710,32 @@ async function refreshSchool(force){
   try { const j = await scall({op:"events", days:60}, 45000); ls.set("fd-school-cache", {at:Date.now(), events:(j.result.events || []).slice(0, 600)}); schoolState = "ok"; mergeEvents(); schedule(); }
   catch(e){ schoolState = e.code || "offline"; if(force) schedule(); }
   finally { schoolBusy = false; }
+}
+/* ===== calendars of the Google accounts on this phone (Android app only) =====
+   Read through Android's calendar provider. Shown like school events: kept in memory only, never saved to the personal data. */
+const FDN = () => { try { return window.FoldDeskNative && window.FoldDeskNative.calState ? window.FoldDeskNative : null; } catch(e){ return null; } };
+const devCalAvail = () => !!FDN();
+const devCalOn = () => { const n = FDN(); try { return !!n && n.calState() === "granted"; } catch(e){ return false; } };
+const devCfg = () => ls.get("fd-devcal", {on:{}, label:{}});
+const HOLI_RE = /(休業|休校|振替休日|振休|代休|開校記念日|創立記念日|臨時休業|学校休業日|夏季休業|冬季休業|春季休業)/;
+let devCals = [], devEv = [];
+const isGmail = a => /@gmail\.com$|@googlemail\.com$/i.test(a || "");
+const devLabel = a => devCfg().label[a] || (isGmail(a) ? "個人" : "学校");
+const devDefaultOn = c => !isGmail(c.account) || /祝日|holiday/i.test(c.name || "");
+const devIsOn = c => { const o = devCfg().on[c.id]; return o === undefined ? devDefaultOn(c) : !!o; };
+const devWritable = () => devCals.filter(c => c.write && c.sync !== false && devLabel(c.account) === "学校");
+function refreshDevice(){
+  const n = FDN();
+  if(!devCalOn()){ if(devEv.length){ devEv = []; mergeEvents(); schedule(); } return; }
+  try { devCals = JSON.parse(n.calList() || "[]").filter(c => c.type !== "LOCAL" || c.name); } catch(e){ devCals = []; }
+  const on = devCals.filter(devIsOn), byId = Object.fromEntries(devCals.map(c => [String(c.id), c]));
+  let raw = [];
+  if(on.length) try { raw = JSON.parse(n.calEvents(addDays(todayS(), -7), 75, JSON.stringify(on.map(c => c.id))) || "[]"); } catch(e){ raw = []; }
+  devEv = raw.map(e => { const c = byId[String(e.cal)] || {}, lab = devLabel(c.account);
+    const holi = e.allDay && (/祝日|holiday/i.test(c.name || "") || HOLI_RE.test(e.title || ""));
+    return {id:"dev:" + e.id, eid:e.eid, title:e.title || "（無題）", date:e.date, time:e.time || "", endTime:e.endTime || "", place:e.place || "", kind:holi ? "休み" : "",
+      calendar:e.calendar || c.name || "", account:lab, school:lab === "学校", ro:true, device:true}; });
+  mergeEvents(); schedule();
 }
 function disconnectSchool(){ ["fd-sapi", "fd-stoken", "fd-school-cache"].forEach(k => { try { localStorage.removeItem(k); } catch(e){} }); schoolState = ""; mergeEvents(); schedule(); }
 /* pairing: the link mailed by pair() carries the endpoint + token in the #fragment (never sent to any server) */
@@ -2693,6 +2802,9 @@ db.doc("config/school").onSnapshot(s => { applySchool(s.exists ? s.data() : null
 db.doc("config/google").onSnapshot(s => { S.google = s.exists ? s.data() : {}; });
 S.ready = true; schedule();
 refreshSchool(schoolJustPaired);
+refreshDevice();
+setInterval(() => { if(!document.hidden) refreshDevice(); }, 5 * 60e3);
+document.addEventListener("visibilitychange", () => { if(!document.hidden) refreshDevice(); });
 setInterval(() => { if(!document.hidden) refreshSchool(); }, 5 * 60e3);
 if(schoolJustPaired) setTimeout(() => toast("学校のアカウントを接続しました"), 600);
 if(schoolPairError) setTimeout(() => toast("学校の接続リンクを読み取れませんでした"), 600);
@@ -2700,7 +2812,7 @@ if(paired()){
   store.pull().then(() => { setTimeout(remindCheck, 1200); loadConciergeArt(); });
   setInterval(() => { if(!document.hidden) store.pull(); }, 45000);
   document.addEventListener("visibilitychange", () => { if(!document.hidden){ store.reload(); store.pull(); refreshSchool(); } });
-  window.__fdResume = () => { store.reload(); store.pull(); refreshSchool(); };
+  window.__fdResume = () => { store.reload(); store.pull(); refreshSchool(); refreshDevice(); };
   addEventListener("online", () => store.pull());
 }
 if(["#ask","#prep","#settings","#follow"].includes(location.hash)) setTimeout(() => openRoute(location.hash), 500);
