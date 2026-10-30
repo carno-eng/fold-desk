@@ -52,6 +52,15 @@ jobs:
             "$RUNNER_TEMP/gradle-8.10.2/bin/gradle" --no-daemon --console=plain assembleRelease
           } 2>&1 | tee "$RUNNER_TEMP/build.log"
 
+      - name: Widget previews
+        if: success()
+        continue-on-error: true
+        working-directory: android
+        run: |
+          "$RUNNER_TEMP/gradle-8.10.2/bin/gradle" --no-daemon --console=plain testDebugUnitTest --tests '*WidgetShots*' > "$RUNNER_TEMP/shots.log" 2>&1 || true
+          tail -c 60000 "$RUNNER_TEMP/shots.log" > "$RUNNER_TEMP/shots-tail.log"
+          ls app/build/shots >> "$RUNNER_TEMP/shots-tail.log" 2>&1 || true
+
       - name: Publish build log
         if: always()
         run: |
@@ -60,6 +69,8 @@ jobs:
           cd "$RUNNER_TEMP" && rm -rf logs && mkdir logs && cd logs
           git init -q && git checkout -q -b ci-logs
           cp /tmp/android-build.log /tmp/status.txt .
+          cp "$RUNNER_TEMP/shots-tail.log" . 2>/dev/null || true
+          if [ -d "$GITHUB_WORKSPACE/android/app/build/shots" ]; then mkdir shots && cp "$GITHUB_WORKSPACE"/android/app/build/shots/*.png shots/ 2>/dev/null || true; fi
           git add -A
           git -c user.name=ci -c user.email=ci@users.noreply.github.com commit -qm "build ${{ github.run_number }}"
           git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" ci-logs

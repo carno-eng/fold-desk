@@ -14,9 +14,9 @@ object Paint2 {
     private fun dp(c: Context, v: Float) = v * c.resources.displayMetrics.density
     fun dark(c: Context) = (c.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
-    fun ring(c: Context, frac: Float, idle: Boolean): Bitmap {
-        val s = dp(c, 92f).toInt(); val b = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888); val cv = Canvas(b)
-        val sw = dp(c, 9f); val r = RectF(sw / 2 + 2, sw / 2 + 2, s - sw / 2 - 2, s - sw / 2 - 2)
+    fun ring(c: Context, frac: Float, idle: Boolean, sizeDp: Float = 92f): Bitmap {
+        val s = dp(c, sizeDp).toInt(); val b = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888); val cv = Canvas(b)
+        val sw = dp(c, sizeDp * 0.095f); val r = RectF(sw / 2 + 2, sw / 2 + 2, s - sw / 2 - 2, s - sw / 2 - 2)
         val p = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = sw; strokeCap = Paint.Cap.ROUND }
         p.color = 0x33FFFFFF; cv.drawArc(r, 0f, 360f, false, p)
         p.color = if (idle) 0x59FFFFFF else 0xFFFFFFFF.toInt()
@@ -25,7 +25,7 @@ object Paint2 {
         return b
     }
 
-    fun dayBar(c: Context, day: JSONObject?, widthPx: Int): Bitmap? {
+    fun dayBar(c: Context, day: JSONObject?, widthPx: Int, isToday: Boolean = true): Bitmap? {
         val items = day?.optJSONArray("items") ?: return null
         if (items.length() == 0 || widthPx < 50) return null
         val h = dp(c, 34f).toInt(); val b = Bitmap.createBitmap(widthPx, h, Bitmap.Config.ARGB_8888); val cv = Canvas(b)
@@ -40,7 +40,7 @@ object Paint2 {
         cv.drawRoundRect(RectF(0f, top - 2, widthPx.toFloat(), bot + 2), dp(c, 11f), dp(c, 11f), bg)
         val fill = Paint(Paint.ANTI_ALIAS_FLAG); val stroke = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = dp(c, 1.5f) }
         val txt = Paint(Paint.ANTI_ALIAS_FLAG).apply { textSize = dp(c, 11.5f); typeface = Typeface.DEFAULT_BOLD; textAlign = Paint.Align.CENTER }
-        val now = System.currentTimeMillis()
+        val now = if (isToday) System.currentTimeMillis() else 0L
         for (i in 0 until items.length()) {
             val it = items.getJSONObject(i); val k = it.optString("k"); if (k == "cancel") continue
             val a = Sched.at(date, it.optString("s")); val e = Sched.at(date, it.optString("e"))

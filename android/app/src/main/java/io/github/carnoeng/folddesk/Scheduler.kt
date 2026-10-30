@@ -26,6 +26,13 @@ object Scheduler {
         WorkManager.getInstance(c).enqueueUniquePeriodicWork("snapshot", ExistingPeriodicWorkPolicy.KEEP, req)
     }
 
+    /** Apply widget taps soon (one at a time; later taps join the queue). */
+    fun runActions(c: Context) {
+        val req = androidx.work.OneTimeWorkRequestBuilder<SnapshotWorker>()
+            .setInputData(androidx.work.workDataOf("hash" to "act")).build()
+        WorkManager.getInstance(c).enqueueUniqueWork("act", androidx.work.ExistingWorkPolicy.APPEND_OR_REPLACE, req)
+    }
+
     fun schedule(c: Context) {
         val s = Store.snapshot(c) ?: return
         scheduleTick(c, s)

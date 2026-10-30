@@ -38,6 +38,8 @@ class Bridge(
         }
     }
 
+    @JavascriptInterface fun takeActions(): String = Store.takeActions(ctx)
+
     @JavascriptInterface fun done() { main.post { onDone?.invoke() } }
 
     /** Concierge art (kept only on this device). Returns its size so the web app knows whether to resend. */

@@ -1140,7 +1140,14 @@ function taskForm(t = {}){
       <div class="btns"><button class="btn primary" type="submit">保存</button>${t.id?`<button class="btn danger" type="button" data-del="tasks:${t.id}">削除</button>`:''}</div>${t.gtaskId ? '<p class="hint" style="margin-top:8px">Google ToDo リストと同期しています</p>' : ''}${srcLink(t)}
     </form>`);
 }
+function schoolEventPane(e){
+  openPane(`${paneHead("学校の予定")}
+    <div class="group"><div class="setrow"><span class="main"><b>${esc(e.title)}</b><small>${esc([md(e.date), e.time ? e.time + (e.endTime ? "–" + e.endTime : "") : "終日", e.place].filter(Boolean).join(" · "))}</small></span><span class="chip mini accent">学校</span></div></div>
+    <p class="hint" style="margin-top:10px">学校の Google アカウントのカレンダー${e.calendar ? `「${esc(e.calendar)}」` : ""}の予定です。このスマホに表示しているだけで、個人のアカウントには保存していません。変更は学校の Google カレンダーで行ってください。</p>
+    <div class="btns"><button class="btn primary" data-act="close">閉じる</button></div>`);
+}
 function eventForm(e = {}){
+  if(e.school){ schoolEventPane(e); return; }
   openPane(`${paneHead(e.id ? "予定" : "新しい予定")}
     <form data-form="event" data-id="${esc(e.id||"")}">
       <div class="field"><label for="e-title">予定</label><input id="e-title" name="title" required value="${esc(e.title)}" autofocus></div>
@@ -1423,6 +1430,13 @@ function settingsPane(){
         <div class="setrow"><span class="main"><b>今すぐ同期</b><small id="g-last">連絡先・ドライブは各画面から使えます</small></span><button class="chip accent" data-g-sync>同期</button></div>
       </div>
 
+      <div class="sec">学校の Google アカウント</div>
+      <div class="group">${schoolPaired() ? `
+        <div class="setrow"><span class="main"><b>接続済み</b><small id="s-last">${esc(schoolStatusText())}</small></span><button class="chip accent" data-school-sync>取り込む</button></div>
+        <div class="setrow"><span class="main"><b>カレンダー</b><small>表示する学校のカレンダーを選ぶ</small></span><button class="chip" data-school-cals>選ぶ</button></div>
+        <div class="setrow"><span class="main"><b>接続を解除</b><small>このスマホから学校の予定を消します（学校の Google には影響しません）</small></span><button class="chip" data-school-off>解除</button></div>`
+      : `<button class="row" data-school-guide style="grid-template-columns:auto 1fr auto"><span class="avatar" style="width:36px;height:36px">${ico("today")}</span><span class="main"><b>学校のアカウントを追加</b><small>学校のカレンダーを、学校のデータのまま並べて表示</small></span><span class="when">${ico("right")}</span></button>`}</div>
+
       <div class="sec">ホーム画面</div>
       ${NATIVE ? `<button class="row" data-act="widgetguide" style="grid-template-columns:auto 1fr auto"><span class="avatar" style="width:36px;height:36px">${ico("home")}</span><span class="main"><b>ウィジェットを置く</b><small>今日の時間割・いま／次・タスクと準備</small></span><span class="when">${ico("right")}</span></button>
         <div class="sec" style="margin:14px 0 6px">アプリの外のコンシェルジュ</div>
@@ -1641,6 +1655,13 @@ document.addEventListener("click", async (ev) => {
     try { await gcall("g.saveContact", {person:{id:p.id, name:p.name, email:p.email, phone:p.phone, org:orgName(p.orgId), role:p.role, about:p.about}}); await store.pull(true); toast("Google 連絡先に保存しました"); }
     catch(e){ b.disabled = false; toast("保存できませんでした"); } return; }
   if(b.matches("[data-gcal-pick]")){ calendarsPane(); return; }
+  if(b.matches("[data-school-guide]")){ schoolGuide(); return; }
+  if(b.matches("[data-school-sync]")){ b.disabled = true; await refreshSchool(true); b.disabled = false; const x = $("#s-last"); if(x) x.textContent = schoolStatusText(); toast(schoolState === "ok" ? "学校の予定を取り込みました" : "取り込めませんでした"); return; }
+  if(b.matches("[data-school-off]")){ disconnectSchool(); toast("学校のアカウントの接続を解除しました"); settingsPane(); return; }
+  if(b.matches("[data-school-cals]")){ schoolCalendarsPane(); return; }
+  if(d.schoolCal){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on);
+    const off = {}; document.querySelectorAll("#pane [data-school-cal]").forEach(x => { if(x.getAttribute("aria-checked") !== "true") off[x.dataset.schoolCal] = true; });
+    try { await scall({op:"setCalendars", off}); refreshSchool(true); } catch(e){ toast("保存できませんでした"); } return; }
   if(d.gcalToggle){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); const cals = {...(G().calendars || {})}; if(on) delete cals[d.gcalToggle]; else cals[d.gcalToggle] = false; await putGoogle({calendars:cals}); return; }
   if(d.gToggle){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); await putGoogle({[d.gToggle]:on}); if(on && d.gToggle === "tasks") googleSyncNow(); return; }
   if(b.matches("[data-g-sync]")){ b.disabled = true; await googleSyncNow(); b.disabled = false; return; }
@@ -1753,6 +1774,12 @@ document.addEventListener("submit", async (ev) => {
         if(rec.phone || old.gcalId){ const g = await gcalSyncTask({...rec, id:tid}); if(g !== (old.gcalId||"")) await put("tasks", tid, {...rec, gcalId:g}); }
         break; }
       case "event": {
+        if(v.dest === "school" && !id){
+          try { await scall({op:"add", ev:{title:v.title.trim(), date:v.date, time:v.time, endTime:v.endTime || "", place:v.place || "", note:v.note || "", remindMin:v.remindMin > 0 ? +v.remindMin : (pref("eventBefore") || 10)}});
+            toast("学校の Google カレンダーに入れました"); refreshSchool(true); ui.calMonth = v.date.slice(0,7); ui.calSel = v.date; closePane(); return; }
+          catch(err){ toast(err.code === "offline" ? "オフラインのため入れられませんでした" : "学校のカレンダーに入れられませんでした"); if(btn) btn.disabled = false; return; }
+        }
+        if(v.dest === "google") v.google = "1";
         const old = S.events.find(x => x.id === id) || {};
         const rec = {...old, title:v.title.trim(), date:v.date, time:v.time, endTime:v.endTime||"", kind:v.kind, place:v.place, note:v.note, remindMin: v.remindMin ? +v.remindMin : 0, phone:false, files:safeFiles(v.files)};
         if((v.google || old.calId) && paired()){
@@ -2241,11 +2268,13 @@ function buildSnapshot(){
     const items = (dayItems(d) || []).map(x => x.type === "period"
       ? {s:x.start, e:x.end, n:x.n, t:x.cancelled ? "なし" : (cellKind(x.cell) === "free" ? "空き" : x.cell.subject || ""), sub:x.cancelled ? cellText(x.base) : (x.cell.cls || ""), k:x.cancelled ? "cancel" : cellKind(x.cell), c:!!x.changed}
       : {s:x.start, e:x.end, n:0, t:x.label || "", sub:x.kind || "", k:x.type === "block" ? "block" : x.type, c:x.type === "extra"});
-    days.push({date:d, label:md(d), mode:wk ? M.label : "", dismiss:wk ? M.dismiss : "", items});
+    days.push({date:d, label:md(d), mode:wk ? M.label : "", mk:wk ? dayMode(d) : "", dismiss:wk ? M.dismiss : "", items});
   }
   const tasks = openTasks().filter(k => !k.due || k.due <= addDays(t, 14)).slice(0, 8).map(k => { const r = remain(k.due, false); return {id:k.id, title:k.title, label:r.t, warn:r.c === "warn"}; });
   const pt = prepTarget(), pl = prepFor(pt);
-  const prep = {label:dayLabel(pt), items:pl.flatMap(p => p.open.map(o => `${p.u.subject} ${o.t}`)).slice(0, 8)};
+  const prepL = pl.flatMap(p => p.open.map(o => ({t:`${p.u.subject} ${o.t}`, k:`${p.lp.id}:${o.i}`}))).slice(0, 8);
+  const prepAll = pl.reduce((a, p) => a + (p.lp.prep || []).length, 0);
+  const prep = {label:dayLabel(pt), date:pt, items:prepL.map(x => x.t), keys:prepL.map(x => x.k), total:prepAll};
   const now = Date.now();
   const reminders = reminderList(now, now + 2 * 864e5).slice(0, 40).map(r => ({key:r.key, at:r.at, title:r.title, body:[r.lead, r.body].filter(Boolean).join(" ・ ")}));
   const wk = weekDates(0), np = NP();
@@ -2255,7 +2284,7 @@ function buildSnapshot(){
         cells:Array.from({length:np}, (_, i) => { const x = items.find(y => y.n === i + 1); if(!x) return {k:"none"};
           return x.cancelled ? {t:"なし", sub:"", k:"cancel", c:true} : {t:cellKind(x.cell) === "free" ? "" : x.cell.subject || "", sub:x.cell.cls || "", k:cellKind(x.cell), c:!!x.changed}; })}; })};
   const events = upcoming(14).slice(0, 10).map(e => ({date:e.date, label:md(e.date), time:e.time || "", end:e.endTime || "", title:e.title, kind:e.kind || "", place:e.place || "", account:e.account || ""}));
-  const follow = openFollow().slice(0, 8).map(f => ({who:f.who || "", subject:f.subject || "", days:daysSince(f.since) || 0, me:f.direction === "me"}));
+  const follow = openFollow().slice(0, 8).map(f => ({id:f.id, who:f.who || "", subject:f.subject || "", days:daysSince(f.since) || 0, me:f.direction === "me"}));
   const b = S.briefs.find(x => x.id === "latest");
   const brief = b && b.date === t ? {time:b.time || "", lines:(b.lines || []).slice(0, 6)} : null;
   const cs = currentState();
@@ -2263,7 +2292,8 @@ function buildSnapshot(){
     holiday:(holidayOf(t) || {}).title || ""};
   const talk = (() => { const due = openTasks().filter(k => k.due && k.due <= t).length, fu = openFollow().filter(f => f.direction === "me").length;
     return [due ? `今日までのタスクが${due}件あります` : "", fu ? `返信が必要なメールが${fu}件あります` : "", prep.items.length ? `${prep.label}の準備が${prep.items.length}つ残っています` : ""].filter(Boolean); })();
-  return {v:2, at:now, days, tasks, prep, reminders, week, events, follow, brief, hero, talk};
+  const modes = DAY_MODES.map(k => ({k, l:k === "off" ? "休み" : (OFFICIAL[k] || {}).label || k}));
+  return {v:3, at:now, days, tasks, prep, reminders, week, events, follow, brief, hero, talk, modes};
 }
 let snapT = 0;
 function pushSnapshot(now){
@@ -2296,7 +2326,7 @@ function widgetGuide(){
       <li><span>一覧から <b>Fold Desk</b> を選び、置きたいものを長押しして配置します。</span></li>
     </ol>
     <div class="group" style="margin-top:14px">
-      ${[["今日（情報シート）","アプリの「今日」の青いシートそのまま。残り時間のリングとカウントダウン、1日のバー"],["いま・次","小さなサイズ。いまの授業の残り時間か、次の予定まで"],["今日の日程","今日のコマの一覧。週末は次の授業日"],["週の時間割","月〜金の時間割。今日の列と、その日だけの変更が分かる"],["タスク","期限の近いタスク"],["授業準備","次の授業日の準備物"],["これからの予定","2週間先までの予定"],["お知らせ予定","これから出る通知の一覧"],["返信待ち","返信が必要なメール"],["今朝のまとめ","毎朝の自動まとめ"],["ひとことで追加","押すとすぐ入力できる小さなボタン"]]
+      ${[["今日（情報シート）","アプリの「今日」の青いシート。大きさに合わせて中身が変わり、縦に広げると時程の切り替えボタンと残りのコマも出ます"],["いま・次","小さなサイズ。いまの授業の残り時間か、次の予定まで"],["今日の日程","コマの一覧。‹ › で明日以降の日程も見られます"],["週の時間割","月〜金の時間割。今日の列と、その日だけの変更が分かる"],["タスク","期限の近いタスク。左の丸を押すと完了"],["授業準備","次の授業日の準備物。丸を押すとチェック"],["これからの予定","2週間先までの予定"],["お知らせ予定","これから出る通知の一覧"],["返信待ち","返信が必要なメール。「済み」で消えます"],["今朝のまとめ","毎朝の自動まとめ"],["ひとことで追加","押すとすぐ入力できる小さなボタン"]]
         .map(([a, b2]) => `<div class="setrow"><span class="main"><b>${a}</b><small>${b2}</small></span></div>`).join("")}
     </div>
     <p class="hint" style="margin-top:10px">ウィジェットは授業の区切りで自動で切り替わり、アプリを開かなくても2時間ごとに最新のデータへ更新されます。</p>
@@ -2327,6 +2357,12 @@ function fileChips(files, removable = true){ return safeFiles(files).map((f, i) 
 function filesField(files){ return `<div class="field"><label>添付（Google ドライブ）</label><input type="hidden" name="files" value="${esc(JSON.stringify(safeFiles(files)))}"><div class="suggest fileschips">${fileChips(files)}</div>
   <div><button type="button" class="chip accent" data-drive-attach style="margin-top:6px">${ico("plus")} ドライブから添付</button></div></div>`; }
 function googleRow(e){
+  if(!e.id && !e.calId && schoolPaired()) return `<div class="field"><label for="e-dest">入れる先</label><select id="e-dest" name="dest">
+      <option value="">このアプリだけ</option><option value="google">個人の Google カレンダーにも</option><option value="school">学校の Google カレンダー</option></select>
+      <p class="hint" style="margin-top:6px">「学校」を選ぶと学校のカレンダーにだけ入れ、個人のアカウントには保存しません。</p></div><input type="hidden" name="google" value="">`;
+  return googleRow0(e);
+}
+function googleRow0(e){
   if(e.calId) return `<p class="hint" style="margin:-4px 0 12px">Google カレンダーの予定です${e.calendar ? `（${esc(e.calendar)}）` : ""}。ここでの変更は Google にも反映されます。</p><input type="hidden" name="google" value="1">`;
   return `<div class="setrow" style="border-top:0;padding:4px 0 14px"><span class="main"><b>Google カレンダーにも入れる</b><small>「通知」の設定がそのまま Google の通知になります</small></span>
     <button type="button" class="switch" role="switch" aria-checked="false" data-switch="google" aria-label="Google カレンダーにも入れる"></button><input type="hidden" name="google" value=""></div>`;
@@ -2341,6 +2377,34 @@ function calendarsPane(){
         <div class="btns"><button class="btn primary" data-g-sync>今すぐ取り込む</button></div>`; };
     ui.paneLive = null; draw();
   }).catch(e => { $("#pane").innerHTML = `${paneHead("Google カレンダー")}<p class="empty">${e.code === "offline" ? "オフラインのため読み込めませんでした。" : "読み込めませんでした。Apps Script の権限を確認してください。"}</p>`; });
+}
+function schoolStatusText(){
+  const c = schoolCache();
+  if(schoolState === "auth") return "合言葉が無効です。学校の Apps Script で pair() をやり直してください";
+  if(schoolState === "blocked") return "学校の設定で接続が止められています（「追加の手順」を参照）";
+  if(!c.at) return "まだ取り込んでいません";
+  const d = new Date(c.at); return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())} に取り込み ・ ${schoolEvents().filter(e => e.date >= todayS()).length}件`;
+}
+function schoolCalendarsPane(){
+  openPane(`${paneHead("学校のカレンダー")}<p class="thinking">読み込んでいます…</p>`);
+  scall({op:"calendars"}).then(j => {
+    $("#pane").innerHTML = `${paneHead("学校のカレンダー")}<p class="empty" style="margin-top:0">オンにしたカレンダーの予定を表示します。祝日のカレンダーや「休業日」などの終日予定は、授業なしの日として扱います。</p>
+      <div class="group">${j.result.map(c => `<div class="setrow"><span class="dot" style="background:${esc(c.color || "#999")};width:12px;height:12px"></span><span class="main"><b>${esc(c.name)}</b><small>${c.owned ? "自分のカレンダー" : "共有されたカレンダー"}</small></span><button class="switch" role="switch" aria-checked="${c.on}" data-school-cal="${esc(c.id)}" aria-label="${esc(c.name)}"></button></div>`).join("")}</div>`;
+  }).catch(e => { $("#pane").innerHTML = `${paneHead("学校のカレンダー")}<p class="empty">${e.code === "offline" ? "オフラインのため読み込めませんでした。" : "読み込めませんでした。"}</p>`; });
+}
+function schoolGuide(){
+  const src = "https://github.com/carno-eng/fold-desk/tree/main/gas/school";
+  openPane(`${paneHead("学校のアカウントを追加")}
+    <p class="empty" style="margin-top:0">学校のアカウントの中に、<b>カレンダーだけ</b>を扱う小さな Apps Script を作ります。メール・連絡先・ドライブには触れません。学校の予定はこのスマホに直接届き、個人の Google には保存されません。</p>
+    <ol class="steps">
+      <li><span><b>学校のアカウント</b>でパソコンから <b>script.google.com</b> を開き、「新しいプロジェクト」を作ります（名前は「Fold Desk 学校」など）。</span></li>
+      <li><span><a href="${src}" target="_blank" rel="noopener">gas/school</a> の <b>Code.gs</b> の中身をそのまま貼り付けます。歯車（プロジェクトの設定）で「appsscript.json を表示」をオンにし、同じ場所の <b>appsscript.json</b> も貼り付けます。</span></li>
+      <li><span><b>setup</b> を選んで「実行」し、許可します（カレンダーと、自分宛てのメール送信だけ）。</span></li>
+      <li><span>「デプロイ → 新しいデプロイ → ウェブアプリ」。<b>次のユーザーとして実行：自分</b>、<b>アクセスできるユーザー：全員</b>。出てきた URL（…/exec）を、プロジェクトの設定の「スクリプト プロパティ」に <b>WEBAPP_URL</b> という名前で保存します。</span></li>
+      <li><span><b>pair</b> を実行すると、学校のアドレスに接続リンクが届きます。<b>このスマホで</b>リンクを開き、終わったらメールを削除します。</span></li>
+    </ol>
+    <div class="group" style="margin-top:12px"><div class="setrow"><span class="main"><b>「全員」が選べないとき</b><small>学校の管理者が外部からの接続を止めています。その場合は、学校のカレンダーを個人のアカウントに「共有」してもらい、「Google 連携 → カレンダー」でオンにする方法になります（予定のタイトルが個人のアカウントからも見えるようになります）。</small></span></div></div>
+    <div class="btns"><button class="btn primary" data-act="close">わかりました</button></div>`);
 }
 async function googleSyncNow(){
   toast("Google と同期しています…");
@@ -2399,11 +2463,14 @@ const store = (() => {
     finally { pulling = false; }
   }
   function wipe(){ st = {cols:{}, cfg:{}, rev:0}; queue = []; persist(); emitAll(); }
+  /* another copy of the app (the widget helper) may have changed the shared storage */
+  function reload(){ const a = ls.get(KEY, null); if(!a) return; st = a; queue = ls.get(QKEY, []); emitAll(); flush(); }
   return {
     collection(c){ return { doc(id){ return { set: async body => local({op:"put", col:c, id, doc:body}), delete: async () => local({op:"del", col:c, id}) }; },
       onSnapshot(fn){ (subs["c:" + c] = subs["c:" + c] || []).push(fn); fn(snapOf(c)); } }; },
     doc(path){ const k = path.split("/")[1]; return { set: async v => local({op:"cfg", key:k, value:v}), onSnapshot(fn){ (subs["d:" + k] = subs["d:" + k] || []).push(fn); fn(cfgSnap(k)); } }; },
-    pull, flush, wipe, get pending(){ return queue.length; }
+    pull, flush, wipe, reload, get pending(){ return queue.length; },
+    async idle(){ for(let i = 0; i < 150 && pulling; i++) await new Promise(r => setTimeout(r, 200)); }
   };
 })();
 
@@ -2446,8 +2513,52 @@ async function uploadConciergeArt(file){
 }
 
 let pairError = "";
+
+/* ================= school Google account (a separate, calendar-only Apps Script in the school account) =================
+   School events are fetched straight from the school script and kept only on this device;
+   they are never written into the personal store, so nothing from the school account reaches the personal Drive. */
+const SCHOOL_URL_RE = /^https:\/\/script\.google\.com\/(a\/macros\/[A-Za-z0-9.-]+\/|macros\/)s\/[A-Za-z0-9_-]+\/exec$/;
+const SAPI = { get url(){ return ls.get("fd-sapi", ""); }, get token(){ return ls.get("fd-stoken", ""); } };
+const schoolPaired = () => SCHOOL_URL_RE.test(SAPI.url) && SAPI.token.length >= 40;
+let schoolHandoff = "", schoolJustPaired = false, schoolPairError = false, schoolState = "", personalEvents = [];
+async function scall(body, timeoutMs = 30000){
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), timeoutMs);
+  let r;
+  try { r = await fetch(SAPI.url, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify({...body, token:SAPI.token}), redirect:"follow", cache:"no-store", credentials:"omit", referrerPolicy:"no-referrer", signal:ctl.signal}); }
+  catch(e){ const x = new Error("offline"); x.code = "offline"; throw x; }
+  finally { clearTimeout(tm); }
+  let j; try { j = await r.json(); } catch(e){ const x = new Error("bad_response"); x.code = "blocked"; throw x; }
+  if(!j.ok){ const x = new Error(j.error || j.code || "error"); x.code = j.code || "server"; throw x; }
+  return j;
+}
+const schoolCache = () => ls.get("fd-school-cache", null) || {at:0, events:[]};
+function schoolEvents(){
+  if(!schoolPaired()) return [];
+  return (schoolCache().events || []).map(e => ({id:"school:" + e.id, title:e.title, date:e.date, time:e.time || "", endTime:e.endTime || "", place:e.place || "", kind:e.kind || "", calendar:e.calendar || "", account:"学校", school:true}));
+}
+function mergeEvents(){ S.events = personalEvents.concat(schoolEvents()); }
+let schoolBusy = false;
+async function refreshSchool(force){
+  if(!schoolPaired() || schoolBusy) return;
+  if(!force && Date.now() - (schoolCache().at || 0) < 15 * 60e3) return;
+  schoolBusy = true;
+  try { const j = await scall({op:"events", days:60}, 45000); ls.set("fd-school-cache", {at:Date.now(), events:(j.result.events || []).slice(0, 600)}); schoolState = "ok"; mergeEvents(); schedule(); }
+  catch(e){ schoolState = e.code || "offline"; if(force) schedule(); }
+  finally { schoolBusy = false; }
+}
+function disconnectSchool(){ ["fd-sapi", "fd-stoken", "fd-school-cache"].forEach(k => { try { localStorage.removeItem(k); } catch(e){} }); schoolState = ""; mergeEvents(); schedule(); }
 /* pairing: the link mailed by pair() carries the endpoint + token in the #fragment (never sent to any server) */
 function readPairing(){
+  const sm = location.hash.match(/^#school=([A-Za-z0-9_-]+)/);
+  if(sm){
+    schoolHandoff = sm[1];
+    try { const j = JSON.parse(decodeURIComponent(escape(atob(sm[1].replace(/-/g, "+").replace(/_/g, "/")))));
+      if(SCHOOL_URL_RE.test(j.u || "") && String(j.t || "").length >= 40){ ls.set("fd-sapi", j.u); ls.set("fd-stoken", j.t); ls.set("fd-school-cache", null); schoolJustPaired = true; }
+      else schoolPairError = true;
+    } catch(e){ schoolPairError = true; }
+    history.replaceState(null, "", location.pathname + "#today");
+    return false;
+  }
   const m = location.hash.match(/^#pair=([A-Za-z0-9_-]+)/);
   if(!m) return false;
   try {
@@ -2492,20 +2603,42 @@ function sysNotify(r){
 readPairing();
 readHash(); setMode();
 db = store; sample = aiShim; sampleImages = true; mcp = calShim; S.local = true;
-COLS.forEach(c => db.collection(c).onSnapshot(snap => { S[c] = snap.docs.map(x => ({...x.data(), id:x.id})); schedule(); }));
+COLS.forEach(c => db.collection(c).onSnapshot(snap => { const docs = snap.docs.map(x => ({...x.data(), id:x.id})); if(c === "events"){ personalEvents = docs; mergeEvents(); } else S[c] = docs; schedule(); }));
 db.doc("config/timetable").onSnapshot(s => { S.tt = s.exists ? s.data() : null; schedule(); });
 db.doc("config/days").onSnapshot(s => { S.days = s.exists ? s.data() : {}; schedule(); });
 db.doc("config/prefs").onSnapshot(s => { S.prefs = s.exists ? s.data() : {}; schedule(); });
 db.doc("config/school").onSnapshot(s => { applySchool(s.exists ? s.data() : null); schedule(); });
 db.doc("config/google").onSnapshot(s => { S.google = s.exists ? s.data() : {}; });
 S.ready = true; schedule();
+refreshSchool(schoolJustPaired);
+setInterval(() => { if(!document.hidden) refreshSchool(); }, 5 * 60e3);
+if(schoolJustPaired) setTimeout(() => toast("学校のアカウントを接続しました"), 600);
+if(schoolPairError) setTimeout(() => toast("学校の接続リンクを読み取れませんでした"), 600);
 if(paired()){
   store.pull().then(() => { setTimeout(remindCheck, 1200); loadConciergeArt(); });
   setInterval(() => { if(!document.hidden) store.pull(); }, 45000);
-  document.addEventListener("visibilitychange", () => { if(!document.hidden) store.pull(); });
+  document.addEventListener("visibilitychange", () => { if(!document.hidden){ store.reload(); store.pull(); refreshSchool(); } });
+  window.__fdResume = () => { store.reload(); store.pull(); refreshSchool(); };
   addEventListener("online", () => store.pull());
 }
 if(["#ask","#prep","#settings","#follow"].includes(location.hash)) setTimeout(() => openRoute(location.hash), 500);
+async function widgetAct(a){
+  if(a.a === "task"){ const t = S.tasks.find(x => x.id === a.id); if(t && t.status !== "done"){ if(t.gcalId) await gcalDelete(t.gcalId); await put("tasks", t.id, {...t, status:"done", gcalId:""}); } }
+  else if(a.a === "follow"){ const f = S.followups.find(x => x.id === a.id); if(f && f.status !== "done") await put("followups", f.id, {...f, status:"done"}); }
+  else if(a.a === "prep"){ const [pid, i] = String(a.key || "").split(":"), p = S.progress.find(x => x.id === pid);
+    if(p && !(p.prepDone || []).includes(+i)) await put("progress", pid, {...p, prepDone:[...(p.prepDone || []), +i]}); }
+  else if(a.a === "mode" && DAY_MODES.includes(a.mode) && /^\d{4}-\d{2}-\d{2}$/.test(a.date || "")){ if(dayMode(a.date) !== a.mode) await setDayMode(a.mode, a.date); }
+}
+if(NATIVE && location.hash === "#act"){
+  (async () => {
+    try { if(paired()){ await store.idle(); await store.pull(); await store.idle(); } } catch(e){}
+    let acts = []; try { acts = JSON.parse(NATIVE.takeActions() || "[]"); } catch(e){}
+    for(const a of acts){ try { await widgetAct(a); } catch(e){} }
+    const t0 = Date.now(); store.flush();
+    while(store.pending && paired() && Date.now() - t0 < 25000) await new Promise(r => setTimeout(r, 400));
+    pushSnapshot(true); try { NATIVE.done(); } catch(e){}
+  })();
+}
 if(NATIVE && location.hash === "#snapshot"){
   const finish = () => { pushSnapshot(true); try { NATIVE.done(); } catch(e){} };
   if(paired()) store.pull().then(finish, finish); else finish();
@@ -2517,7 +2650,18 @@ function openRoute(h){
   else if(h === "#settings"){ go("today"); setTimeout(() => settingsPane(), 300); }
   else if(h === "#follow"){ go("tasks"); }
 }
-addEventListener("hashchange", () => { if(location.hash.indexOf("#pair=") === 0 && readPairing()) location.reload(); openRoute(location.hash); });
+addEventListener("hashchange", () => {
+  if(location.hash.indexOf("#school=") === 0){ readPairing(); if(schoolJustPaired){ schoolJustPaired = false; toast("学校のアカウントを接続しました"); refreshSchool(true); } schoolHandoffPane(); return; }
+  if(location.hash.indexOf("#pair=") === 0 && readPairing()) location.reload(); openRoute(location.hash); });
+/* the link mailed by the school script opens in the browser; hand it to the Android app, which keeps its own storage */
+function schoolHandoffPane(){
+  if(NATIVE || !isAndroid || !schoolHandoff) return;
+  const link = `intent://pair?s=${schoolHandoff}#Intent;scheme=folddesk;package=io.github.carnoeng.folddesk;end`; schoolHandoff = "";
+  openPane(`${paneHead("学校のアカウント")}<p class="empty" style="margin-top:0">Android アプリの Fold Desk を使っている場合は、下のボタンでアプリにも接続してください。</p>
+    <div class="btns"><a class="btn primary" href="${esc(link)}">アプリで接続する</a><button class="btn" data-act="close">このままでよい</button></div>`);
+}
+setTimeout(schoolHandoffPane, 900);
+if(location.port === "8765") window.__fdT = {get S(){ return S; }, dayMode, eventForm, closePane};
 })();
 </script>
 </body>

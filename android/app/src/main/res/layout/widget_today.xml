@@ -1,26 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- "今日の日程" card from the app: title, day arrows, one row per period with its time range. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent"
-    android:background="@drawable/bg_widget" android:orientation="vertical" android:padding="16dp">
+    android:background="@drawable/bg_card" android:orientation="vertical" android:paddingStart="18dp" android:paddingEnd="14dp" android:paddingTop="14dp" android:paddingBottom="12dp">
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
-        <TextView android:id="@+id/date" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-            android:textColor="#FFFFFF" android:textSize="15sp" android:textStyle="bold" android:maxLines="1" />
-        <TextView android:id="@+id/mode" android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:background="@drawable/bg_chip" android:paddingStart="9dp" android:paddingEnd="9dp" android:paddingTop="2dp" android:paddingBottom="2dp"
-            android:textColor="#FFFFFF" android:textSize="11sp" android:maxLines="1" />
-        <ImageView android:id="@+id/add" android:layout_width="32dp" android:layout_height="32dp" android:layout_marginStart="8dp"
-            android:background="@drawable/bg_chip" android:padding="6dp" android:src="@drawable/ic_add" android:contentDescription="ひとことで追加" />
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+            <TextView android:id="@+id/date" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/card_fg" android:textSize="18sp" android:textStyle="bold" android:maxLines="1" />
+            <TextView android:id="@+id/mode" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:textColor="@color/card_muted" android:textSize="12.5sp" android:textStyle="bold" android:maxLines="1" />
+        </LinearLayout>
+        <ImageView android:id="@+id/prev" android:layout_width="34dp" android:layout_height="34dp" android:background="@drawable/bg_icon_btn" android:padding="7dp" android:src="@drawable/ic_chev_left" android:contentDescription="前の日" />
+        <ImageView android:id="@+id/next" android:layout_width="34dp" android:layout_height="34dp" android:layout_marginStart="6dp" android:background="@drawable/bg_icon_btn" android:padding="7dp" android:src="@drawable/ic_chev_right" android:contentDescription="次の日" />
+        <ImageView android:id="@+id/add" android:layout_width="34dp" android:layout_height="34dp" android:layout_marginStart="6dp" android:background="@drawable/bg_icon_btn" android:padding="7dp" android:src="@drawable/ic_add_accent" android:contentDescription="ひとことで追加" />
     </LinearLayout>
-    <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp"
-        android:textColor="#FFFFFF" android:textSize="17sp" android:textStyle="bold" android:maxLines="1" android:ellipsize="end" />
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
-        <Chronometer android:id="@+id/chrono" android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:textColor="#FFE38A" android:textSize="14sp" android:textStyle="bold" android:layout_marginEnd="10dp" />
-        <TextView android:id="@+id/sub" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-            android:textColor="#CCFFFFFF" android:textSize="12.5sp" android:maxLines="1" android:ellipsize="end" />
+    <LinearLayout android:id="@+id/nowbox" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:orientation="horizontal" android:gravity="center_vertical">
+        <TextView android:id="@+id/status" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+            android:textColor="@color/accent" android:textSize="14sp" android:textStyle="bold" android:maxLines="1" android:ellipsize="end" />
+        <Chronometer android:id="@+id/chrono" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp"
+            android:textColor="@color/accent" android:textSize="14sp" android:textStyle="bold" />
     </LinearLayout>
+    <TextView android:id="@+id/sub" android:layout_width="match_parent" android:layout_height="wrap_content" android:visibility="gone"
+        android:textColor="@color/card_muted" android:textSize="12sp" android:maxLines="1" android:ellipsize="end" />
     <LinearLayout android:id="@+id/rows" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
-        android:layout_marginTop="8dp" android:orientation="vertical" />
+        android:layout_marginTop="6dp" android:orientation="vertical" />
     <TextView android:id="@+id/foot" android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:textColor="#B3FFFFFF" android:textSize="11sp" android:gravity="end" android:maxLines="1" />
+        android:textColor="@color/card_muted" android:textSize="11.5sp" android:gravity="end" android:maxLines="1" />
 </LinearLayout>

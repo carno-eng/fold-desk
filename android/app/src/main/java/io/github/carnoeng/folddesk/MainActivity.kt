@@ -86,6 +86,8 @@ class MainActivity : ComponentActivity() {
         if (d != null && d.scheme == "folddesk" && d.host == "pair") {
             val payload = d.getQueryParameter("d") ?: ""
             if (Regex("^[A-Za-z0-9_-]{20,2000}$").matches(payload)) return Web.APP_URL + "#pair=" + payload
+            val school = d.getQueryParameter("s") ?: ""
+            if (Regex("^[A-Za-z0-9_-]{20,2000}$").matches(school)) return Web.APP_URL + "#school=" + school
         }
         val route = i?.getStringExtra("route") ?: "today"
         return Web.APP_URL + "#" + (if (route in ROUTES) route else "today")
@@ -97,7 +99,11 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) { super.onSaveInstanceState(outState); web.saveState(outState) }
-    override fun onResume() { super.onResume(); foreground = true; web.onResume() }
+    override fun onResume() {
+        super.onResume(); foreground = true; web.onResume()
+        // widgets may have changed data through the invisible copy of the app
+        web.evaluateJavascript("window.__fdResume && window.__fdResume()", null)
+    }
     override fun onPause() { foreground = false; web.onPause(); super.onPause() }
     override fun onDestroy() { web.destroy(); super.onDestroy() }
 
