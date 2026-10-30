@@ -1696,7 +1696,7 @@ document.addEventListener("click", async (ev) => {
       if(done){ b.classList.add("pop"); b.closest(".row")?.classList.add("completing"); try { navigator.vibrate && navigator.vibrate(12); } catch(e){} await new Promise(r => setTimeout(r, 650)); }
       await put("tasks", t.id, {...t, status: done ? "done" : "todo"});
       if(done && t.gcalId){ gcalDelete(t.gcalId); put("tasks", t.id, {...t, status:"done", gcalId:""}).catch(() => {}); }
-      if(done){ const left = openTasks().length; toast(left ? `完了。残り ${left} 件` : "すべて完了しました"); concierge.say(left ? ["やったね！", "えらい！", "おつかれさまです！", "その調子！", "ひとつ完了！"][Math.floor(Math.random() * 5)] : ["全部おわりました！すごい！", "ぜんぶ完了！天才！", "タスクゼロ！おつかれさま！"][Math.floor(Math.random() * 3)], "joy", 2600); } } return; }
+      if(done){ const left = openTasks().length; toast(left ? `完了。残り ${left} 件` : "すべて完了しました"); concierge.say(left ? ["やったね！", "えらい！", "おつかれさまです！", "その調子！", "ひとつ完了！"][Math.floor(Math.random() * 5)] : ["全部おわりました！すごい！", "ぜんぶ完了！天才！", "ぜんぶ終わったごほうびに、ケーキ焼いたよ！"][Math.floor(Math.random() * 3)], left ? "joy" : "cake", 3200); } } return; }
   if(d.act === "ccart"){ const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/webp,image/png"; inp.onchange = () => inp.files[0] && uploadConciergeArt(inp.files[0]).then(() => settingsPane()); inp.click(); return; }
   if(d.ttOpen !== undefined && b.matches("[data-tt-open]")){ ttSetupPane(d.ttOpen || "grid"); return; }
   if(ttEd && b.closest("#pane")){
@@ -1826,7 +1826,7 @@ document.addEventListener("click", async (ev) => {
   if(b.matches("[data-ask-save]")){ b.disabled = true; await saveAsk(); return; }
   if(d.prepCheck){ const [pid, i] = d.prepCheck.split(":"), p = S.progress.find(x => x.id === pid); if(p){ const set = new Set(p.prepDone||[]); const on = !set.has(+i); on ? set.add(+i) : set.delete(+i);
       if(on){ b.classList.add("pop"); try { navigator.vibrate && navigator.vibrate(10); } catch(e){} await new Promise(r => setTimeout(r, 380)); }
-      await put("progress", pid, {...p, prepDone:[...set]}); if(on && prepOpen({...p, prepDone:[...set]}).length === 0) concierge.say("準備ばっちりです！", "joy", 2400); } return; }
+      await put("progress", pid, {...p, prepDone:[...set]}); if(on && prepOpen({...p, prepDone:[...set]}).length === 0) concierge.say("準備ばっちりです！", "sparkle", 2400); } return; }
   if(d.ask !== undefined && b.matches("[data-ask]")){ askPane(d.ask); return; }
   if(d.followDone){ const f = S.followups.find(x => x.id === d.followDone); if(f){ await put("followups", f.id, {...f, status:"done"}); toast("済みにしました"); } return; }
   if(d.cell){ const [dk, pi] = d.cell.split(":"); cellForm(dk, +pi); return; }
@@ -1936,7 +1936,7 @@ document.addEventListener("submit", async (ev) => {
         const sub = (f.dataset.sub || v.subject || "").trim(), cls = (f.dataset.sub ? f.dataset.cls : (v.cls || "")).trim();
         if(!sub){ toast("教科を入れてください"); return; }
         await put("progress", null, {subject:sub, cls, unit:(v.unit||"").trim(), lesson: v.lesson ? +v.lesson : null, page:(v.page||"").trim(), done:(v.done||"").trim(), next:(v.next||"").trim(), prep:splitPrep(v.prep), prepDone:[], files:safeFiles(v.files), date:v.date || todayS()});
-        concierge.react("joy");
+        concierge.say(["記録できたね！すくすく育ってる〜", "授業の記録、ばっちり！", "おつかれさま！記録しておいたよ"][Math.floor(Math.random() * 3)], "garden", 2800);
         break; }
       case "periods": {
         const T = JSON.parse(JSON.stringify(tt()));
@@ -1954,20 +1954,35 @@ const concierge = (() => {
     130,130,130,130,130,130,  160,140,150,150,150,280,  200,110,110,240,150,260,  130,130,130,130,130,280,  240,170,170,520,190,340];
   const R = (a, b) => Array.from({length:b-a+1}, (_, i) => a + i);
   const CLIPS = { greet:R(0,5), runR:R(6,12), runL:R(14,20), wave:[...R(22,25),23,24,25], joy:R(26,30), sorry:R(31,39), cheeks:R(39,44), think:R(45,50), idle:R(51,56),
-    hop:R(57,62), wave2:[63,64,65,66,65,66,67,68], jump:R(69,74), spin:R(75,80), bow:[81,82,83,84,84,85,86] };
-  const LOOP = {idle:1, runR:1, runL:1, think:1, hop:1};
+    hop:R(57,62), wave2:[63,64,65,66,65,66,67,68], jump:R(69,74), spin:R(75,80), bow:[81,82,83,84,84,85,86],
+    blink:R(87,94), walkR:R(95,102), walkL:R(95,102), dashR:R(103,109), dashL:R(103,109), hello:R(111,118), stretch:R(119,126),
+    giggle:[127,128,129,130,131,130,131], ponder:[132,133,134,133], bow2:R(135,143),
+    strawberry:R(144,151), cake:R(152,159), paint:R(160,167), read:[...R(168,175), 174, 175], surprise:[176,176], nervous:[177,177,177], cry:[178,179,178,179,178,179],
+    pout:[180,180], relief:[181,181], sparkle:[182,182], heart:[183,183], bunny:R(184,191), garden:R(192,199), tea:[200,200,200] };
+  const LOOP = {idle:1, runR:1, runL:1, think:1, hop:1, walkR:1, walkL:1, dashR:1, dashL:1, ponder:1};
+  const FLIP = {walkL:1, dashL:1};
+  for(let f = 87; f <= 200; f++) D[f] = 200;
+  [[95,102,120],[103,109,90],[111,118,150],[127,131,170],[135,143,170],[168,175,320]].forEach(([a, b, ms]) => { for(let f = a; f <= b; f++) D[f] = ms; });
+  [[110,300],[118,320],[126,420],[143,320],[151,600],[159,600],[167,600],[175,700],[176,700],[177,450],[178,260],[179,260],[180,700],[181,700],[182,700],[183,700],[191,600],[199,700],[200,900],[147,320],[148,320],[156,320],[157,320]].forEach(([f, ms]) => { D[f] = ms; });
   /* the atlas tells how many frames it has; motions it lacks fall back to the original ones */
   let ROWS = 8;
-  const FALLBACK = {hop:"runR", wave2:"wave", jump:"joy", spin:"idle", bow:"greet"};
+  const FALLBACK = {hop:"runR", wave2:"wave", jump:"joy", spin:"idle", bow:"greet", blink:"idle", walkR:"runR", walkL:"runL", dashR:"runR", dashL:"runL", hello:"wave2", stretch:"joy",
+    giggle:"cheeks", ponder:"think", bow2:"bow", strawberry:"joy", cake:"jump", paint:"idle", read:"idle", surprise:"wave", nervous:"sorry", cry:"sorry", pout:"think",
+    relief:"joy", sparkle:"jump", heart:"cheeks", bunny:"idle", garden:"idle", tea:"idle"};
+  const pickOf = a => a[Math.floor(Math.random() * a.length)];
   const has = name => Math.max(...CLIPS[name]) < ROWS * 8;
   function variant(name){
-    if(!has("bow")) return FALLBACK[name] && !has(name) ? FALLBACK[name] : name;
-    const r = Math.random();
-    if(name === "wave" && r < .5) return "wave2";
-    if(name === "joy" && r < .4) return "jump";
-    if(name === "greet" && r < .3) return "bow";
+    if(!has("bow")) return name;
+    const r = Math.random(), more = has("hello");
+    if(name === "wave") return more ? (r < .35 ? "hello" : r < .65 ? "wave2" : "wave") : (r < .5 ? "wave2" : "wave");
+    if(name === "joy") return more ? (r < .25 ? "jump" : r < .45 ? "relief" : r < .6 ? "sparkle" : "joy") : (r < .4 ? "jump" : "joy");
+    if(name === "greet") return more ? (r < .2 ? "bow" : r < .35 ? "hello" : "greet") : (r < .3 ? "bow" : "greet");
+    if(name === "bow" && more && r < .5) return "bow2";
+    if(name === "cheeks" && more) return r < .35 ? "giggle" : r < .5 ? "heart" : "cheeks";
+    if(name === "think" && more && r < .5) return "ponder";
     return name;
   }
+  const resolve = name => { for(let i = 0; i < 4 && !has(name); i++) name = FALLBACK[name] || "idle"; return has(name) ? name : "idle"; };
   const el = $("#cc"), spr = el.querySelector(".spr"), bub = $("#ccb");
   const W = 86, H = 93;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1984,10 +1999,11 @@ const concierge = (() => {
     return {left, right: Math.max(left, right), top, bottom: Math.max(top, bottom)};
   }
   const clamp = () => { const b = bounds(); pos.x = Math.min(b.right, Math.max(b.left, pos.x)); pos.y = Math.min(b.bottom, Math.max(b.top, pos.y)); };
-  function play(name){ name = variant(name); if(!has(name)) name = FALLBACK[name] || "idle"; if(clip === name && LOOP[name]) return; clip = name; fi = 0; acc = 0; draw(); }
+  function play(name){ name = resolve(variant(name)); if(clip === name && LOOP[name]) return; clip = name; fi = 0; acc = 0; draw(); }
   function draw(){
     const f = CLIPS[clip][fi];
     spr.style.backgroundPosition = `${(f % 8) / 7 * 100}% ${Math.floor(f / 8) / (ROWS - 1) * 100}%`;
+    const fl = FLIP[clip] ? "-1 1" : ""; if(spr.style.scale !== fl) spr.style.scale = fl;
     el.style.transform = `translate3d(${pos.x.toFixed(1)}px,${pos.y.toFixed(1)}px,0)`;
     if(bubOpen) placeBubble();
   }
@@ -2009,19 +2025,25 @@ const concierge = (() => {
     const dt = Math.min(64, now - (last || now)); last = now;
     // frame timing
     const seq = CLIPS[clip], isRun = clip === "runR" || clip === "runL";
+    const pace = clip === "walkR" || clip === "walkL" ? .7 : clip === "dashR" || clip === "dashL" ? 1.45 : 1;
     if(!drag) acc += dt;
     const dur = isRun ? 105 : (D[seq[fi]] || 140);
     if(acc >= dur){ acc = 0; fi++;
-      if(fi >= seq.length){ if(LOOP[clip]) fi = 0; else { fi = 0; const r = Math.random(); clip = thinking ? "think" : r < .2 ? variant("greet") : (r < .27 && has("spin")) ? "spin" : "idle"; } }
+      if(fi >= seq.length){ if(LOOP[clip]) fi = 0; else { fi = 0; const r = Math.random();
+        if(!thinking && !tgt && !bubOpen && r < .07 && has("paint") && now > quietUntil){ doActivity(); }
+        else clip = thinking ? "think" : r < .2 ? resolve(variant("greet")) : (r < .27 && has("spin")) ? "spin" : (r < .45 && has("blink")) ? "blink" : (r < .5 && has("stretch")) ? "stretch" : "idle"; } }
       if(clip === "idle" && fi === 0 && Math.random() < .3) clip = "greet";
     }
     // movement
     if(tgt && !drag){
-      const dx = tgt.x - pos.x, dy = tgt.y - pos.y, dist = Math.hypot(dx, dy), v = speed() * dt / 1000;
+      const dx = tgt.x - pos.x, dy = tgt.y - pos.y, dist = Math.hypot(dx, dy), v = speed() * pace * dt / 1000;
       if(dist <= v){ pos.x = tgt.x; pos.y = tgt.y; tgt = null; play(Math.random() < .3 ? "wave" : Math.random() < .12 ? "spin" : "idle"); savePos(); planMove(now); }
-      else { pos.x += dx / dist * v; pos.y += dy / dist * v; const want = (Math.abs(dy) > Math.abs(dx) * 1.4 && has("hop")) ? "hop" : Math.abs(dx) < 4 ? (clip === "runL" ? "runL" : "runR") : dx > 0 ? "runR" : "runL"; if(clip !== want){ clip = want; fi = 0; } }
+      else { pos.x += dx / dist * v; pos.y += dy / dist * v; const left = Math.abs(dx) < 4 ? /L$/.test(clip) : dx < 0;
+        const gait = has("walkR") ? (tgt.dash ? "dash" : "walk") : "run";
+        const want = (Math.abs(dy) > Math.abs(dx) * 1.4 && has("hop")) ? "hop" : gait + (left ? "L" : "R");
+        if(clip !== want){ clip = want; fi = 0; } }
     } else if(!drag && !bubOpen && !thinking && cfg.level !== "calm" && !reduce && now > nextMove && now > quietUntil && !(document.body.classList.contains("pane-open") && document.body.dataset.mode !== "main-l")){
-      tgt = pickTarget();
+      tgt = pickTarget(); tgt.dash = Math.hypot(tgt.x - pos.x, tgt.y - pos.y) > 260 && Math.random() < .6;
     }
     draw();
   }
@@ -2086,19 +2108,19 @@ const concierge = (() => {
     // 3) overdue / due today
     openTasks().filter(k => k.due && k.due <= t).forEach(k => {
       const d = diff(t, k.due);
-      out.push({key:`task:${k.id}`, snoozeDays:1, pose: d > 0 ? "sorry" : "wave", text: d > 0 ? pick([`「${k.title}」、期限を${d}日すぎちゃってるよ…もう終わってたら完了にしとこっか？`, `あれやった？「${k.title}」、期限すぎてるみたい！`, `わすれてなーい？「${k.title}」の期限、${d}日前だったよ`])
+      out.push({key:`task:${k.id}`, snoozeDays:1, pose: d >= 3 ? "cry" : d > 0 ? "nervous" : "surprise", text: d > 0 ? pick([`「${k.title}」、期限を${d}日すぎちゃってるよ…もう終わってたら完了にしとこっか？`, `あれやった？「${k.title}」、期限すぎてるみたい！`, `わすれてなーい？「${k.title}」の期限、${d}日前だったよ`])
         : pick([`あれやった？今日までの「${k.title}」！`, `わすれてなーい？「${k.title}」、今日が期限だよ`, `今日が期限の「${k.title}」があります。いっしょにがんばろ！`]),
         acts:[["開く", () => taskForm(k)], ...(d > 0 ? [["完了にする", async () => { await put("tasks", k.id, {...k, status:"done"}); react("joy"); }]] : [])]});
     });
     // 4) replies I owe
     openFollow().filter(f => f.direction === "me" && daysSince(f.since) >= 2).forEach(f => {
-      out.push({key:`fu:${f.id}`, snoozeDays:2, pose:"think", text:pick([`${f.who ? f.who + "への" : ""}お返事「${f.subject}」、${daysSince(f.since)}日たってるよ。わすれてなーい？`, `あれやった？${f.who ? f.who + "への" : ""}返信「${f.subject}」`, `「${f.subject}」のお返事、そろそろかも！`]),
+      out.push({key:`fu:${f.id}`, snoozeDays:2, pose:"surprise", text:pick([`${f.who ? f.who + "への" : ""}お返事「${f.subject}」、${daysSince(f.since)}日たってるよ。わすれてなーい？`, `あれやった？${f.who ? f.who + "への" : ""}返信「${f.subject}」`, `「${f.subject}」のお返事、そろそろかも！`]),
         acts:[...(f.url && MAILURL.test(f.url) ? [["メールを開く", () => window.open(f.url, "_blank", "noopener")]] : []), ["済みにする", async () => { await put("followups", f.id, {...f, status:"done"}); react("joy"); }]]});
     });
     // 5) forgotten: no due date, untouched for 10+ days
     S.tasks.filter(k => k.status !== "done" && !k.due && k.updatedAt && (dt - Date.parse(k.updatedAt)) / 864e5 >= 10).forEach(k => {
       const d = Math.floor((dt - Date.parse(k.updatedAt)) / 864e5);
-      out.push({key:`old:${k.id}`, snoozeDays:5, pose:"think", text:pick([`ねえねえ、「${k.title}」ってどうなった？${d}日そのままだよ`, `「${k.title}」、${d}日さわってないみたい。まだ必要？`, `あれやった？「${k.title}」…もしかして、もう終わってる？`]), acts:[["開く", () => taskForm(k)], ["完了にする", async () => { await put("tasks", k.id, {...k, status:"done"}); react("joy"); }]]});
+      out.push({key:`old:${k.id}`, snoozeDays:5, pose:"ponder", text:pick([`ねえねえ、「${k.title}」ってどうなった？${d}日そのままだよ`, `「${k.title}」、${d}日さわってないみたい。まだ必要？`, `あれやった？「${k.title}」…もしかして、もう終わってる？`]), acts:[["開く", () => taskForm(k)], ["完了にする", async () => { await put("tasks", k.id, {...k, status:"done"}); react("joy"); }]]});
     });
     { const am = isWeekday(t) && !(S.days && S.days[t]) ? autoModeOf(t) : null;
       if(am && n < mins(OFFICIAL[am.mode].dismiss)) out.push({key:`auto:${t}`, pose:"wave", text:pick([`今日は「${am.ev.title}」なので、${OFFICIAL[am.mode].label}時程にしておいたよ！`, `学校の予定に「${am.ev.title}」があったので、今日は${OFFICIAL[am.mode].label}時程です。`]), acts:[["日程を見る", () => { ui.day = null; go("today"); }]]}); }
@@ -2108,7 +2130,7 @@ const concierge = (() => {
     // 6b) class prep: before school for today, after dismissal for the next class day
     { const tgtD = prepTarget(), pl = prepFor(tgtD), items = pl.flatMap(p => p.open.map(o => o.t));
       const before = tgtD === t ? pl.filter(p => p.open.length).every(p => true) && n < 12*60 : true;
-      if(items.length && before) out.push({key:`prep:${tgtD}`, pose:"wave", text:pick([`${dayLabel(tgtD)}の準備、だいじょうぶ？「${items.slice(0, 2).join("」「")}」${items.length > 2 ? "など" : ""}がまだだよ`, `わすれてなーい？${dayLabel(tgtD)}の授業準備があと${items.length}つ！`, `${dayLabel(tgtD)}の準備チェックしよっ。「${items[0]}」${items.length > 1 ? `ほか${items.length - 1}つ` : ""}です`]), acts:[["チェックリスト", () => prepPane(tgtD)]]}); }
+      if(items.length && before) out.push({key:`prep:${tgtD}`, pose:"ponder", text:pick([`${dayLabel(tgtD)}の準備、だいじょうぶ？「${items.slice(0, 2).join("」「")}」${items.length > 2 ? "など" : ""}がまだだよ`, `わすれてなーい？${dayLabel(tgtD)}の授業準備があと${items.length}つ！`, `${dayLabel(tgtD)}の準備チェックしよっ。「${items[0]}」${items.length > 1 ? `ほか${items.length - 1}つ` : ""}です`]), acts:[["チェックリスト", () => prepPane(tgtD)]]}); }
     // 7) tomorrow preview in the afternoon
     if(n >= 15*60){
       const tm = addDays(t, 1), md0 = dayMode(tm), ev = S.events.filter(e => e.date === tm), ov = getOv(tm);
@@ -2120,11 +2142,11 @@ const concierge = (() => {
     // 8) greetings and check-ins (lowest priority, at most once a day each)
     const wd = new Date().getDay(), dis = isWeekday(t) ? mins(OFFICIAL[dayMode(t)].dismiss) : 15*60;
     if(n < 8*60 + 30) out.push({key:"hi:am", pose:"bow", text:pick(["おはようございます！今日もいっしょにがんばろうね", "おはよう！今日の予定、見ておく？", "おはようございます！いい1日になりますように"])});
-    if(n >= 12*60 + 20 && n < 13*60 + 30) out.push({key:"hi:lunch", pose:"cheeks", text:pick(["お昼ごはん、ちゃんと食べた？", "ひと休みできてる？お水も飲んでね", "午後もがんばろうね！"])});
-    if(n >= dis && n < 18*60) out.push({key:"hi:after", pose:"bow", text: wd === 5 ? pick(["1週間おつかれさまでした！", "金曜日だ！今週もおつかれさま！"]) : pick(["今日もおつかれさまです！", "授業おつかれさま！ひと息つこ", "おつかれさまです！今日もえらい！"])});
-    if(n >= 18*60 + 30) out.push({key:"hi:late", pose:"think", text:pick(["まだお仕事？むりしないでね", "だいじょうぶ？げんき？そろそろ帰ろ〜", "遅くまでおつかれさま…ちゃんと休んでね"])});
-    if(!openTasks().some(k => k.due && k.due <= t) && S.tasks.length) out.push({key:"hi:clear", pose:"joy", text:pick(["今日までのタスク、ぜんぶ終わってる！すごい！", "期限のタスクはなし！いい感じだね"])});
-    out.push({key:"hi:check", pose:"cheeks", text:pick(["だいじょうぶ？げんき？", "ちょっと深呼吸しよっか", "何かあったら、ひとことで入れてね！", "いつも見てるよ、がんばってるね"])});
+    if(n >= 12*60 + 20 && n < 13*60 + 30) out.push({key:"hi:lunch", pose:pickOf(["strawberry", "tea"]), text:pick(["お昼ごはん、ちゃんと食べた？", "ひと休みできてる？お水も飲んでね", "午後もがんばろうね！"])});
+    if(n >= dis && n < 18*60) out.push({key:"hi:after", pose: wd === 5 ? "cake" : pickOf(["bow", "tea", "stretch"]), text: wd === 5 ? pick(["1週間おつかれさまでした！", "金曜日だ！今週もおつかれさま！"]) : pick(["今日もおつかれさまです！", "授業おつかれさま！ひと息つこ", "おつかれさまです！今日もえらい！"])});
+    if(n >= 18*60 + 30) out.push({key:"hi:late", pose:"pout", text:pick(["まだお仕事？むりしないでね", "だいじょうぶ？げんき？そろそろ帰ろ〜", "遅くまでおつかれさま…ちゃんと休んでね"])});
+    if(!openTasks().some(k => k.due && k.due <= t) && S.tasks.length) out.push({key:"hi:clear", pose:"sparkle", text:pick(["今日までのタスク、ぜんぶ終わってる！すごい！", "期限のタスクはなし！いい感じだね"])});
+    out.push({key:"hi:check", pose:"heart", text:pick(["だいじょうぶ？げんき？", "ちょっと深呼吸しよっか", "何かあったら、ひとことで入れてね！", "いつも見てるよ、がんばってるね"])});
     return out;
   }
   function talk(){
@@ -2176,8 +2198,26 @@ const concierge = (() => {
   function apply(){ el.hidden = !cfg.on; bub.hidden = !cfg.on; if(cfg.on){ clamp(); draw(); requestAnimationFrame(() => el.classList.add("on")); } else closeBubble(); }
   function setCfg(p){ cfg = {...cfg, ...p}; ls.set("fd-cc", cfg); apply(); }
   apply(); raf = requestAnimationFrame(step);
+  const ACT_LINES = {strawberry:["いちご見つけた！", "あまくておいしい〜", "いちご、ひとつどうぞ！"], cake:["ケーキ焼いたよ！", "いちごのケーキできた〜"],
+    paint:["お絵かき中〜", "いちご描けた！見て見て！"], read:["読書タイム…", "この本、おもしろいよ"], bunny:["うさぎさん、かわいい〜", "うさぎさんと遊んでるよ"],
+    garden:["すくすく育ってね", "お花さいた！"], tea:["ひと休みしよっか", "お茶がおいしい〜"], stretch:["のび〜っ", "ちょっと休憩しよ〜"]};
+  let lastActSay = 0;
+  function doActivity(){
+    const st = currentState(), n = nowMin(), wd = new Date().getDay();
+    const inClass = st.cur && st.cur.type === "period" && cellKind(st.cur.cell) !== "free";
+    const free = st.cur && st.cur.type === "period" && cellKind(st.cur.cell) === "free";
+    const pool = inClass ? ["read"] : free ? ["paint", "tea", "read"] : (n >= 12*60 + 15 && n < 13*60 + 30) ? ["strawberry", "tea"]
+      : st.after ? (wd === 5 ? ["cake", "garden", "bunny", "tea"] : ["garden", "bunny", "tea", "paint"]) : ["paint", "read", "bunny", "garden", "stretch"];
+    const act = pickOf(pool.filter(has));
+    if(!act) return;
+    clip = act; fi = 0; acc = 0;
+    if(!inClass && cfg.talk !== "off" && cfg.talk !== "low" && Date.now() - lastActSay > 10 * 60e3 && Math.random() < .4 && ACT_LINES[act]){
+      lastActSay = Date.now(); const line = pickOf(ACT_LINES[act]);
+      if(!talking && !bubOpen){ openBubble(`<div class="ln">${esc(line)}</div>`, true); clearTimeout(sayTimer); sayTimer = setTimeout(closeBubble, 3200); }
+    }
+  }
   function setRows(n){ ROWS = Math.max(8, Math.min(40, n | 0)); spr.style.backgroundSize = `800% ${ROWS * 100}%`; if(!has(clip)){ clip = "idle"; fi = 0; } draw(); }
-  return { setRows, close(){ closeBubble(); }, talkNow(){ const st = tstate(); st.last = 0; tsave(st); idleSince = 0; talk(); }, say, react, setCfg, get cfg(){ return cfg; }, think(on){ thinking = on; if(on) react("think"); else play("idle"); }, home(){ tgt = pickTarget(); } };
+  return { setRows, has, doActivity, close(){ closeBubble(); }, talkNow(){ const st = tstate(); st.last = 0; tsave(st); idleSince = 0; talk(); }, say, react, setCfg, get cfg(){ return cfg; }, think(on){ thinking = on; if(on) react("think"); else play("idle"); }, home(){ tgt = pickTarget(); } };
 })();
 
 /* ================= timetable & class-time editor (+ CSV / Google Sheets import) ================= */
