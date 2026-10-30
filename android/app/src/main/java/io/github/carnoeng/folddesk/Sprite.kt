@@ -17,12 +17,15 @@ import kotlin.random.Random
 /** The concierge character: same clips and timing as the web app, drawn on any Canvas. */
 class Sprite(private val ctx: Context, heightDp: Float = 92f) {
     companion object {
-        private val D = intArrayOf(280,110,110,140,140,320,120,120,120,120,120,120,120,220,120,120,120,120,120,120,120,220,140,140,140,280,140,140,140,140,280,140,140,140,140,140,140,140,240,150,150,150,150,150,260,120,120,120,120,120,220,150,150,150,150,150,280)
+        private val D = intArrayOf(280,110,110,140,140,320,120,120,120,120,120,120,120,220,120,120,120,120,120,120,120,220,140,140,140,280,140,140,140,140,280,140,140,140,140,140,140,140,240,150,150,150,150,150,260,120,120,120,120,120,220,150,150,150,150,150,280,
+            130,130,130,130,130,130, 160,140,150,150,150,280, 200,110,110,240,150,260, 130,130,130,130,130,280, 240,170,170,520,190,340)
         private fun r(a: Int, b: Int) = (a..b).toList()
         val CLIPS = mapOf(
             "greet" to r(0, 5), "runR" to r(6, 12), "runL" to r(14, 20), "wave" to r(22, 25) + listOf(23, 24, 25),
-            "joy" to r(26, 30), "sorry" to r(31, 39), "cheeks" to r(39, 44), "think" to r(45, 50), "idle" to r(51, 56))
-        private val LOOP = setOf("idle", "runR", "runL", "think")
+            "joy" to r(26, 30), "sorry" to r(31, 39), "cheeks" to r(39, 44), "think" to r(45, 50), "idle" to r(51, 56),
+            "hop" to r(57, 62), "wave2" to listOf(63, 64, 65, 66, 65, 66, 67, 68), "jump" to r(69, 74), "spin" to r(75, 80), "bow" to listOf(81, 82, 83, 84, 84, 85, 86))
+        private val LOOP = setOf("idle", "runR", "runL", "think", "hop")
+        private val FALLBACK = mapOf("hop" to "runR", "wave2" to "wave", "jump" to "joy", "spin" to "idle", "bow" to "greet")
         const val FW = 192; const val FH = 208
         fun artFile(c: Context) = File(c.filesDir, "concierge.img")
         fun hasArt(c: Context) = artFile(c).length() > 0
@@ -56,7 +59,15 @@ class Sprite(private val ctx: Context, heightDp: Float = 92f) {
     }
     val ready get() = atlas != null
 
-    fun play(name: String) { if (clip == name && name in LOOP) return; clip = name; fi = 0; acc = 0 }
+    /** frames in the loaded atlas; newer motions are used only when the atlas has them */
+    private val frames get() = atlas?.let { (it.height / FH) * 8 } ?: 64
+    private fun has(n: String) = (CLIPS[n]?.maxOrNull() ?: 999) < frames
+    private fun variant(n: String): String {
+        if (!has("bow")) return if (!has(n)) FALLBACK[n] ?: "idle" else n
+        val r = Random.nextFloat()
+        return when { n == "wave" && r < .5f -> "wave2"; n == "joy" && r < .4f -> "jump"; n == "greet" && r < .3f -> "bow"; else -> n }
+    }
+    fun play(name0: String) { val name = variant(name0).let { if (has(it)) it else FALLBACK[it] ?: "idle" }; if (clip == name && name in LOOP) return; clip = name; fi = 0; acc = 0 }
     fun say(lines: List<String>, ms: Long = 7000, pose: String = "wave") {
         bubble = lines.filter { it.isNotBlank() }.take(4); bubbleUntil = System.currentTimeMillis() + ms; tx = -1f; play(pose); nextMove = System.currentTimeMillis() + ms + 2000
     }
@@ -75,12 +86,12 @@ class Sprite(private val ctx: Context, heightDp: Float = 92f) {
         val dur = if (run) 105 else D[seq[fi]]
         if (acc >= dur) {
             acc = 0; fi++; changed = true
-            if (fi >= seq.size) { fi = 0; if (clip !in LOOP) clip = if (Random.nextFloat() < .25f) "greet" else "idle" }
+            if (fi >= seq.size) { fi = 0; if (clip !in LOOP) { val r = Random.nextFloat(); clip = if (r < .2f) variant("greet") else if (r < .27f && has("spin")) "spin" else "idle" } }
         }
         if (tx >= 0) {
             val dx = tx - x; val dy = ty - y; val dist = hypot(dx, dy); val v = 150f * density * dt / 1000f
-            if (dist <= v) { x = tx; y = ty; tx = -1f; play(if (Random.nextFloat() < .3f) "wave" else "idle"); nextMove = now + 6000 + Random.nextLong(9000) }
-            else { x += dx / dist * v; y += dy / dist * v; val want = if (dx >= 0) "runR" else "runL"; if (clip != want) { clip = want; fi = 0 } }
+            if (dist <= v) { x = tx; y = ty; tx = -1f; play(if (Random.nextFloat() < .3f) "wave" else if (Random.nextFloat() < .12f) "spin" else "idle"); nextMove = now + 6000 + Random.nextLong(9000) }
+            else { x += dx / dist * v; y += dy / dist * v; val want = if (kotlin.math.abs(dy) > kotlin.math.abs(dx) * 1.4f && has("hop")) "hop" else if (dx >= 0) "runR" else "runL"; if (clip != want) { clip = want; fi = 0 } }
             changed = true
         } else if (!calm && !talking && now > nextMove && nextMove != 0L) {
             tx = b.left + Random.nextFloat() * (b.width() - w).coerceAtLeast(1); ty = b.top + Random.nextFloat() * (b.height() - h).coerceAtLeast(1)
@@ -88,7 +99,7 @@ class Sprite(private val ctx: Context, heightDp: Float = 92f) {
         return changed || talking
     }
 
-    fun frameRect(): Rect { val f = (CLIPS[clip] ?: listOf(0))[fi]; return Rect((f % 8) * FW, (f / 8) * FH, (f % 8) * FW + FW, (f / 8) * FH + FH) }
+    fun frameRect(): Rect { val f = (CLIPS[clip] ?: listOf(0)).getOrElse(fi) { 0 }.let { if (it < frames) it else 51 }; return Rect((f % 8) * FW, (f / 8) * FH, (f % 8) * FW + FW, (f / 8) * FH + FH) }
 
     /** Draws the character (and its bubble) at its own position on the canvas. */
     fun draw(c: Canvas, ox: Float = x, oy: Float = y, withBubble: Boolean = true) {

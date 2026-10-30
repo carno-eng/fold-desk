@@ -1950,10 +1950,24 @@ document.addEventListener("submit", async (ev) => {
 
 /* ================= concierge ================= */
 const concierge = (() => {
-  const D = [280,110,110,140,140,320,120,120,120,120,120,120,120,220,120,120,120,120,120,120,120,220,140,140,140,280,140,140,140,140,280,140,140,140,140,140,140,140,240,150,150,150,150,150,260,120,120,120,120,120,220,150,150,150,150,150,280];
+  const D = [280,110,110,140,140,320,120,120,120,120,120,120,120,220,120,120,120,120,120,120,120,220,140,140,140,280,140,140,140,140,280,140,140,140,140,140,140,140,240,150,150,150,150,150,260,120,120,120,120,120,220,150,150,150,150,150,280,
+    130,130,130,130,130,130,  160,140,150,150,150,280,  200,110,110,240,150,260,  130,130,130,130,130,280,  240,170,170,520,190,340];
   const R = (a, b) => Array.from({length:b-a+1}, (_, i) => a + i);
-  const CLIPS = { greet:R(0,5), runR:R(6,12), runL:R(14,20), wave:[...R(22,25),23,24,25], joy:R(26,30), sorry:R(31,39), cheeks:R(39,44), think:R(45,50), idle:R(51,56) };
-  const LOOP = {idle:1, runR:1, runL:1, think:1};
+  const CLIPS = { greet:R(0,5), runR:R(6,12), runL:R(14,20), wave:[...R(22,25),23,24,25], joy:R(26,30), sorry:R(31,39), cheeks:R(39,44), think:R(45,50), idle:R(51,56),
+    hop:R(57,62), wave2:[63,64,65,66,65,66,67,68], jump:R(69,74), spin:R(75,80), bow:[81,82,83,84,84,85,86] };
+  const LOOP = {idle:1, runR:1, runL:1, think:1, hop:1};
+  /* the atlas tells how many frames it has; motions it lacks fall back to the original ones */
+  let ROWS = 8;
+  const FALLBACK = {hop:"runR", wave2:"wave", jump:"joy", spin:"idle", bow:"greet"};
+  const has = name => Math.max(...CLIPS[name]) < ROWS * 8;
+  function variant(name){
+    if(!has("bow")) return FALLBACK[name] && !has(name) ? FALLBACK[name] : name;
+    const r = Math.random();
+    if(name === "wave" && r < .5) return "wave2";
+    if(name === "joy" && r < .4) return "jump";
+    if(name === "greet" && r < .3) return "bow";
+    return name;
+  }
   const el = $("#cc"), spr = el.querySelector(".spr"), bub = $("#ccb");
   const W = 86, H = 93;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1970,10 +1984,10 @@ const concierge = (() => {
     return {left, right: Math.max(left, right), top, bottom: Math.max(top, bottom)};
   }
   const clamp = () => { const b = bounds(); pos.x = Math.min(b.right, Math.max(b.left, pos.x)); pos.y = Math.min(b.bottom, Math.max(b.top, pos.y)); };
-  function play(name){ if(clip === name && LOOP[name]) return; clip = name; fi = 0; acc = 0; draw(); }
+  function play(name){ name = variant(name); if(!has(name)) name = FALLBACK[name] || "idle"; if(clip === name && LOOP[name]) return; clip = name; fi = 0; acc = 0; draw(); }
   function draw(){
     const f = CLIPS[clip][fi];
-    spr.style.backgroundPosition = `${(f % 8) / 7 * 100}% ${Math.floor(f / 8) / 7 * 100}%`;
+    spr.style.backgroundPosition = `${(f % 8) / 7 * 100}% ${Math.floor(f / 8) / (ROWS - 1) * 100}%`;
     el.style.transform = `translate3d(${pos.x.toFixed(1)}px,${pos.y.toFixed(1)}px,0)`;
     if(bubOpen) placeBubble();
   }
@@ -1998,14 +2012,14 @@ const concierge = (() => {
     if(!drag) acc += dt;
     const dur = isRun ? 105 : (D[seq[fi]] || 140);
     if(acc >= dur){ acc = 0; fi++;
-      if(fi >= seq.length){ if(LOOP[clip]) fi = 0; else { fi = 0; clip = thinking ? "think" : Math.random() < .25 ? "greet" : "idle"; } }
+      if(fi >= seq.length){ if(LOOP[clip]) fi = 0; else { fi = 0; const r = Math.random(); clip = thinking ? "think" : r < .2 ? variant("greet") : (r < .27 && has("spin")) ? "spin" : "idle"; } }
       if(clip === "idle" && fi === 0 && Math.random() < .3) clip = "greet";
     }
     // movement
     if(tgt && !drag){
       const dx = tgt.x - pos.x, dy = tgt.y - pos.y, dist = Math.hypot(dx, dy), v = speed() * dt / 1000;
-      if(dist <= v){ pos.x = tgt.x; pos.y = tgt.y; tgt = null; play(Math.random() < .3 ? "wave" : "idle"); savePos(); planMove(now); }
-      else { pos.x += dx / dist * v; pos.y += dy / dist * v; const want = Math.abs(dx) < 4 ? (clip === "runL" ? "runL" : "runR") : dx > 0 ? "runR" : "runL"; if(clip !== want){ clip = want; fi = 0; } }
+      if(dist <= v){ pos.x = tgt.x; pos.y = tgt.y; tgt = null; play(Math.random() < .3 ? "wave" : Math.random() < .12 ? "spin" : "idle"); savePos(); planMove(now); }
+      else { pos.x += dx / dist * v; pos.y += dy / dist * v; const want = (Math.abs(dy) > Math.abs(dx) * 1.4 && has("hop")) ? "hop" : Math.abs(dx) < 4 ? (clip === "runL" ? "runL" : "runR") : dx > 0 ? "runR" : "runL"; if(clip !== want){ clip = want; fi = 0; } }
     } else if(!drag && !bubOpen && !thinking && cfg.level !== "calm" && !reduce && now > nextMove && now > quietUntil && !(document.body.classList.contains("pane-open") && document.body.dataset.mode !== "main-l")){
       tgt = pickTarget();
     }
@@ -2105,9 +2119,9 @@ const concierge = (() => {
     }
     // 8) greetings and check-ins (lowest priority, at most once a day each)
     const wd = new Date().getDay(), dis = isWeekday(t) ? mins(OFFICIAL[dayMode(t)].dismiss) : 15*60;
-    if(n < 8*60 + 30) out.push({key:"hi:am", pose:"greet", text:pick(["おはようございます！今日もいっしょにがんばろうね", "おはよう！今日の予定、見ておく？", "おはようございます！いい1日になりますように"])});
+    if(n < 8*60 + 30) out.push({key:"hi:am", pose:"bow", text:pick(["おはようございます！今日もいっしょにがんばろうね", "おはよう！今日の予定、見ておく？", "おはようございます！いい1日になりますように"])});
     if(n >= 12*60 + 20 && n < 13*60 + 30) out.push({key:"hi:lunch", pose:"cheeks", text:pick(["お昼ごはん、ちゃんと食べた？", "ひと休みできてる？お水も飲んでね", "午後もがんばろうね！"])});
-    if(n >= dis && n < 18*60) out.push({key:"hi:after", pose:"joy", text: wd === 5 ? pick(["1週間おつかれさまでした！", "金曜日だ！今週もおつかれさま！"]) : pick(["今日もおつかれさまです！", "授業おつかれさま！ひと息つこ", "おつかれさまです！今日もえらい！"])});
+    if(n >= dis && n < 18*60) out.push({key:"hi:after", pose:"bow", text: wd === 5 ? pick(["1週間おつかれさまでした！", "金曜日だ！今週もおつかれさま！"]) : pick(["今日もおつかれさまです！", "授業おつかれさま！ひと息つこ", "おつかれさまです！今日もえらい！"])});
     if(n >= 18*60 + 30) out.push({key:"hi:late", pose:"think", text:pick(["まだお仕事？むりしないでね", "だいじょうぶ？げんき？そろそろ帰ろ〜", "遅くまでおつかれさま…ちゃんと休んでね"])});
     if(!openTasks().some(k => k.due && k.due <= t) && S.tasks.length) out.push({key:"hi:clear", pose:"joy", text:pick(["今日までのタスク、ぜんぶ終わってる！すごい！", "期限のタスクはなし！いい感じだね"])});
     out.push({key:"hi:check", pose:"cheeks", text:pick(["だいじょうぶ？げんき？", "ちょっと深呼吸しよっか", "何かあったら、ひとことで入れてね！", "いつも見てるよ、がんばってるね"])});
@@ -2162,7 +2176,8 @@ const concierge = (() => {
   function apply(){ el.hidden = !cfg.on; bub.hidden = !cfg.on; if(cfg.on){ clamp(); draw(); requestAnimationFrame(() => el.classList.add("on")); } else closeBubble(); }
   function setCfg(p){ cfg = {...cfg, ...p}; ls.set("fd-cc", cfg); apply(); }
   apply(); raf = requestAnimationFrame(step);
-  return { close(){ closeBubble(); }, talkNow(){ const st = tstate(); st.last = 0; tsave(st); idleSince = 0; talk(); }, say, react, setCfg, get cfg(){ return cfg; }, think(on){ thinking = on; if(on) react("think"); else play("idle"); }, home(){ tgt = pickTarget(); } };
+  function setRows(n){ ROWS = Math.max(8, Math.min(40, n | 0)); spr.style.backgroundSize = `800% ${ROWS * 100}%`; if(!has(clip)){ clip = "idle"; fi = 0; } draw(); }
+  return { setRows, close(){ closeBubble(); }, talkNow(){ const st = tstate(); st.last = 0; tsave(st); idleSince = 0; talk(); }, say, react, setCfg, get cfg(){ return cfg; }, think(on){ thinking = on; if(on) react("think"); else play("idle"); }, home(){ tgt = pickTarget(); } };
 })();
 
 /* ================= timetable & class-time editor (+ CSV / Google Sheets import) ================= */
@@ -2645,6 +2660,7 @@ async function loadConciergeArt(){
       await cache.put(KEYURL, res.clone());
     }
     if(res){ const blob = await res.blob(); spr.style.backgroundImage = `url(${URL.createObjectURL(blob)})`; document.getElementById("cc").classList.add("art");
+      try { const bm = await createImageBitmap(blob); concierge.setRows(Math.round(bm.height / (bm.width / 8 * 208 / 192))); } catch(e){}
       try { if(window.FoldDeskNative && window.FoldDeskNative.isApp() && window.FoldDeskNative.artVersion && window.FoldDeskNative.artVersion() !== blob.size){
         const b64 = await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.readAsDataURL(blob); });
         window.FoldDeskNative.setConciergeArt(b64); } } catch(e){} }
@@ -2855,7 +2871,7 @@ function schoolHandoffPane(){
     <div class="btns"><a class="btn primary" href="${esc(link)}">アプリで接続する</a><button class="btn" data-act="close">このままでよい</button></div>`);
 }
 setTimeout(schoolHandoffPane, 900);
-if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, dayMode, eventForm, closePane};
+if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, concierge, dayMode, eventForm, closePane};
 })();
 </script>
 </body>

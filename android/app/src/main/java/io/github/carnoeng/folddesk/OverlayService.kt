@@ -110,7 +110,7 @@ class OverlayService : Service() {
         if (sprite.talking) return
         val r = Talk.dueReminder(this, wall)
         if (r != null) { sayNow(r, "wave"); return }
-        Talk.proactive(this)?.let { sayNow(it, "wave", 9000) }
+        Talk.proactive(this)?.let { sayNow(it, Talk.pose, 9000) }
     }
 
     private val screenRx = object : BroadcastReceiver() {

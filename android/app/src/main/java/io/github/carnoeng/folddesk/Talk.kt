@@ -33,6 +33,9 @@ object Talk {
         }
     }
 
+    /** pose for the last thing proactive() returned */
+    @Volatile var pose = "wave"
+
     private fun prefs(c: Context) = c.getSharedPreferences("fd_talk", Context.MODE_PRIVATE)
 
     /**
@@ -48,6 +51,7 @@ object Talk {
         if (p.getString("day", "") != today) p.edit().clear().putString("day", today).apply()
         val seen = p.getStringSet("seen", emptySet())!!.toMutableSet()
         fun take(key: String, lines: List<String>): List<String> {
+            pose = if (key == "hi:am" || key == "hi:after") "bow" else if (key.startsWith("hi:")) "cheeks" else "wave"
             seen.add(key)
             p.edit().putStringSet("seen", seen).putLong("last", now).putInt("count", p.getInt("count", 0) + 1).apply()
             return lines

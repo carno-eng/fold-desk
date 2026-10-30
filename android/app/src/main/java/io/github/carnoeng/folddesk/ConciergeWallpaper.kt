@@ -74,7 +74,7 @@ class ConciergeWallpaper : WallpaperService() {
             if (sprite.talking) return
             val r = Talk.dueReminder(this@ConciergeWallpaper, now)
             if (r != null) { sprite.say(r, 9000, "wave"); return }
-            Talk.proactive(this@ConciergeWallpaper)?.let { sprite.say(it, 9000, "wave") }
+            Talk.proactive(this@ConciergeWallpaper)?.let { sprite.say(it, 9000, Talk.pose) }
         }
 
         private fun background(c: Canvas) {
