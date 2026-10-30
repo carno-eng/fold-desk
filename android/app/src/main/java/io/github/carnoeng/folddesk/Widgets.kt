@@ -26,6 +26,18 @@ class NextWidget : AppWidgetProvider() {
 class TasksWidget : AppWidgetProvider() {
     override fun onUpdate(c: Context, m: AppWidgetManager, ids: IntArray) = Widgets.updateAll(c)
 }
+open class FdWidget : AppWidgetProvider() {
+    override fun onUpdate(c: Context, m: AppWidgetManager, ids: IntArray) = Widgets.updateAll(c)
+    override fun onAppWidgetOptionsChanged(c: Context, m: AppWidgetManager, id: Int, o: android.os.Bundle) = Widgets.updateAll(c)
+}
+class HeroWidget : FdWidget()
+class WeekWidget : FdWidget()
+class PrepWidget : FdWidget()
+class EventsWidget : FdWidget()
+class RemindWidget : FdWidget()
+class FollowWidget : FdWidget()
+class BriefWidget : FdWidget()
+class AddWidget : FdWidget()
 
 /** Schedule helpers shared by widgets and alarms. Times are "HH:MM" on a "yyyy-MM-dd" date, local time. */
 object Sched {
@@ -89,16 +101,40 @@ object Widgets {
     private const val WHITE = 0xFFFFFFFF.toInt()
     private const val DIM = 0x99FFFFFF.toInt()
     private const val WARN = 0xFFFFC9C2.toInt()
+    private const val RED = 0xFFE5483B.toInt()
+
+    private inline fun <reified T : Any> ids(c: Context, m: AppWidgetManager) = m.getAppWidgetIds(ComponentName(c, T::class.java))
 
     fun updateAll(c: Context) {
         val m = AppWidgetManager.getInstance(c)
         val s = Store.snapshot(c)
-        m.getAppWidgetIds(ComponentName(c, TodayWidget::class.java)).forEach { m.updateAppWidget(it, today(c, s)) }
-        m.getAppWidgetIds(ComponentName(c, NextWidget::class.java)).forEach { m.updateAppWidget(it, next(c, s)) }
-        m.getAppWidgetIds(ComponentName(c, TasksWidget::class.java)).forEach { m.updateAppWidget(it, tasks(c, s)) }
+        ids<TodayWidget>(c, m).forEach { m.updateAppWidget(it, today(c, s)) }
+        ids<NextWidget>(c, m).forEach { m.updateAppWidget(it, next(c, s)) }
+        ids<TasksWidget>(c, m).forEach { m.updateAppWidget(it, tasks(c, s)) }
+        ids<HeroWidget>(c, m).forEach { m.updateAppWidget(it, hero(c, s, widthPx(c, m, it))) }
+        ids<WeekWidget>(c, m).forEach { val (w, h) = sizePx(c, m, it); m.updateAppWidget(it, week(c, s, w, h)) }
+        ids<PrepWidget>(c, m).forEach { m.updateAppWidget(it, prep(c, s)) }
+        ids<EventsWidget>(c, m).forEach { m.updateAppWidget(it, events(c, s)) }
+        ids<RemindWidget>(c, m).forEach { m.updateAppWidget(it, reminders(c, s)) }
+        ids<FollowWidget>(c, m).forEach { m.updateAppWidget(it, follow(c, s)) }
+        ids<BriefWidget>(c, m).forEach { m.updateAppWidget(it, brief(c, s)) }
+        ids<AddWidget>(c, m).forEach { m.updateAppWidget(it, RemoteViews(c.packageName, R.layout.widget_add).apply { setOnClickPendingIntent(R.id.root, open(c, "ask")) }) }
     }
 
-    private fun open(c: Context, route: String): PendingIntent =
+    fun hasHero(c: Context): Boolean {
+        val m = AppWidgetManager.getInstance(c)
+        return ids<HeroWidget>(c, m).isNotEmpty() || ids<TodayWidget>(c, m).isNotEmpty() || ids<NextWidget>(c, m).isNotEmpty()
+    }
+
+    private fun sizePx(c: Context, m: AppWidgetManager, id: Int): Pair<Int, Int> {
+        val o = m.getAppWidgetOptions(id); val d = c.resources.displayMetrics.density
+        val w = o.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 300).coerceAtLeast(120)
+        val h = o.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 200).coerceAtLeast(100)
+        return Pair((w * d).toInt(), (h * d).toInt())
+    }
+    private fun widthPx(c: Context, m: AppWidgetManager, id: Int) = sizePx(c, m, id).first
+
+    fun open(c: Context, route: String): PendingIntent =
         PendingIntent.getActivity(c, route.hashCode() and 0xffff,
             Intent(c, MainActivity::class.java).putExtra("route", route).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
@@ -125,6 +161,65 @@ object Widgets {
         val at = s?.optLong("at") ?: return ""
         val h = (System.currentTimeMillis() - at) / 3_600_000
         return if (h >= 6) "更新 ${h}時間前" else ""
+    }
+
+    /** The blue "today" sheet from the app: date, now/next, live countdown inside the ring, and the day bar. */
+    fun hero(c: Context, s: JSONObject?, widthPx: Int): RemoteViews {
+        val v = RemoteViews(c.packageName, R.layout.widget_hero)
+        v.setOnClickPendingIntent(R.id.root, open(c, "today"))
+        val cal = Calendar.getInstance()
+        val hero = s?.optJSONObject("hero")
+        v.setTextViewText(R.id.eyebrow, hero?.optString("eyebrow") ?: "${cal.get(Calendar.YEAR)}年")
+        v.setTextViewText(R.id.date, "${cal.get(Calendar.MONTH) + 1}月${cal.get(Calendar.DAY_OF_MONTH)}日")
+        val st = Sched.status(s)
+        v.setTextViewText(R.id.status, st.line)
+        val subLine = when {
+            st.target > 0 && st.line.startsWith("いま") -> "${hhmm(st.target)}まで" + (if (st.next.isNotEmpty()) "　" + st.next else "")
+            else -> st.next.ifEmpty { hero?.optString("holiday") ?: "" }
+        }
+        v.setTextViewText(R.id.sub, subLine)
+        val mode = hero?.optString("modeLabel") ?: ""
+        v.setTextViewText(R.id.mode, mode); v.setViewVisibility(R.id.mode, if (mode.isEmpty()) View.GONE else View.VISIBLE)
+        // ring + countdown
+        val day = s?.let { Sched.today(it) }
+        var frac = 0f; var idle = true
+        if (st.target > 0 && day != null) {
+            idle = false
+            val now = System.currentTimeMillis()
+            if (st.line.startsWith("いま")) {
+                val cur = findAround(day, now)
+                frac = if (cur != null) ((now - cur.first).toFloat() / (cur.second - cur.first).coerceAtLeast(1)) else 0f
+            } else frac = 1f - ((st.target - now) / 600_000f).coerceIn(0f, 1f)
+            v.setChronometer(R.id.chrono, SystemClock.elapsedRealtime() + (st.target - now), "%s", true)
+            v.setChronometerCountDown(R.id.chrono, true)
+            v.setViewVisibility(R.id.chrono, View.VISIBLE); v.setViewVisibility(R.id.clock, View.GONE)
+            v.setTextViewText(R.id.ringlabel, if (st.line.startsWith("いま")) "のこり" else "まで")
+        } else {
+            v.setViewVisibility(R.id.chrono, View.GONE); v.setViewVisibility(R.id.clock, View.VISIBLE)
+            v.setTextViewText(R.id.ringlabel, "いま")
+        }
+        v.setImageViewBitmap(R.id.ring, Paint2.ring(c, frac, idle))
+        // day bar
+        val d = c.resources.displayMetrics.density
+        val bar = Paint2.dayBar(c, day, (widthPx - 36 * d).toInt())
+        if (bar != null) {
+            v.setImageViewBitmap(R.id.bar, bar); v.setViewVisibility(R.id.bar, View.VISIBLE)
+            val items = day!!.optJSONArray("items")!!
+            v.setTextViewText(R.id.barstart, items.getJSONObject(0).optString("s"))
+            val dis = day.optString("dismiss")
+            v.setTextViewText(R.id.barend, listOf(if (dis.isNotEmpty()) "下校 $dis" else "", stale(s)).filter { it.isNotEmpty() }.joinToString("  ・  "))
+            v.setViewVisibility(R.id.barlabels, View.VISIBLE)
+        } else { v.setViewVisibility(R.id.bar, View.GONE); v.setViewVisibility(R.id.barlabels, View.GONE) }
+        return v
+    }
+    private fun hhmm(t: Long): String { val c = Calendar.getInstance().apply { timeInMillis = t }; return "%d:%02d".format(c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE)) }
+    private fun findAround(day: JSONObject, now: Long): Pair<Long, Long>? {
+        val items = day.optJSONArray("items") ?: return null
+        var best: Pair<Long, Long>? = null
+        for (i in 0 until items.length()) { val it = items.getJSONObject(i); if (it.optString("k") == "cancel") continue
+            val a = Sched.at(day.optString("date"), it.optString("s")); val e = Sched.at(day.optString("date"), it.optString("e"))
+            if (now in a until e && (best == null || it.optString("k") != "block")) best = Pair(a, e) }
+        return best
     }
 
     fun today(c: Context, s: JSONObject?): RemoteViews {
@@ -174,29 +269,72 @@ object Widgets {
         return v
     }
 
-    fun tasks(c: Context, s: JSONObject?): RemoteViews {
-        val v = RemoteViews(c.packageName, R.layout.widget_tasks)
-        v.setOnClickPendingIntent(R.id.root, open(c, "tasks"))
-        v.setOnClickPendingIntent(R.id.add, open(c, "ask"))
+    fun week(c: Context, s: JSONObject?, w: Int, h: Int): RemoteViews {
+        val v = RemoteViews(c.packageName, R.layout.widget_week)
+        v.setOnClickPendingIntent(R.id.root, open(c, "timetable"))
+        val d = c.resources.displayMetrics.density
+        val bmp = Paint2.week(c, s?.optJSONObject("week"), (w - 20 * d).toInt(), (h - 20 * d).toInt())
+        if (bmp != null) { v.setImageViewBitmap(R.id.grid, bmp); v.setViewVisibility(R.id.empty, View.GONE) }
+        else v.setViewVisibility(R.id.empty, View.VISIBLE)
+        return v
+    }
+
+    /* ---------- card-style list widgets ---------- */
+    private class Row(val left: String, val title: String, val sub: String = "", val right: String = "", val warn: Boolean = false)
+
+    private fun list(c: Context, title: String, rows: List<Row>, empty: String, route: String, add: Boolean = false, max: Int = 6): RemoteViews {
+        val v = RemoteViews(c.packageName, R.layout.widget_list)
+        v.setOnClickPendingIntent(R.id.root, open(c, route))
+        v.setTextViewText(R.id.title, title)
+        v.setTextViewText(R.id.count, if (rows.isNotEmpty()) rows.size.toString() else "")
+        if (add) { v.setViewVisibility(R.id.add, View.VISIBLE); v.setOnClickPendingIntent(R.id.add, open(c, "ask")) } else v.setViewVisibility(R.id.add, View.GONE)
         v.removeAllViews(R.id.rows)
-        val arr = s?.optJSONArray("tasks")
-        val n = arr?.length() ?: 0
-        v.setTextViewText(R.id.count, if (n > 0) "$n" else "")
-        if (arr != null) for (i in 0 until minOf(n, 5)) {
-            val t = arr.getJSONObject(i)
-            val row = RemoteViews(c.packageName, R.layout.widget_task_row)
-            row.setTextViewText(R.id.title, t.optString("title"))
-            row.setTextViewText(R.id.label, t.optString("label"))
-            row.setTextColor(R.id.label, if (t.optBoolean("warn")) WARN else DIM)
+        rows.take(max).forEach { r ->
+            val row = RemoteViews(c.packageName, R.layout.widget_list_row)
+            row.setTextViewText(R.id.left, r.left); row.setViewVisibility(R.id.left, if (r.left.isEmpty()) View.GONE else View.VISIBLE)
+            row.setTextViewText(R.id.title, r.title)
+            row.setTextViewText(R.id.sub, r.sub); row.setViewVisibility(R.id.sub, if (r.sub.isEmpty()) View.GONE else View.VISIBLE)
+            row.setTextViewText(R.id.right, r.right)
+            if (r.warn) row.setTextColor(R.id.right, RED)
             v.addView(R.id.rows, row)
         }
-        v.setViewVisibility(R.id.empty, if (n == 0) View.VISIBLE else View.GONE)
-        val prep = s?.optJSONObject("prep")
-        val pItems = prep?.optJSONArray("items")
-        if (pItems != null && pItems.length() > 0) {
-            v.setTextViewText(R.id.prep, "${prep.optString("label")}の準備：" + (0 until minOf(pItems.length(), 3)).joinToString("、") { pItems.optString(it) } + (if (pItems.length() > 3) " ほか" else ""))
-            v.setViewVisibility(R.id.prep, View.VISIBLE)
-        } else v.setViewVisibility(R.id.prep, View.GONE)
+        v.setTextViewText(R.id.empty, empty)
+        v.setViewVisibility(R.id.empty, if (rows.isEmpty()) View.VISIBLE else View.GONE)
         return v
+    }
+    private fun arr(s: JSONObject?, k: String) = s?.optJSONArray(k)?.let { a -> (0 until a.length()).map { a.getJSONObject(it) } } ?: emptyList()
+
+    fun tasks(c: Context, s: JSONObject?) = list(c, "タスク",
+        arr(s, "tasks").map { Row("", it.optString("title"), right = it.optString("label"), warn = it.optBoolean("warn")) },
+        "期限の近いタスクはありません", "tasks", add = true)
+
+    fun prep(c: Context, s: JSONObject?): RemoteViews {
+        val p = s?.optJSONObject("prep"); val items = p?.optJSONArray("items")
+        val rows = if (items != null) (0 until items.length()).map { Row("□", items.optString(it)) } else emptyList()
+        return list(c, "${p?.optString("label") ?: "次"}の授業準備", rows, "準備するものはありません", "prep", max = 7)
+    }
+
+    fun events(c: Context, s: JSONObject?) = list(c, "これからの予定",
+        arr(s, "events").map { Row(it.optString("label").replace(Regex("\\(.\\)"), ""), it.optString("title"), listOf(it.optString("time"), it.optString("place")).filter { x -> x.isNotEmpty() }.joinToString(" ・ "), it.optString("account")) },
+        "2週間以内の予定はありません", "events")
+
+    fun reminders(c: Context, s: JSONObject?): RemoteViews {
+        val now = System.currentTimeMillis()
+        val rows = arr(s, "reminders").filter { it.optLong("at") > now }.map {
+            val cal = Calendar.getInstance().apply { timeInMillis = it.optLong("at") }
+            val tomorrow = cal.get(Calendar.DAY_OF_YEAR) != Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+            Row((if (tomorrow) "明日 " else "") + "%d:%02d".format(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)), it.optString("title"), it.optString("body").substringBefore(" ・ "))
+        }
+        return list(c, "お知らせ予定", rows, "これからのお知らせはありません", "settings")
+    }
+
+    fun follow(c: Context, s: JSONObject?) = list(c, "返信待ち",
+        arr(s, "follow").map { Row(if (it.optBoolean("me")) "返す" else "待ち", it.optString("subject"), it.optString("who"), "${it.optInt("days")}日", it.optInt("days") >= 3 && it.optBoolean("me")) },
+        "返信待ちはありません", "follow")
+
+    fun brief(c: Context, s: JSONObject?): RemoteViews {
+        val b = s?.optJSONObject("brief"); val lines = b?.optJSONArray("lines")
+        val rows = if (lines != null) (0 until lines.length()).map { Row("・", lines.optString(it)) } else emptyList()
+        return list(c, "今朝のまとめ" + (b?.optString("time")?.takeIf { it.isNotEmpty() }?.let { "（$it）" } ?: ""), rows, "今朝のまとめはまだありません", "today")
     }
 }

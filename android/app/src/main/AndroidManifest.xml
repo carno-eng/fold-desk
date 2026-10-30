@@ -8,6 +8,10 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
 
     <application
         android:allowBackup="false"
@@ -35,7 +39,21 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="folddesk" android:host="pair" />
             </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
+
+        <service android:name=".ConciergeWallpaper" android:exported="true" android:label="Fold Desk コンシェルジュ"
+            android:permission="android.permission.BIND_WALLPAPER">
+            <intent-filter><action android:name="android.service.wallpaper.WallpaperService" /></intent-filter>
+            <meta-data android:name="android.service.wallpaper" android:resource="@xml/wallpaper" />
+        </service>
+        <service android:name=".OverlayService" android:exported="false" android:foregroundServiceType="specialUse">
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="On-screen assistant character the user turned on" />
+        </service>
+        <service android:name=".QuickTile" android:exported="true" android:icon="@drawable/ic_notify" android:label="@string/tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+        </service>
 
         <receiver android:name=".AlarmReceiver" android:exported="false" />
         <receiver android:name=".BootReceiver" android:exported="true">
@@ -45,7 +63,7 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".TodayWidget" android:exported="true" android:label="今日の時間割">
+        <receiver android:name=".TodayWidget" android:exported="true" android:label="今日の日程">
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_today_info" />
         </receiver>
@@ -53,9 +71,41 @@
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_next_info" />
         </receiver>
-        <receiver android:name=".TasksWidget" android:exported="true" android:label="タスクと準備">
+        <receiver android:name=".TasksWidget" android:exported="true" android:label="タスク">
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_tasks_info" />
+        </receiver>
+        <receiver android:name=".HeroWidget" android:exported="true" android:label="今日（情報シート）">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_hero_info" />
+        </receiver>
+        <receiver android:name=".WeekWidget" android:exported="true" android:label="週の時間割">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_week_info" />
+        </receiver>
+        <receiver android:name=".PrepWidget" android:exported="true" android:label="授業準備">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_prep_info" />
+        </receiver>
+        <receiver android:name=".EventsWidget" android:exported="true" android:label="これからの予定">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_events_info" />
+        </receiver>
+        <receiver android:name=".RemindWidget" android:exported="true" android:label="お知らせ予定">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_remind_info" />
+        </receiver>
+        <receiver android:name=".FollowWidget" android:exported="true" android:label="返信待ち">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_follow_info" />
+        </receiver>
+        <receiver android:name=".BriefWidget" android:exported="true" android:label="今朝のまとめ">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_brief_info" />
+        </receiver>
+        <receiver android:name=".AddWidget" android:exported="true" android:label="ひとことで追加">
+            <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_add_info" />
         </receiver>
     </application>
 </manifest>

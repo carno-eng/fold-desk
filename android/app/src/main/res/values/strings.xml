@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_today_info_desc">今日の時間割と、いま・次の授業までのカウントダウン</string>
+    <string name="widget_today_info_desc">今日のコマの一覧と、いまの授業の残り時間</string>
     <string name="widget_next_info_desc">いまの授業の残り時間と次の予定</string>
-    <string name="widget_tasks_info_desc">期限の近いタスクと授業準備</string>
+    <string name="widget_tasks_info_desc">期限の近いタスク</string>
+    <string name="widget_hero_info_desc">アプリの「今日」の青いシート。残り時間のリングと1日の流れ</string>
+    <string name="widget_week_info_desc">月〜金の時間割。今日の列と、その日だけの変更</string>
+    <string name="widget_prep_info_desc">次の授業日の準備物</string>
+    <string name="widget_events_info_desc">2週間先までの予定</string>
+    <string name="widget_remind_info_desc">これから出るお知らせの一覧</string>
+    <string name="widget_follow_info_desc">返信が必要なメール</string>
+    <string name="widget_brief_info_desc">毎朝の自動まとめ</string>
+    <string name="widget_add_info_desc">押すとすぐ「ひとことで追加」</string>
+    <string name="wallpaper_desc">Fold Desk のコンシェルジュがホーム画面を歩き回ります</string>
+    <string name="tile_label">ひとことで追加</string>
+    <string name="sc_timetable">時間割</string>
+    <string name="sc_tasks">タスク</string>
 </resources>

@@ -34,10 +34,36 @@ class Bridge(
         main.post {
             Widgets.updateAll(ctx)
             Scheduler.schedule(ctx)
+            Quiet.apply(ctx)
         }
     }
 
     @JavascriptInterface fun done() { main.post { onDone?.invoke() } }
+
+    /** Concierge art (kept only on this device). Returns its size so the web app knows whether to resend. */
+    @JavascriptInterface fun artVersion(): Int = Sprite.artFile(ctx).let { if (it.exists()) it.length().toInt() else -1 }
+    @JavascriptInterface fun setConciergeArt(b64: String) {
+        try { val bytes = Base64.decode(b64, Base64.DEFAULT); if (bytes.size in 1..6_000_000) Sprite.artFile(ctx).writeBytes(bytes) } catch (_: Exception) { }
+    }
+    @JavascriptInterface fun openWallpaper() { main.post { activity?.openWallpaperPicker() } }
+    @JavascriptInterface fun pickWallpaperImage() { main.post { activity?.pickWallpaperImage() } }
+    @JavascriptInterface fun overlayOn(): Boolean = OverlayService.enabled(ctx) && android.provider.Settings.canDrawOverlays(ctx)
+    @JavascriptInterface fun setOverlay(on: Boolean): Boolean {
+        if (on && !Sprite.hasArt(ctx)) return false
+        var ok = false
+        val latch = java.util.concurrent.CountDownLatch(1)
+        main.post { ok = OverlayService.setEnabled(ctx, on); latch.countDown() }
+        latch.await(2, java.util.concurrent.TimeUnit.SECONDS)
+        return ok
+    }
+    @JavascriptInterface fun quietOn(): Boolean = Quiet.enabled(ctx)
+    @JavascriptInterface fun setQuiet(on: Boolean): Boolean {
+        var ok = false
+        val latch = java.util.concurrent.CountDownLatch(1)
+        main.post { ok = Quiet.setEnabled(ctx, on); latch.countDown() }
+        latch.await(2, java.util.concurrent.TimeUnit.SECONDS)
+        return ok
+    }
 
     @JavascriptInterface fun notifState(): String {
         if (!NotificationManagerCompat.from(ctx).areNotificationsEnabled()) {

@@ -586,8 +586,8 @@ async function del(col, id){
 async function setDayMode(mode, date){
   const t = date || todayS(), next = {};
   Object.keys(S.days || {}).forEach(k => { if(k >= addDays(todayS(), -60)) next[k] = S.days[k]; });
-  if(mode === "normal") delete next[t]; else next[t] = mode;
-  const msg = `${t === todayS() ? "今日" : md(t)}は${OFFICIAL[mode].label}時程にしました`;
+  if(mode === "normal" && !holidayOf(t)) delete next[t]; else next[t] = mode;
+  const msg = `${t === todayS() ? "今日" : md(t)}は${mode === "off" ? "授業なし（休み）" : OFFICIAL[mode].label + "時程"}にしました`;
   if(db){ try { await db.doc("config/days").set(next); toast(msg); } catch(e){ toast("保存できませんでした"); } }
   else { S.days = next; saveLocal(); schedule(); toast(msg); }
 }
@@ -713,16 +713,20 @@ const OFFICIAL_DEFAULT = {
     upper:[TM("09:05","09:50"),TM("10:00","10:45"),TM("10:55","11:40"),TM("11:45","12:30"),TM("13:30","14:15"),TM("14:25","15:10")],
     blocks:[{label:"朝の会",...TM("08:30","08:40")},{label:"朝会",...TM("08:45","09:05")},{label:"給食・昼休み",...TM("12:30","13:30")}] }
 };
-let OFFICIAL = OFFICIAL_DEFAULT, SCHOOL = null;
+const OFF_DEF = {label:"休み", dismiss:"", low:[], upper:[], blocks:[]};
+let OFFICIAL = {...OFFICIAL_DEFAULT, off:OFF_DEF}, SCHOOL = null;
 function applySchool(c){
   SCHOOL = c || null;
-  OFFICIAL = c && c.official && c.official.normal ? c.official : OFFICIAL_DEFAULT;
+  OFFICIAL = {...(c && c.official && c.official.normal ? c.official : OFFICIAL_DEFAULT), off:OFF_DEF};
   AREAS = c && Array.isArray(c.areas) && c.areas.length ? c.areas : AREAS_DEFAULT;
   EKINDS = c && Array.isArray(c.ekinds) && c.ekinds.length ? c.ekinds : EKINDS_DEFAULT;
 }
 const MODES = ["normal","short","assembly"];
+const DAY_MODES = [...MODES, "off"];
+/* an all-day event of kind 休み (holiday, school closure, substitute day off) means no classes */
+const holidayOf = s => S.events.find(e => e.date === s && !e.time && e.kind === "休み") || null;
 const bandOf = c => { const g = String((c && c.cls) || "").match(/^([0-9])-/); return g && upperGrades().includes(g[1]) ? "upper" : "low"; };
-const dayMode = (s = todayS()) => (S.days && S.days[s]) || "normal";
+const dayMode = (s = todayS()) => (S.days && S.days[s]) || (holidayOf(s) ? "off" : "normal");
 const isWeekday = s => { const w = parse(s).getDay(); return w >= 1 && w <= 5; };
 const getOv = s => S.overrides.find(o => o.id === s) || null;
 const plusMin = (t, m) => { const x = mins(t) + m; return `${pad(Math.floor(x/60) % 24)}:${pad(x % 60)}`; };
@@ -862,7 +866,7 @@ function dayCard(dateS){
   const title = isT ? "今日の日程" : `${md(dateS)}の日程`;
   const head = `<h3>${esc(title)}<span class="daynav"><button class="icon-btn sm" data-daynav="-1" aria-label="前の日">${ico("left")}</button>${isT ? '' : '<button class="chip" data-daynav="0">今日</button>'}<button class="icon-btn sm" data-daynav="1" aria-label="次の日">${ico("right")}</button></span>
     <button class="chip ${ui.edit ? 'on' : ''}" data-edit-toggle aria-pressed="${ui.edit}">${ui.edit ? '完了' : '編集'}</button></h3>`;
-  const editTop = ui.edit ? `<div class="editbar">${wk ? `<div class="seg mini" role="group" aria-label="この日の時程">${MODES.map(k => `<button type="button" data-daymode="${k}" data-date="${dateS}" aria-pressed="${mode===k}">${OFFICIAL[k].label}</button>`).join("")}</div>` : ''}
+  const editTop = ui.edit ? `<div class="editbar">${wk ? `<div class="seg mini" role="group" aria-label="この日の時程">${DAY_MODES.map(k => `<button type="button" data-daymode="${k}" data-date="${dateS}" aria-pressed="${mode===k}">${OFFICIAL[k].label}</button>`).join("")}</div>` : ''}
       <span class="hint">この日だけの変更です。毎週の時間割は変わりません。</span></div>` : '';
   let afterShown = false, rows = "";
   items.forEach(x => {
@@ -960,7 +964,7 @@ function vToday(){
     const n = nowMin(); const nl = n >= s0 && n <= s1 ? `<i class="nowline" id="nowline" data-s0="${s0}" data-span="${span}" style="left:${(n-s0)/span*100}%"></i>` : "";
     dayBar = `<div class="day" aria-hidden="true">${blks}${nl}</div><div class="day-labels"><span>${items[0].start}</span><span>${isWeekday(t) ? `下校 ${OFFICIAL[mode].dismiss}` : ""}${Math.max(...items.map(x => mins(x.end))) > mins(OFFICIAL[mode].dismiss) && isWeekday(t) ? ` · 放課後 〜${items.reduce((a,x) => mins(x.end) > mins(a) ? x.end : a, "00:00")}` : ""}</span></div>`;
   }
-  const modeSeg = isWeekday(t) ? `<div class="seg mini" role="group" aria-label="今日の時程">${MODES.map(k => `<button type="button" data-daymode="${k}" data-date="${t}" aria-pressed="${mode===k}">${OFFICIAL[k].label}</button>`).join("")}</div>` : "";
+  const modeSeg = isWeekday(t) ? `<div class="seg mini" role="group" aria-label="今日の時程">${DAY_MODES.map(k => `<button type="button" data-daymode="${k}" data-date="${t}" aria-pressed="${mode===k}">${OFFICIAL[k].label}</button>`).join("")}</div>` : "";
 
   const ot = openTasks();
   const periodsCard = dayCard(ui.day || t);
@@ -1421,6 +1425,16 @@ function settingsPane(){
 
       <div class="sec">ホーム画面</div>
       ${NATIVE ? `<button class="row" data-act="widgetguide" style="grid-template-columns:auto 1fr auto"><span class="avatar" style="width:36px;height:36px">${ico("home")}</span><span class="main"><b>ウィジェットを置く</b><small>今日の時間割・いま／次・タスクと準備</small></span><span class="when">${ico("right")}</span></button>
+        <div class="sec" style="margin:14px 0 6px">アプリの外のコンシェルジュ</div>
+        <div class="group">
+          <div class="setrow"><span class="main"><b>ホーム画面の壁紙で歩く</b><small>ライブ壁紙に設定します。電池にやさしく、許可も不要</small></span><button class="chip accent" data-native="wallpaper">設定</button></div>
+          <div class="setrow"><span class="main"><b>全画面モード</b><small>どのアプリの上でも歩きます。「他のアプリの上に表示」の許可と常駐通知が必要</small></span><button class="switch" role="switch" aria-checked="${NATIVE.overlayOn ? NATIVE.overlayOn() : false}" data-native="overlay" aria-label="全画面モード"></button></div>
+          <div class="setrow"><span class="main"><b>壁紙の背景画像</b><small>未設定のときはやさしいグラデーション</small></span><button class="chip" data-native="wallbg">選ぶ</button></div>
+        </div>
+        <div class="sec" style="margin:14px 0 6px">授業中</div>
+        <div class="group">
+          <div class="setrow"><span class="main"><b>授業中は自動でサイレント</b><small>時間割の授業・会議の間だけ「おやすみモード」にします（最初に許可が必要）</small></span><button class="switch" role="switch" aria-checked="${NATIVE.quietOn ? NATIVE.quietOn() : false}" data-native="quiet" aria-label="授業中は自動でサイレント"></button></div>
+        </div>
         <div class="setrow"><span class="main"><b>アプリのバージョン</b><small id="appver">1.0.${NATIVE_VER ? NATIVE_VER.code : "?"} ・ 確認中…</small></span><button class="chip" data-act="appupdate" id="appupd" hidden>更新する</button></div>`
       : `<button class="row" data-act="homeguide" style="grid-template-columns:auto 1fr auto"><span class="avatar" style="width:36px;height:36px">${ico("home")}</span><span class="main"><b>${standalone() ? "アプリとしてインストール済み" : "アプリとしてインストール"}</b><small>Fold8 の表紙画面・メイン画面に</small></span><span class="when">${ico("right")}</span></button>
         ${isAndroid ? `<div class="group" style="margin-top:8px">
@@ -1635,6 +1649,12 @@ document.addEventListener("click", async (ev) => {
   if(d.act === "syncnow"){ toast("同期しています…"); await store.pull("sync"); toast(syncState === "ok" ? "同期しました" : "同期できませんでした"); return; }
   if(d.act === "notifyperm" && NATIVE){ NATIVE.requestNotifications(); return; }
   if(d.act === "widgetguide"){ widgetGuide(); return; }
+  if(d.native && NATIVE){
+    if(d.native === "wallpaper"){ NATIVE.openWallpaper(); return; }
+    if(d.native === "wallbg"){ NATIVE.pickWallpaperImage(); return; }
+    if(d.native === "overlay"){ const on = b.getAttribute("aria-checked") !== "true"; const ok = NATIVE.setOverlay(on); b.setAttribute("aria-checked", on && ok); if(on && !ok) toast("「他のアプリの上に表示」を許可してから、もう一度オンにしてください"); return; }
+    if(d.native === "quiet"){ const on = b.getAttribute("aria-checked") !== "true"; const ok = NATIVE.setQuiet(on); b.setAttribute("aria-checked", on && ok); if(on && !ok) toast("「おやすみモードへのアクセス」を Fold Desk に許可してから、もう一度オンにしてください"); return; }
+  }
   if(d.act === "appupdate"){ NATIVE && NATIVE.openExternal(b.dataset.url || RELEASES); return; }
   if(d.act === "notifyperm"){ try { const p = await Notification.requestPermission(); toast(p === "granted" ? "スマホの通知をオンにしました" : "通知は許可されませんでした"); } catch(e){} settingsPane(); return; }
   if(d.act === "unpair"){ if(b.dataset.armed){ ["fd-api","fd-token"].forEach(k => { try { localStorage.removeItem(k); } catch(e){} }); store.wipe(); try { await caches.delete("fd-private"); } catch(e){} location.reload(); } else { b.dataset.armed = "1"; b.textContent = "もう一度押す"; } return; }
@@ -2228,7 +2248,22 @@ function buildSnapshot(){
   const prep = {label:dayLabel(pt), items:pl.flatMap(p => p.open.map(o => `${p.u.subject} ${o.t}`)).slice(0, 8)};
   const now = Date.now();
   const reminders = reminderList(now, now + 2 * 864e5).slice(0, 40).map(r => ({key:r.key, at:r.at, title:r.title, body:[r.lead, r.body].filter(Boolean).join(" ・ ")}));
-  return {v:1, at:now, days, tasks, prep, reminders};
+  const wk = weekDates(0), np = NP();
+  const week = {times:Array.from({length:np}, (_, i) => ((OFFICIAL.normal.low[i] || OFFICIAL.normal.upper[i] || {}).start) || ""),
+    days:wk.map((d, di) => { const items = (dayItems(d) || []).filter(x => x.type === "period"), mode = dayMode(d);
+      return {date:d, label:["月","火","水","木","金"][di], md:md(d).replace(/\(.\)/, ""), today:d === t, mode:mode === "normal" ? "" : (OFFICIAL[mode] || {}).label || "",
+        cells:Array.from({length:np}, (_, i) => { const x = items.find(y => y.n === i + 1); if(!x) return {k:"none"};
+          return x.cancelled ? {t:"なし", sub:"", k:"cancel", c:true} : {t:cellKind(x.cell) === "free" ? "" : x.cell.subject || "", sub:x.cell.cls || "", k:cellKind(x.cell), c:!!x.changed}; })}; })};
+  const events = upcoming(14).slice(0, 10).map(e => ({date:e.date, label:md(e.date), time:e.time || "", end:e.endTime || "", title:e.title, kind:e.kind || "", place:e.place || "", account:e.account || ""}));
+  const follow = openFollow().slice(0, 8).map(f => ({who:f.who || "", subject:f.subject || "", days:daysSince(f.since) || 0, me:f.direction === "me"}));
+  const b = S.briefs.find(x => x.id === "latest");
+  const brief = b && b.date === t ? {time:b.time || "", lines:(b.lines || []).slice(0, 6)} : null;
+  const cs = currentState();
+  const hero = {eyebrow:`${new Date().getFullYear()}年 ${WD[new Date().getDay()]}曜日`, modeLabel:isWeekday(t) ? (OFFICIAL[dayMode(t)] || {}).label || "" : "",
+    holiday:(holidayOf(t) || {}).title || ""};
+  const talk = (() => { const due = openTasks().filter(k => k.due && k.due <= t).length, fu = openFollow().filter(f => f.direction === "me").length;
+    return [due ? `今日までのタスクが${due}件あります` : "", fu ? `返信が必要なメールが${fu}件あります` : "", prep.items.length ? `${prep.label}の準備が${prep.items.length}つ残っています` : ""].filter(Boolean); })();
+  return {v:2, at:now, days, tasks, prep, reminders, week, events, follow, brief, hero, talk};
 }
 let snapT = 0;
 function pushSnapshot(now){
@@ -2261,9 +2296,8 @@ function widgetGuide(){
       <li><span>一覧から <b>Fold Desk</b> を選び、置きたいものを長押しして配置します。</span></li>
     </ol>
     <div class="group" style="margin-top:14px">
-      <div class="setrow"><span class="main"><b>今日の時間割</b><small>いまの授業の残り時間（カウントダウン）と、今日のコマの一覧。週末は次の授業日を表示</small></span></div>
-      <div class="setrow"><span class="main"><b>いま・次</b><small>小さなサイズ。いまの授業の残り時間か、次の予定まで</small></span></div>
-      <div class="setrow"><span class="main"><b>タスクと準備</b><small>期限の近いタスクと、次の授業日の準備物。「＋」でひとことで追加</small></span></div>
+      ${[["今日（情報シート）","アプリの「今日」の青いシートそのまま。残り時間のリングとカウントダウン、1日のバー"],["いま・次","小さなサイズ。いまの授業の残り時間か、次の予定まで"],["今日の日程","今日のコマの一覧。週末は次の授業日"],["週の時間割","月〜金の時間割。今日の列と、その日だけの変更が分かる"],["タスク","期限の近いタスク"],["授業準備","次の授業日の準備物"],["これからの予定","2週間先までの予定"],["お知らせ予定","これから出る通知の一覧"],["返信待ち","返信が必要なメール"],["今朝のまとめ","毎朝の自動まとめ"],["ひとことで追加","押すとすぐ入力できる小さなボタン"]]
+        .map(([a, b2]) => `<div class="setrow"><span class="main"><b>${a}</b><small>${b2}</small></span></div>`).join("")}
     </div>
     <p class="hint" style="margin-top:10px">ウィジェットは授業の区切りで自動で切り替わり、アプリを開かなくても2時間ごとに最新のデータへ更新されます。</p>
     <div class="btns"><button class="btn primary" data-act="close">わかりました</button></div>`);
@@ -2396,7 +2430,10 @@ async function loadConciergeArt(){
       res = new Response(new Blob([bin], {type:j.mime || "image/webp"}));
       await cache.put(KEYURL, res.clone());
     }
-    if(res){ spr.style.backgroundImage = `url(${URL.createObjectURL(await res.blob())})`; document.getElementById("cc").classList.add("art"); }
+    if(res){ const blob = await res.blob(); spr.style.backgroundImage = `url(${URL.createObjectURL(blob)})`; document.getElementById("cc").classList.add("art");
+      try { if(window.FoldDeskNative && window.FoldDeskNative.isApp() && window.FoldDeskNative.artVersion && window.FoldDeskNative.artVersion() !== blob.size){
+        const b64 = await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.readAsDataURL(blob); });
+        window.FoldDeskNative.setConciergeArt(b64); } } catch(e){} }
   } catch(e){}
 }
 
@@ -2468,13 +2505,19 @@ if(paired()){
   document.addEventListener("visibilitychange", () => { if(!document.hidden) store.pull(); });
   addEventListener("online", () => store.pull());
 }
-if(location.hash === "#ask") setTimeout(() => askPane(), 400);
+if(["#ask","#prep","#settings","#follow"].includes(location.hash)) setTimeout(() => openRoute(location.hash), 500);
 if(NATIVE && location.hash === "#snapshot"){
   const finish = () => { pushSnapshot(true); try { NATIVE.done(); } catch(e){} };
   if(paired()) store.pull().then(finish, finish); else finish();
 }
 document.addEventListener("visibilitychange", () => { if(document.hidden) pushSnapshot(true); });
-addEventListener("hashchange", () => { if(location.hash.indexOf("#pair=") === 0 && readPairing()) location.reload(); if(location.hash === "#ask") askPane(); });
+function openRoute(h){
+  if(h === "#ask") askPane();
+  else if(h === "#prep"){ go("today"); setTimeout(() => prepPane(prepTarget()), 300); }
+  else if(h === "#settings"){ go("today"); setTimeout(() => settingsPane(), 300); }
+  else if(h === "#follow"){ go("tasks"); }
+}
+addEventListener("hashchange", () => { if(location.hash.indexOf("#pair=") === 0 && readPairing()) location.reload(); openRoute(location.hash); });
 })();
 </script>
 </body>

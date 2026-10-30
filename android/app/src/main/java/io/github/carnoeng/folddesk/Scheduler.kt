@@ -56,6 +56,16 @@ object Scheduler {
                 }
             }
         }
+        // keep the ring and day bar fresh every 5 minutes between the first and last item of the day
+        Sched.today(s)?.let { day ->
+            val items = day.optJSONArray("items")
+            if (items != null && items.length() > 0) {
+                val first = Sched.at(day.optString("date"), items.getJSONObject(0).optString("s")) - 3_600_000
+                var lastEnd = 0L
+                for (k in 0 until items.length()) lastEnd = maxOf(lastEnd, Sched.at(day.optString("date"), items.getJSONObject(k).optString("e")))
+                if (now in first..lastEnd && Widgets.hasHero(c)) next = minOf(next, now + 5 * 60_000)
+            }
+        }
         val midnight = Calendar.getInstance().apply {
             add(Calendar.DAY_OF_YEAR, 1); set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 5)
         }.timeInMillis

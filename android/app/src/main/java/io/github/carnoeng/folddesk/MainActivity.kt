@@ -24,6 +24,20 @@ class MainActivity : ComponentActivity() {
         fileCb?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(r.resultCode, r.data))
         fileCb = null
     }
+    private val pickBg = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri == null) return@registerForActivityResult
+        try {
+            contentResolver.openInputStream(uri)?.use { inp -> java.io.File(filesDir, "wall_bg.img").outputStream().use { inp.copyTo(it) } }
+            web.evaluateJavascript("window.toast && 0", null)
+        } catch (_: Exception) { }
+    }
+    fun pickWallpaperImage() { pickBg.launch(androidx.activity.result.PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+    fun openWallpaperPicker() {
+        val i = Intent(android.app.WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
+            .putExtra(android.app.WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT, android.content.ComponentName(this, ConciergeWallpaper::class.java))
+        try { startActivity(i) } catch (_: Exception) { try { startActivity(Intent(android.app.WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER)) } catch (_: Exception) { } }
+    }
+
     private val notifPerm = registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
         web.evaluateJavascript("window.__fdNotif && window.__fdNotif(${if (ok) "true" else "false"})", null)
     }
@@ -58,6 +72,8 @@ class MainActivity : ComponentActivity() {
         if (savedInstanceState != null) web.restoreState(savedInstanceState) else web.loadUrl(urlFor(intent))
         Scheduler.ensureWorker(applicationContext)
         Notifier.ensureChannel(applicationContext)
+        if (OverlayService.enabled(this) && android.provider.Settings.canDrawOverlays(this) && !OverlayService.running)
+            androidx.core.content.ContextCompat.startForegroundService(this, Intent(this, OverlayService::class.java))
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -87,6 +103,6 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         @Volatile var foreground = false
-        val ROUTES = setOf("today", "timetable", "tasks", "events", "people", "memo", "ask")
+        val ROUTES = setOf("today", "timetable", "tasks", "events", "people", "memo", "ask", "prep", "settings", "follow")
     }
 }
