@@ -43,8 +43,10 @@ class Sprite(private val ctx: Context, heightDp: Float = 92f) {
     // speech bubble
     private var bubble: List<String> = emptyList(); private var bubbleUntil = 0L
     private val bubbleBg = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xF2FFFFFF.toInt(); setShadowLayer(12f * density, 0f, 4f * density, 0x33000000) }
-    private val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF0B0B0F.toInt(); textSize = 14f * density }
-    private val namePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF0A62F5.toInt(); textSize = 11f * density; isFakeBoldText = true }
+    // follows the phone's font-size setting (sp), and is larger than in-app text so it reads at a glance
+    private fun sp(v: Float) = android.util.TypedValue.applyDimension(android.util.TypedValue.COMPLEX_UNIT_SP, v, ctx.resources.displayMetrics)
+    private val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF0B0B0F.toInt(); textSize = sp(19f); isFakeBoldText = true }
+    private val namePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF0A62F5.toInt(); textSize = sp(13f); isFakeBoldText = true }
 
     fun load(): Boolean {
         val f = artFile(ctx)
@@ -97,16 +99,17 @@ class Sprite(private val ctx: Context, heightDp: Float = 92f) {
     }
 
     fun drawBubble(c: Canvas, ox: Float, oy: Float, cw: Int, ch: Int) {
-        val maxW = (240 * density).toInt()
+        val maxW = minOf((320 * density).toInt(), (cw - 32 * density).toInt())
         val text = bubble.joinToString("\n")
-        val lay = StaticLayout.Builder.obtain(text, 0, text.length, textPaint, maxW).setAlignment(Layout.Alignment.ALIGN_NORMAL).setLineSpacing(2 * density, 1f).build()
-        val pad = 12 * density
-        val bw = (0 until lay.lineCount).maxOf { lay.getLineWidth(it) } + pad * 2
-        val bh = lay.height + pad * 2 + 16 * density
+        val lay = StaticLayout.Builder.obtain(text, 0, text.length, textPaint, maxW).setAlignment(Layout.Alignment.ALIGN_NORMAL).setLineSpacing(4 * density, 1f).build()
+        val pad = 16 * density
+        val bw = maxOf((0 until lay.lineCount).maxOf { lay.getLineWidth(it) }, namePaint.measureText("コンシェルジュ")) + pad * 2
+        val nameH = namePaint.textSize + 8 * density
+        val bh = lay.height + pad * 2 + nameH
         var bx = ox + w / 2f - bw / 2f; bx = bx.coerceIn(8 * density, cw - bw - 8 * density)
         var by = oy - bh - 8 * density; if (by < 8 * density) by = oy + h + 8 * density
-        c.drawRoundRect(RectF(bx, by, bx + bw, by + bh), 18 * density, 18 * density, bubbleBg)
-        c.drawText("コンシェルジュ", bx + pad, by + pad + 10 * density, namePaint)
-        c.save(); c.translate(bx + pad, by + pad + 16 * density); lay.draw(c); c.restore()
+        c.drawRoundRect(RectF(bx, by, bx + bw, by + bh), 22 * density, 22 * density, bubbleBg)
+        c.drawText("コンシェルジュ", bx + pad, by + pad + namePaint.textSize * .85f, namePaint)
+        c.save(); c.translate(bx + pad, by + pad + nameH); lay.draw(c); c.restore()
     }
 }
