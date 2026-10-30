@@ -54,7 +54,7 @@ class ConciergeWallpaper : WallpaperService() {
         override fun onVisibilityChanged(v: Boolean) {
             visible = v
             main.removeCallbacks(frame)
-            if (v) { last = SystemClock.uptimeMillis(); main.post(frame) }
+            if (v) { last = SystemClock.uptimeMillis(); lastReminderCheck = System.currentTimeMillis() - 17_000; main.post(frame) }
         }
         override fun onDestroy() { visible = false; main.removeCallbacks(frame); super.onDestroy() }
 
@@ -71,7 +71,10 @@ class ConciergeWallpaper : WallpaperService() {
             val now = System.currentTimeMillis()
             if (now - lastReminderCheck < 20_000) return
             lastReminderCheck = now
-            Talk.dueReminder(this@ConciergeWallpaper, now)?.let { sprite.say(it, 9000, "wave") }
+            if (sprite.talking) return
+            val r = Talk.dueReminder(this@ConciergeWallpaper, now)
+            if (r != null) { sprite.say(r, 9000, "wave"); return }
+            Talk.proactive(this@ConciergeWallpaper)?.let { sprite.say(it, 9000, "wave") }
         }
 
         private fun background(c: Canvas) {

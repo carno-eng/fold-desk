@@ -2343,7 +2343,21 @@ function buildSnapshot(){
       prep.items.length ? pk([`${prep.label}の準備、だいじょうぶ？あと${prep.items.length}つ`, `${prep.label}の準備があと${prep.items.length}つだよ`]) : "",
       am ? `今日は「${am.ev.title}」なので${OFFICIAL[am.mode].label}時程です` : ""].filter(Boolean); })();
   const modes = DAY_MODES.map(k => ({k, l:k === "off" ? "休み" : (OFFICIAL[k] || {}).label || k}));
-  return {v:3, at:now, days, tasks, prep, reminders, week, events, follow, brief, hero, talk, modes};
+  const topics = (() => { const pk = a => a[Math.floor(Math.random() * a.length)], out = [], n = nowMin();
+    const dueL = openTasks().filter(k => k.due && k.due <= t), fuL = openFollow().filter(f => f.direction === "me" && daysSince(f.since) >= 2);
+    const am = isWeekday(t) && !(S.days && S.days[t]) ? autoModeOf(t) : null;
+    if(am) out.push({key:`auto:${t}`, text:pk([`今日は「${am.ev.title}」なので、${OFFICIAL[am.mode].label}時程にしておいたよ！`, `学校の予定に「${am.ev.title}」があったので、今日は${OFFICIAL[am.mode].label}時程です。`])});
+    if(dueL.length) out.push({key:`due:${t}`, text:dueL.length === 1 ? pk([`あれやった？今日までの「${dueL[0].title}」！`, `わすれてなーい？「${dueL[0].title}」、今日が期限だよ`]) : pk([`あれやった？今日までのタスクが${dueL.length}件あるよ`, `わすれてなーい？「${dueL[0].title}」ほか${dueL.length - 1}件が今日までだよ`])});
+    if(prep.items.length) out.push({key:`prep:${prep.date}`, text:pk([`${prep.label}の準備、だいじょうぶ？「${prep.items[0]}」${prep.items.length > 1 ? `ほか${prep.items.length - 1}つ` : ""}がまだだよ`, `わすれてなーい？${prep.label}の授業準備があと${prep.items.length}つ！`])});
+    if(fuL.length) out.push({key:`fu:${t}`, text:pk([`${fuL[0].who ? fuL[0].who + "への" : ""}お返事「${fuL[0].subject}」、${daysSince(fuL[0].since)}日たってるよ`, `わすれてなーい？返信待ちが${fuL.length}件あるよ`])});
+    const old = S.tasks.find(k => k.status !== "done" && !k.due && k.updatedAt && (now - Date.parse(k.updatedAt)) / 864e5 >= 10);
+    if(old) out.push({key:`old:${t}`, text:pk([`ねえねえ、「${old.title}」ってどうなった？`, `あれやった？「${old.title}」…もしかして、もう終わってる？`])});
+    if(n >= 15*60){ const tm = addDays(t, 1), m0 = dayMode(tm), ev = S.events.filter(e => e.date === tm);
+      const bits = [isWeekday(tm) && m0 !== "normal" ? `${m0 === "off" ? "お休み" : OFFICIAL[m0].label + "時程"}` : "", ev.length ? `「${ev[0].title}」${ev.length > 1 ? `ほか${ev.length - 1}件` : ""}` : ""].filter(Boolean);
+      if(bits.length) out.push({key:`tomorrow:${t}`, text:`明日は ${bits.join("・")} だよ！`}); }
+    return out.slice(0, 8); })();
+  const talkLevel = concierge && concierge.cfg && concierge.cfg.on === false ? "off" : ((concierge && concierge.cfg && concierge.cfg.talk) || "normal");
+  return {v:4, at:now, days, tasks, prep, reminders, week, events, follow, brief, hero, talk, modes, topics, talkLevel};
 }
 let snapT = 0;
 function pushSnapshot(now){

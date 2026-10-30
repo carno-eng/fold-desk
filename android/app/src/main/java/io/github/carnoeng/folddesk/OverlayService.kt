@@ -101,13 +101,21 @@ class OverlayService : Service() {
             move(); charView.invalidate()
             if (sprite.talking) { if (!bubbleShown) showBubble() else bubbleView.invalidate() } else if (bubbleShown) hideBubble()
             val wall = System.currentTimeMillis()
-            if (wall - lastCheck > 20_000) { lastCheck = wall; Talk.dueReminder(this@OverlayService, wall)?.let { sayNow(it, "wave") } }
+            if (wall - lastCheck > 20_000) { lastCheck = wall; checkTalk(wall) }
             if (screenOn) main.postDelayed(this, 40)
         }
     }
 
+    private fun checkTalk(wall: Long) {
+        if (sprite.talking) return
+        val r = Talk.dueReminder(this, wall)
+        if (r != null) { sayNow(r, "wave"); return }
+        Talk.proactive(this)?.let { sayNow(it, "wave", 9000) }
+    }
+
     private val screenRx = object : BroadcastReceiver() {
         override fun onReceive(c: Context, i: Intent) {
+            if (i.action == Intent.ACTION_USER_PRESENT) { main.postDelayed({ if (running && screenOn) checkTalk(System.currentTimeMillis()) }, 2500); return }
             screenOn = i.action == Intent.ACTION_SCREEN_ON
             main.removeCallbacks(frame)
             if (screenOn) { last = SystemClock.uptimeMillis(); main.post(frame) }
@@ -132,7 +140,7 @@ class OverlayService : Service() {
         cp.x = sprite.x.toInt(); cp.y = sprite.y.toInt()
         try { wm.addView(charView, cp) } catch (_: Exception) { stopSelf(); return }
         running = true
-        androidx.core.content.ContextCompat.registerReceiver(this, screenRx, IntentFilter().apply { addAction(Intent.ACTION_SCREEN_ON); addAction(Intent.ACTION_SCREEN_OFF) }, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED)
+        androidx.core.content.ContextCompat.registerReceiver(this, screenRx, IntentFilter().apply { addAction(Intent.ACTION_SCREEN_ON); addAction(Intent.ACTION_SCREEN_OFF); addAction(Intent.ACTION_USER_PRESENT) }, androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED)
         last = SystemClock.uptimeMillis(); main.post(frame)
     }
 
@@ -155,7 +163,7 @@ class OverlayService : Service() {
         super.onDestroy()
     }
 
-    private fun sayNow(lines: List<String>, pose: String) { sprite.say(lines, 8000, pose); showBubble() }
+    private fun sayNow(lines: List<String>, pose: String, ms: Long = 8000) { sprite.say(lines, ms, pose); showBubble() }
     private fun showBubble() { if (bubbleShown) return; try { wm.addView(bubbleView, bp); bubbleShown = true } catch (_: Exception) { } }
     private fun hideBubble() { if (!bubbleShown) return; try { wm.removeView(bubbleView) } catch (_: Exception) { }; bubbleShown = false }
 
