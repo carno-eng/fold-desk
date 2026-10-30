@@ -475,6 +475,7 @@ body.unpaired #app{grid-template-columns:1fr!important}
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+.automode{font-size:12px;font-weight:600;opacity:.85;margin-top:6px}
 </style>
 </head>
 <body>
@@ -548,7 +549,7 @@ const COLS = ["tasks","events","people","orgs","memos","logs","progress","follow
 const S = { tasks:[], events:[], people:[], orgs:[], memos:[], logs:[], progress:[], followups:[], briefs:[], overrides:[], tt:null, days:{}, prefs:{}, ready:false, local:false };
 let db = null, sample = null, sampleImages = false, mcp = null;
 const GCAL = "Google Calendar";
-const PREF_DEF = { classBefore:3, eventBefore:10, afterBefore:10, morning:true, mergeEvents:true };
+const PREF_DEF = { classBefore:3, eventBefore:10, afterBefore:10, morning:true, mergeEvents:true, autoMode:true };
 const pref = k => (S.prefs && S.prefs[k] !== undefined) ? S.prefs[k] : PREF_DEF[k];
 async function putPrefs(p){
   const next = {...PREF_DEF, ...(S.prefs||{}), ...p};
@@ -586,7 +587,7 @@ async function del(col, id){
 async function setDayMode(mode, date){
   const t = date || todayS(), next = {};
   Object.keys(S.days || {}).forEach(k => { if(k >= addDays(todayS(), -60)) next[k] = S.days[k]; });
-  if(mode === "normal" && !holidayOf(t)) delete next[t]; else next[t] = mode;
+  if(mode === "normal" && !holidayOf(t) && !autoModeOf(t)) delete next[t]; else next[t] = mode;
   const msg = `${t === todayS() ? "今日" : md(t)}は${mode === "off" ? "授業なし（休み）" : OFFICIAL[mode].label + "時程"}にしました`;
   if(db){ try { await db.doc("config/days").set(next); toast(msg); } catch(e){ toast("保存できませんでした"); } }
   else { S.days = next; saveLocal(); schedule(); toast(msg); }
@@ -726,7 +727,20 @@ const DAY_MODES = [...MODES, "off"];
 /* an all-day event of kind 休み (holiday, school closure, substitute day off) means no classes */
 const holidayOf = s => S.events.find(e => e.date === s && !e.time && e.kind === "休み") || null;
 const bandOf = c => { const g = String((c && c.cls) || "").match(/^([0-9])-/); return g && upperGrades().includes(g[1]) ? "upper" : "low"; };
-const dayMode = (s = todayS()) => (S.days && S.days[s]) || (holidayOf(s) ? "off" : "normal");
+/* an all-day (or early-morning) event whose name contains a schedule's name, e.g. 「短縮日課」「児童朝会」, switches that day automatically.
+   A choice made by hand for the day always wins. */
+const reEsc = x => String(x).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function autoModeOf(s){
+  if(pref("autoMode") === false || !S.events) return null;
+  const evs = S.events.filter(e => e.date === s && (!e.time || e.time < "09:00") && e.kind !== "休み");
+  for(const k of ["short", "assembly"]){
+    const lb = (OFFICIAL[k] || {}).label; if(!lb) continue;
+    const re = new RegExp(reEsc(lb) + (k === "short" ? "|短縮日課|短縮授業|短縮時程" : "|全校朝会|児童朝会"));
+    const e = evs.find(x => re.test(x.title || "")); if(e) return {mode:k, ev:e};
+  }
+  return null;
+}
+const dayMode = (s = todayS()) => (S.days && S.days[s]) || (holidayOf(s) ? "off" : ((autoModeOf(s) || {}).mode || "normal"));
 const isWeekday = s => { const w = parse(s).getDay(); return w >= 1 && w <= 5; };
 const getOv = s => S.overrides.find(o => o.id === s) || null;
 const plusMin = (t, m) => { const x = mins(t) + m; return `${pad(Math.floor(x/60) % 24)}:${pad(x % 60)}`; };
@@ -964,7 +978,8 @@ function vToday(){
     const n = nowMin(); const nl = n >= s0 && n <= s1 ? `<i class="nowline" id="nowline" data-s0="${s0}" data-span="${span}" style="left:${(n-s0)/span*100}%"></i>` : "";
     dayBar = `<div class="day" aria-hidden="true">${blks}${nl}</div><div class="day-labels"><span>${items[0].start}</span><span>${isWeekday(t) ? `下校 ${OFFICIAL[mode].dismiss}` : ""}${Math.max(...items.map(x => mins(x.end))) > mins(OFFICIAL[mode].dismiss) && isWeekday(t) ? ` · 放課後 〜${items.reduce((a,x) => mins(x.end) > mins(a) ? x.end : a, "00:00")}` : ""}</span></div>`;
   }
-  const modeSeg = isWeekday(t) ? `<div class="seg mini" role="group" aria-label="今日の時程">${DAY_MODES.map(k => `<button type="button" data-daymode="${k}" data-date="${t}" aria-pressed="${mode===k}">${OFFICIAL[k].label}</button>`).join("")}</div>` : "";
+  const am = isWeekday(t) && !(S.days && S.days[t]) ? autoModeOf(t) : null;
+  const modeSeg = isWeekday(t) ? `<div class="seg mini" role="group" aria-label="今日の時程">${DAY_MODES.map(k => `<button type="button" data-daymode="${k}" data-date="${t}" aria-pressed="${mode===k}">${OFFICIAL[k].label}</button>`).join("")}</div>${am ? `<div class="automode">「${esc(am.ev.title)}」の予定から自動で${esc(OFFICIAL[am.mode].label)}にしています</div>` : ""}` : "";
 
   const ot = openTasks();
   const periodsCard = dayCard(ui.day || t);
@@ -1435,6 +1450,7 @@ function settingsPane(){
         <div class="setrow"><span class="main"><b>Google ToDo リストと同期</b><small>「Fold Desk」リストと双方向。ToDo のウィジェットでホーム画面にも出せます</small></span><button class="switch" role="switch" aria-checked="${G().tasks}" data-g-toggle="tasks" aria-label="Google ToDo リストと同期"></button></div>
         <div class="setrow"><span class="main"><b>スター付きメールをタスクに</b><small>タスクを完了すると Gmail のスターも外します</small></span><button class="switch" role="switch" aria-checked="${G().starred}" data-g-toggle="starred" aria-label="スター付きメールをタスクに"></button></div>
         <div class="setrow"><span class="main"><b>Gmail を AI で読む</b><small id="g-ai">やること・予定・返信待ちを1時間ごとに取り出します</small></span><button class="switch" role="switch" aria-checked="${G().gmailAi}" data-g-toggle="gmailAi" aria-label="Gmail を AI で読む"></button></div>
+        <div class="setrow"><span class="main"><b>予定から時程を自動で切り替える</b><small>「短縮」「朝会」などの名前の終日予定がある日は、その時程にします（手で選んだ日はそのまま）</small></span><button class="switch" role="switch" aria-checked="${pref("autoMode") !== false}" data-pref-switch="autoMode" aria-label="予定から時程を自動で切り替える"></button></div>
         <div class="setrow"><span class="main"><b>同じ名前の予定をまとめる</b><small>同じ日・同じ名前の予定（個人・学校・メールから・手入力）を1つにして表示</small></span><button class="switch" role="switch" aria-checked="${pref("mergeEvents") !== false}" data-pref-switch="mergeEvents" aria-label="同じ名前の予定をまとめる"></button></div>
         <div class="setrow"><span class="main"><b>今すぐ同期</b><small id="g-last">連絡先・ドライブは各画面から使えます</small></span><button class="chip accent" data-g-sync>同期</button></div>
       </div>
@@ -1623,7 +1639,7 @@ document.addEventListener("click", async (ev) => {
       if(done){ b.classList.add("pop"); b.closest(".row")?.classList.add("completing"); try { navigator.vibrate && navigator.vibrate(12); } catch(e){} await new Promise(r => setTimeout(r, 650)); }
       await put("tasks", t.id, {...t, status: done ? "done" : "todo"});
       if(done && t.gcalId){ gcalDelete(t.gcalId); put("tasks", t.id, {...t, status:"done", gcalId:""}).catch(() => {}); }
-      if(done){ const left = openTasks().length; toast(left ? `完了。残り ${left} 件` : "すべて完了しました"); concierge.say(left ? "おつかれさまです！" : "全部おわりました！すごい！", "joy", 2600); } } return; }
+      if(done){ const left = openTasks().length; toast(left ? `完了。残り ${left} 件` : "すべて完了しました"); concierge.say(left ? ["やったね！", "えらい！", "おつかれさまです！", "その調子！", "ひとつ完了！"][Math.floor(Math.random() * 5)] : ["全部おわりました！すごい！", "ぜんぶ完了！天才！", "タスクゼロ！おつかれさま！"][Math.floor(Math.random() * 3)], "joy", 2600); } } return; }
   if(d.act === "ccart"){ const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/webp,image/png"; inp.onchange = () => inp.files[0] && uploadConciergeArt(inp.files[0]).then(() => settingsPane()); inp.click(); return; }
   if(d.ttOpen !== undefined && b.matches("[data-tt-open]")){ ttSetupPane(d.ttOpen || "grid"); return; }
   if(ttEd && b.closest("#pane")){
@@ -1948,7 +1964,7 @@ const concierge = (() => {
     if(st.cur) lines.push(`いまは <b>${esc(itemText(st.cur))}</b>。あと${st.left}分です。`);
     else if(st.before) lines.push(`次は <b>${esc(st.before.start)} ${esc(st.before.type === "period" ? itemText(st.before) : st.before.label)}</b>。あと${st.wait}分。`);
     else if(st.weekend) lines.push("今日は授業がありません。");
-    else lines.push("今日の日程はおしまいです。おつかれさまでした。");
+    else lines.push(["今日の日程はおしまいです。おつかれさまでした！", "今日もおつかれさま！ゆっくりしてね", "おしまい！今日もがんばったね"][Math.floor(Math.random() * 3)]);
     const nx = (dayItems(todayS()) || []).find(x => x.type === "period" && !x.cancelled && mins(x.start) > nowMin() && cellKind(x.cell) !== "free" && x.cell.kind !== "meeting");
     if(nx){ const lp = lastProg(nx.cell.subject, nx.cell.cls); lines.push(lp ? `${esc(nx.cell.subject)}${nx.cell.cls ? " " + esc(nx.cell.cls) : ""} は前回 <b>${esc(progLabel(lp))}</b>${lp.next ? `。次は「${esc(lp.next)}」` : ""}` : `${esc(nx.cell.subject)}${nx.cell.cls ? " " + esc(nx.cell.cls) : ""} の進度はまだ記録がありません。`); }
     const due = openTasks().filter(x => x.due && x.due <= todayS()).length;
@@ -1974,47 +1990,59 @@ const concierge = (() => {
   const tsave = t => { Object.keys(t.snooze).forEach(k => { if(t.snooze[k] < todayS()) delete t.snooze[k]; }); ls.set("fd-talk", t); };
   function topics(){
     const out = [], t = todayS(), n = nowMin(), dt = Date.now();
+    const pick = a => a[Math.floor(Math.random() * a.length)];
     // 1) something starts soon (events and inserted items)
     (dayItems(t) || []).filter(x => (x.type === "event" || x.type === "extra") && mins(x.start) - n > 0 && mins(x.start) - n <= 30).forEach(x => {
       const e = x.type === "event" ? S.events.find(y => y.id === x.id) : null;
-      out.push({key:`soon:${x.start}:${x.label}`, pose:"wave", text:`${x.start}から「${x.label}」です。${e && e.place ? `場所は${e.place}。` : ""}あと${mins(x.start) - n}分。`, acts: e ? [["開く", () => eventForm(e)]] : [["日程を見る", () => { ui.day = null; go("today"); }]]});
+      out.push({key:`soon:${x.start}:${x.label}`, pose:"wave", text:pick([`もうすぐだよ！${x.start}から「${x.label}」です。`, `${x.start}から「${x.label}」。あと${mins(x.start) - n}分だよ〜`, `そろそろ「${x.label}」の時間です！`]) + (e && e.place ? `場所は${e.place}。` : ""), acts: e ? [["開く", () => eventForm(e)]] : [["日程を見る", () => { ui.day = null; go("today"); }]]});
     });
     // 2) a class just ended without a progress note
     (dayItems(t) || []).filter(x => x.type === "period" && !x.cancelled && cellKind(x.cell) !== "free" && x.cell.kind !== "meeting" && !NOPROG.test(x.cell.subject||"") && n - mins(x.end) >= 0 && n - mins(x.end) <= 40).forEach(x => {
       const lp = lastProg(x.cell.subject, x.cell.cls); if(lp && lp.date === t) return;
-      out.push({key:`prog:${x.n}`, pose:"cheeks", text:`${x.n}時間目の${x.cell.subject}${x.cell.cls ? " " + x.cell.cls : ""}、どこまで進んだかメモしておきますか？`, acts:[["記録する", () => progressPane(pkey(x.cell.subject, x.cell.cls))]]});
+      out.push({key:`prog:${x.n}`, pose:"cheeks", text:pick([`${x.n}時間目おつかれさまです！${x.cell.subject}${x.cell.cls ? " " + x.cell.cls : ""}、どこまで進んだかメモしとく？`, `${x.cell.subject}${x.cell.cls ? " " + x.cell.cls : ""}、どこまで進んだ？忘れないうちにメモしよっ`, `授業おつかれさま！${x.cell.subject}${x.cell.cls ? " " + x.cell.cls : ""}の進み具合、残しておきますか？`]), acts:[["記録する", () => progressPane(pkey(x.cell.subject, x.cell.cls))]]});
     });
     // 3) overdue / due today
     openTasks().filter(k => k.due && k.due <= t).forEach(k => {
       const d = diff(t, k.due);
-      out.push({key:`task:${k.id}`, snoozeDays:1, pose: d > 0 ? "sorry" : "wave", text: d > 0 ? `「${k.title}」、期限を${d}日すぎています。もう終わっていたら完了にしておきましょうか？` : `今日が期限の「${k.title}」があります。`,
+      out.push({key:`task:${k.id}`, snoozeDays:1, pose: d > 0 ? "sorry" : "wave", text: d > 0 ? pick([`「${k.title}」、期限を${d}日すぎちゃってるよ…もう終わってたら完了にしとこっか？`, `あれやった？「${k.title}」、期限すぎてるみたい！`, `わすれてなーい？「${k.title}」の期限、${d}日前だったよ`])
+        : pick([`あれやった？今日までの「${k.title}」！`, `わすれてなーい？「${k.title}」、今日が期限だよ`, `今日が期限の「${k.title}」があります。いっしょにがんばろ！`]),
         acts:[["開く", () => taskForm(k)], ...(d > 0 ? [["完了にする", async () => { await put("tasks", k.id, {...k, status:"done"}); react("joy"); }]] : [])]});
     });
     // 4) replies I owe
     openFollow().filter(f => f.direction === "me" && daysSince(f.since) >= 2).forEach(f => {
-      out.push({key:`fu:${f.id}`, snoozeDays:2, pose:"think", text:`${f.who ? f.who + "への" : ""}返信「${f.subject}」、${daysSince(f.since)}日たっています。`,
+      out.push({key:`fu:${f.id}`, snoozeDays:2, pose:"think", text:pick([`${f.who ? f.who + "への" : ""}お返事「${f.subject}」、${daysSince(f.since)}日たってるよ。わすれてなーい？`, `あれやった？${f.who ? f.who + "への" : ""}返信「${f.subject}」`, `「${f.subject}」のお返事、そろそろかも！`]),
         acts:[...(f.url && MAILURL.test(f.url) ? [["メールを開く", () => window.open(f.url, "_blank", "noopener")]] : []), ["済みにする", async () => { await put("followups", f.id, {...f, status:"done"}); react("joy"); }]]});
     });
     // 5) forgotten: no due date, untouched for 10+ days
     S.tasks.filter(k => k.status !== "done" && !k.due && k.updatedAt && (dt - Date.parse(k.updatedAt)) / 864e5 >= 10).forEach(k => {
       const d = Math.floor((dt - Date.parse(k.updatedAt)) / 864e5);
-      out.push({key:`old:${k.id}`, snoozeDays:5, pose:"think", text:`「${k.title}」、${d}日そのままです。まだ必要ですか？`, acts:[["開く", () => taskForm(k)], ["完了にする", async () => { await put("tasks", k.id, {...k, status:"done"}); react("joy"); }]]});
+      out.push({key:`old:${k.id}`, snoozeDays:5, pose:"think", text:pick([`ねえねえ、「${k.title}」ってどうなった？${d}日そのままだよ`, `「${k.title}」、${d}日さわってないみたい。まだ必要？`, `あれやった？「${k.title}」…もしかして、もう終わってる？`]), acts:[["開く", () => taskForm(k)], ["完了にする", async () => { await put("tasks", k.id, {...k, status:"done"}); react("joy"); }]]});
     });
+    { const am = isWeekday(t) && !(S.days && S.days[t]) ? autoModeOf(t) : null;
+      if(am && n < mins(OFFICIAL[am.mode].dismiss)) out.push({key:`auto:${t}`, pose:"wave", text:pick([`今日は「${am.ev.title}」なので、${OFFICIAL[am.mode].label}時程にしておいたよ！`, `学校の予定に「${am.ev.title}」があったので、今日は${OFFICIAL[am.mode].label}時程です。`]), acts:[["日程を見る", () => { ui.day = null; go("today"); }]]}); }
     // 6) today's one-off changes, before they happen
     const ch = (dayItems(t) || []).filter(x => x.type === "period" && x.changed && mins(x.start) > n);
     if(ch.length) out.push({key:"changes", pose:"wave", text:`今日は${ch.map(x => `${x.n}時間目が${x.cancelled ? "なし" : `「${cellText(x.cell)}」`}`).join("、")}に変わっています。`, acts:[["日程を見る", () => { ui.day = null; go("today"); }]]});
     // 6b) class prep: before school for today, after dismissal for the next class day
     { const tgtD = prepTarget(), pl = prepFor(tgtD), items = pl.flatMap(p => p.open.map(o => o.t));
       const before = tgtD === t ? pl.filter(p => p.open.length).every(p => true) && n < 12*60 : true;
-      if(items.length && before) out.push({key:`prep:${tgtD}`, pose:"wave", text:`${dayLabel(tgtD)}の授業準備がまだ${items.length}つあります。「${items.slice(0, 2).join("」「")}」${items.length > 2 ? "など" : ""}。`, acts:[["チェックリスト", () => prepPane(tgtD)]]}); }
+      if(items.length && before) out.push({key:`prep:${tgtD}`, pose:"wave", text:pick([`${dayLabel(tgtD)}の準備、だいじょうぶ？「${items.slice(0, 2).join("」「")}」${items.length > 2 ? "など" : ""}がまだだよ`, `わすれてなーい？${dayLabel(tgtD)}の授業準備があと${items.length}つ！`, `${dayLabel(tgtD)}の準備チェックしよっ。「${items[0]}」${items.length > 1 ? `ほか${items.length - 1}つ` : ""}です`]), acts:[["チェックリスト", () => prepPane(tgtD)]]}); }
     // 7) tomorrow preview in the afternoon
     if(n >= 15*60){
       const tm = addDays(t, 1), md0 = dayMode(tm), ev = S.events.filter(e => e.date === tm), ov = getOv(tm);
       const bits = [isWeekday(tm) && md0 !== "normal" ? `${OFFICIAL[md0].label}時程` : "", ev.length ? `「${ev[0].title}」${ev.length > 1 ? `ほか${ev.length - 1}件` : ""}` : "", ov ? "時間割の変更あり" : ""].filter(Boolean);
       const dueT = openTasks().filter(k => k.due === tm);
       if(dueT.length) bits.push(`期限のタスク${dueT.length}件`);
-      if(bits.length) out.push({key:"tomorrow", pose:"wave", text:`明日は ${bits.join("・")} です。`, acts:[["明日を見る", () => { ui.day = tm; go("today"); }]]});
+      if(bits.length) out.push({key:"tomorrow", pose:"wave", text:pick([`明日は ${bits.join("・")} だよ！`, `明日のこと、ちょっとだけ。${bits.join("・")} です。`]), acts:[["明日を見る", () => { ui.day = tm; go("today"); }]]});
     }
+    // 8) greetings and check-ins (lowest priority, at most once a day each)
+    const wd = new Date().getDay(), dis = isWeekday(t) ? mins(OFFICIAL[dayMode(t)].dismiss) : 15*60;
+    if(n < 8*60 + 30) out.push({key:"hi:am", pose:"greet", text:pick(["おはようございます！今日もいっしょにがんばろうね", "おはよう！今日の予定、見ておく？", "おはようございます！いい1日になりますように"])});
+    if(n >= 12*60 + 20 && n < 13*60 + 30) out.push({key:"hi:lunch", pose:"cheeks", text:pick(["お昼ごはん、ちゃんと食べた？", "ひと休みできてる？お水も飲んでね", "午後もがんばろうね！"])});
+    if(n >= dis && n < 18*60) out.push({key:"hi:after", pose:"joy", text: wd === 5 ? pick(["1週間おつかれさまでした！", "金曜日だ！今週もおつかれさま！"]) : pick(["今日もおつかれさまです！", "授業おつかれさま！ひと息つこ", "おつかれさまです！今日もえらい！"])});
+    if(n >= 18*60 + 30) out.push({key:"hi:late", pose:"think", text:pick(["まだお仕事？むりしないでね", "だいじょうぶ？げんき？そろそろ帰ろ〜", "遅くまでおつかれさま…ちゃんと休んでね"])});
+    if(!openTasks().some(k => k.due && k.due <= t) && S.tasks.length) out.push({key:"hi:clear", pose:"joy", text:pick(["今日までのタスク、ぜんぶ終わってる！すごい！", "期限のタスクはなし！いい感じだね"])});
+    out.push({key:"hi:check", pose:"cheeks", text:pick(["だいじょうぶ？げんき？", "ちょっと深呼吸しよっか", "何かあったら、ひとことで入れてね！", "いつも見てるよ、がんばってるね"])});
     return out;
   }
   function talk(){
@@ -2023,7 +2051,8 @@ const concierge = (() => {
     if(document.body.classList.contains("pane-open") || performance.now() - idleSince < 4000 || $("#banner").classList.contains("on")) return;
     const st = tstate(), now = Date.now();
     if(st.count >= lv.cap || now - (st.last || 0) < lv.gap * 60000) return;
-    const tp = topics().find(x => !st.seen[x.key] && !(st.snooze[x.key] && st.snooze[x.key] >= todayS()));
+    const greets = Object.keys(st.seen).filter(k => k.indexOf("hi:") === 0).length;
+    const tp = topics().find(x => !st.seen[x.key] && !(st.snooze[x.key] && st.snooze[x.key] >= todayS()) && !(x.key.indexOf("hi:") === 0 && greets >= 2));
     if(!tp) return;
     st.seen[tp.key] = 1; st.count++; st.last = now; tsave(st);
     talking = tp; tgt = null; play(tp.pose || "wave");
@@ -2307,7 +2336,12 @@ function buildSnapshot(){
   const hero = {eyebrow:`${new Date().getFullYear()}年 ${WD[new Date().getDay()]}曜日`, modeLabel:isWeekday(t) ? (OFFICIAL[dayMode(t)] || {}).label || "" : "",
     holiday:(holidayOf(t) || {}).title || ""};
   const talk = (() => { const due = openTasks().filter(k => k.due && k.due <= t).length, fu = openFollow().filter(f => f.direction === "me").length;
-    return [due ? `今日までのタスクが${due}件あります` : "", fu ? `返信が必要なメールが${fu}件あります` : "", prep.items.length ? `${prep.label}の準備が${prep.items.length}つ残っています` : ""].filter(Boolean); })();
+    const pk = a => a[Math.floor(Math.random() * a.length)];
+    const am = isWeekday(t) && !(S.days && S.days[t]) ? autoModeOf(t) : null;
+    return [due ? pk([`あれやった？今日までのタスクが${due}件あるよ`, `わすれてなーい？今日までのタスク${due}件！`]) : "",
+      fu ? pk([`お返事が必要なメールが${fu}件あるよ`, `わすれてなーい？返信待ちが${fu}件！`]) : "",
+      prep.items.length ? pk([`${prep.label}の準備、だいじょうぶ？あと${prep.items.length}つ`, `${prep.label}の準備があと${prep.items.length}つだよ`]) : "",
+      am ? `今日は「${am.ev.title}」なので${OFFICIAL[am.mode].label}時程です` : ""].filter(Boolean); })();
   const modes = DAY_MODES.map(k => ({k, l:k === "off" ? "休み" : (OFFICIAL[k] || {}).label || k}));
   return {v:3, at:now, days, tasks, prep, reminders, week, events, follow, brief, hero, talk, modes};
 }
