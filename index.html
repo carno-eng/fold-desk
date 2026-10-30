@@ -548,7 +548,7 @@ const COLS = ["tasks","events","people","orgs","memos","logs","progress","follow
 const S = { tasks:[], events:[], people:[], orgs:[], memos:[], logs:[], progress:[], followups:[], briefs:[], overrides:[], tt:null, days:{}, prefs:{}, ready:false, local:false };
 let db = null, sample = null, sampleImages = false, mcp = null;
 const GCAL = "Google Calendar";
-const PREF_DEF = { classBefore:3, eventBefore:10, afterBefore:10, morning:true };
+const PREF_DEF = { classBefore:3, eventBefore:10, afterBefore:10, morning:true, mergeEvents:true };
 const pref = k => (S.prefs && S.prefs[k] !== undefined) ? S.prefs[k] : PREF_DEF[k];
 async function putPrefs(p){
   const next = {...PREF_DEF, ...(S.prefs||{}), ...p};
@@ -689,7 +689,7 @@ function eventRow(e){
   const d = parse(e.date);
   return `<button class="row" data-open-event="${e.id}" style="grid-template-columns:auto 1fr">
     <span class="datebox ${e.date===todayS()?'today':''}"><b>${d.getDate()}</b><small>${d.getMonth()+1}月 ${WD[d.getDay()]}</small></span>
-    <span class="main"><b>${esc(e.title)}</b><small>${e.account ? `<span class="chip mini ${e.account === '学校' ? 'accent' : ''}">${esc(e.account)}</span>` : ''}${e.remindMin ? `<span class="bell" style="vertical-align:-2px;margin-right:4px">${ico("bell")}</span>` : ''}${esc([e.time ? e.time + (e.endTime ? "–" + e.endTime : "") : "", e.place, e.kind].filter(Boolean).join(" · "))}</small></span>
+    <span class="main"><b>${esc(e.title)}</b><small>${[...new Set([e, ...(evDups[e.id] || [])].map(x => x.account).filter(Boolean))].map(a => `<span class="chip mini ${a === '学校' ? 'accent' : ''}">${esc(a)}</span>`).join("")}${(evDups[e.id] || []).length ? `<span class="chip mini">${(evDups[e.id] || []).length + 1}件</span>` : ''}${e.remindMin ? `<span class="bell" style="vertical-align:-2px;margin-right:4px">${ico("bell")}</span>` : ''}${esc([e.time ? e.time + (e.endTime ? "–" + e.endTime : "") : "", e.place, e.kind].filter(Boolean).join(" · "))}</small></span>
   </button>`;
 }
 const openTasks = () => S.tasks.filter(t => t.status !== "done").sort((a,b) => (a.due||"9999").localeCompare(b.due||"9999") || ((a.priority==="high"?0:1)-(b.priority==="high"?0:1)));
@@ -1140,16 +1140,24 @@ function taskForm(t = {}){
       <div class="btns"><button class="btn primary" type="submit">保存</button>${t.id?`<button class="btn danger" type="button" data-del="tasks:${t.id}">削除</button>`:''}</div>${t.gtaskId ? '<p class="hint" style="margin-top:8px">Google ToDo リストと同期しています</p>' : ''}${srcLink(t)}
     </form>`);
 }
+const evSrc = x => x.school ? `学校${x.calendar ? `（${x.calendar}）` : ""}` : x.calId ? `Google${x.calendar ? `（${x.calendar}）` : ""}` : x.source === "gmail" ? "メールから" : "このアプリ";
+const dupRemovable = e => (evDups[e.id] || []).filter(x => !x.school && !x.calId);
+function dupNote(e){
+  const d = e.id && evDups[e.id]; if(!d || !d.length) return "";
+  const rm = dupRemovable(e);
+  return `<div class="group" style="margin:0 0 14px"><div class="setrow"><span class="main"><b>同じ予定を${d.length + 1}件まとめて表示しています</b><small>${esc([evSrc(e), ...d.map(evSrc)].join(" ・ "))}</small></span>${rm.length ? `<button type="button" class="chip accent" data-dup-clean="${esc(e.id)}">1つにする</button>` : ""}</div>
+    ${rm.length ? `<p class="hint" style="padding:0 14px 12px;margin:0">「1つにする」で、${esc(rm.map(evSrc).join("・"))}の分を削除します（場所・メモは残す方に移します）。Google・学校のカレンダーは変わりません。</p>` : ""}</div>`;
+}
 function schoolEventPane(e){
   openPane(`${paneHead("学校の予定")}
     <div class="group"><div class="setrow"><span class="main"><b>${esc(e.title)}</b><small>${esc([md(e.date), e.time ? e.time + (e.endTime ? "–" + e.endTime : "") : "終日", e.place].filter(Boolean).join(" · "))}</small></span><span class="chip mini accent">学校</span></div></div>
-    <p class="hint" style="margin-top:10px">学校の Google アカウントのカレンダー${e.calendar ? `「${esc(e.calendar)}」` : ""}の予定です。このスマホに表示しているだけで、個人のアカウントには保存していません。変更は学校の Google カレンダーで行ってください。</p>
+    ${dupNote(e)}<p class="hint" style="margin-top:10px">学校の Google アカウントのカレンダー${e.calendar ? `「${esc(e.calendar)}」` : ""}の予定です。このスマホに表示しているだけで、個人のアカウントには保存していません。変更は学校の Google カレンダーで行ってください。</p>
     <div class="btns"><button class="btn primary" data-act="close">閉じる</button></div>`);
 }
 function eventForm(e = {}){
   if(e.school){ schoolEventPane(e); return; }
   openPane(`${paneHead(e.id ? "予定" : "新しい予定")}
-    <form data-form="event" data-id="${esc(e.id||"")}">
+    <form data-form="event" data-id="${esc(e.id||"")}">${dupNote(e)}
       <div class="field"><label for="e-title">予定</label><input id="e-title" name="title" required value="${esc(e.title)}" autofocus></div>
       <div class="frow"><div class="field"><label for="e-date">日付</label><input id="e-date" type="date" name="date" required value="${esc(e.date||todayS())}"></div>
         <div class="field"><label for="e-time">開始</label><input id="e-time" type="time" name="time" value="${esc(e.time)}"></div></div>
@@ -1427,6 +1435,7 @@ function settingsPane(){
         <div class="setrow"><span class="main"><b>Google ToDo リストと同期</b><small>「Fold Desk」リストと双方向。ToDo のウィジェットでホーム画面にも出せます</small></span><button class="switch" role="switch" aria-checked="${G().tasks}" data-g-toggle="tasks" aria-label="Google ToDo リストと同期"></button></div>
         <div class="setrow"><span class="main"><b>スター付きメールをタスクに</b><small>タスクを完了すると Gmail のスターも外します</small></span><button class="switch" role="switch" aria-checked="${G().starred}" data-g-toggle="starred" aria-label="スター付きメールをタスクに"></button></div>
         <div class="setrow"><span class="main"><b>Gmail を AI で読む</b><small id="g-ai">やること・予定・返信待ちを1時間ごとに取り出します</small></span><button class="switch" role="switch" aria-checked="${G().gmailAi}" data-g-toggle="gmailAi" aria-label="Gmail を AI で読む"></button></div>
+        <div class="setrow"><span class="main"><b>同じ名前の予定をまとめる</b><small>同じ日・同じ名前の予定（個人・学校・メールから・手入力）を1つにして表示</small></span><button class="switch" role="switch" aria-checked="${pref("mergeEvents") !== false}" data-pref-switch="mergeEvents" aria-label="同じ名前の予定をまとめる"></button></div>
         <div class="setrow"><span class="main"><b>今すぐ同期</b><small id="g-last">連絡先・ドライブは各画面から使えます</small></span><button class="chip accent" data-g-sync>同期</button></div>
       </div>
 
@@ -1656,6 +1665,13 @@ document.addEventListener("click", async (ev) => {
     catch(e){ b.disabled = false; toast("保存できませんでした"); } return; }
   if(b.matches("[data-gcal-pick]")){ calendarsPane(); return; }
   if(b.matches("[data-school-guide]")){ schoolGuide(); return; }
+  if(d.dupClean){ const e = S.events.find(x => x.id === d.dupClean); if(!e) return; const rm = dupRemovable(e); b.disabled = true;
+    try {
+      if(!e.school){ const fill = {}; ["place", "note", "time", "endTime", "kind"].forEach(k => { if(!e[k]){ const v = rm.map(x => x[k]).find(Boolean); if(v) fill[k] = v; } });
+        if(Object.keys(fill).length){ const base = personalEvents.find(x => x.id === e.id); if(base) await put("events", e.id, {...base, ...fill}); } }
+      for(const x of rm) await del("events", x.id);
+      toast("1つにまとめました"); closePane();
+    } catch(err){ b.disabled = false; } return; }
   if(b.matches("[data-school-sync]")){ b.disabled = true; await refreshSchool(true); b.disabled = false; const x = $("#s-last"); if(x) x.textContent = schoolStatusText(); toast(schoolState === "ok" ? "学校の予定を取り込みました" : "取り込めませんでした"); return; }
   if(b.matches("[data-school-off]")){ disconnectSchool(); toast("学校のアカウントの接続を解除しました"); settingsPane(); return; }
   if(b.matches("[data-school-cals]")){ schoolCalendarsPane(); return; }
@@ -2536,7 +2552,25 @@ function schoolEvents(){
   if(!schoolPaired()) return [];
   return (schoolCache().events || []).map(e => ({id:"school:" + e.id, title:e.title, date:e.date, time:e.time || "", endTime:e.endTime || "", place:e.place || "", kind:e.kind || "", calendar:e.calendar || "", account:"学校", school:true}));
 }
-function mergeEvents(){ S.events = personalEvents.concat(schoolEvents()); }
+/* events with the same name on the same day (personal calendar, school calendar, from mail, typed in the app) are shown once.
+   Nothing is deleted or copied: the hidden ones are listed in evDups under the one that is shown. */
+let evDups = {};
+const evKey = t => String(t || "").normalize("NFKC").toLowerCase().replace(/【[^】]*】|\[[^\]]*\]/g, "").replace(/[\s・･、。,.\-ー―〜~()（）\[\]【】「」『』:：]/g, "");
+function mergeEvents(){
+  const all = personalEvents.concat(schoolEvents());
+  evDups = {};
+  if(S.prefs && S.prefs.mergeEvents === false){ S.events = all; return; }
+  const rank = e => (e.school ? 0 : e.calId ? 30 : 20) + (e.time ? 2 : 0) + (e.place ? 1 : 0);
+  const groups = new Map(), out = [];
+  for(const e of all){
+    const k = evKey(e.title); if(!k || !e.date){ out.push(e); continue; }
+    const key = e.date + "|" + k, g = groups.get(key) || [];
+    const hit = g.find(x => !x.time || !e.time || x.time === e.time);
+    if(hit){ hit.m.push(e); if(!hit.time) hit.time = e.time; } else { g.push({time:e.time, m:[e]}); groups.set(key, g); }
+  }
+  groups.forEach(g => g.forEach(n => { n.m.sort((a, b) => rank(b) - rank(a)); out.push(n.m[0]); if(n.m.length > 1) evDups[n.m[0].id] = n.m.slice(1); }));
+  S.events = out;
+}
 let schoolBusy = false;
 async function refreshSchool(force){
   if(!schoolPaired() || schoolBusy) return;
@@ -2606,7 +2640,7 @@ db = store; sample = aiShim; sampleImages = true; mcp = calShim; S.local = true;
 COLS.forEach(c => db.collection(c).onSnapshot(snap => { const docs = snap.docs.map(x => ({...x.data(), id:x.id})); if(c === "events"){ personalEvents = docs; mergeEvents(); } else S[c] = docs; schedule(); }));
 db.doc("config/timetable").onSnapshot(s => { S.tt = s.exists ? s.data() : null; schedule(); });
 db.doc("config/days").onSnapshot(s => { S.days = s.exists ? s.data() : {}; schedule(); });
-db.doc("config/prefs").onSnapshot(s => { S.prefs = s.exists ? s.data() : {}; schedule(); });
+db.doc("config/prefs").onSnapshot(s => { S.prefs = s.exists ? s.data() : {}; mergeEvents(); schedule(); });
 db.doc("config/school").onSnapshot(s => { applySchool(s.exists ? s.data() : null); schedule(); });
 db.doc("config/google").onSnapshot(s => { S.google = s.exists ? s.data() : {}; });
 S.ready = true; schedule();
@@ -2661,7 +2695,7 @@ function schoolHandoffPane(){
     <div class="btns"><a class="btn primary" href="${esc(link)}">アプリで接続する</a><button class="btn" data-act="close">このままでよい</button></div>`);
 }
 setTimeout(schoolHandoffPane, 900);
-if(location.port === "8765") window.__fdT = {get S(){ return S; }, dayMode, eventForm, closePane};
+if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, dayMode, eventForm, closePane};
 })();
 </script>
 </body>
