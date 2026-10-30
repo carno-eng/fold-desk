@@ -44,7 +44,8 @@ class Sprite(private val ctx: Context, heightDp: Float = 92f) {
         private val ACTIVITIES = listOf("paint", "read", "bunny", "garden", "tea", "strawberry", "stretch")
         const val FW = 192; const val FH = 208
         fun artFile(c: Context) = File(c.filesDir, "concierge.img")
-        @Volatile private var shared: Bitmap? = null
+        @Volatile private var shared: List<Bitmap>? = null
+        private var sharedFrames = 0
         private var sharedStamp = 0L
         fun hasArt(c: Context) = artFile(c).length() > 0
     }
@@ -53,7 +54,10 @@ class Sprite(private val ctx: Context, heightDp: Float = 92f) {
     val h = (heightDp * density).toInt()
     val w = (h * FW / FH.toFloat()).toInt()
     var x = 0f; var y = 0f
-    private var atlas: Bitmap? = null
+    /** the atlas cut into strips of 8 rows (64 frames), so no single texture is too tall for the GPU */
+    private var strips: List<Bitmap>? = null
+    private var nFrames = 0
+    private val atlas get() = strips?.firstOrNull()
     private var clip = "greet"; private var fi = 0; private var acc = 0L
     private var tx = -1f; private var ty = -1f
     private var nextMove = 0L
@@ -74,18 +78,26 @@ class Sprite(private val ctx: Context, heightDp: Float = 92f) {
         val f = artFile(ctx)
         if (!f.exists()) return false
         // one shared copy for the wallpaper and the full-screen mode (the atlas is large)
-        atlas = synchronized(Companion) {
+        synchronized(Companion) {
             if (shared == null || sharedStamp != f.lastModified() + f.length()) {
-                shared = try { BitmapFactory.decodeFile(f.absolutePath) } catch (_: Throwable) { null }; sharedStamp = f.lastModified() + f.length()
+                val full = try { BitmapFactory.decodeFile(f.absolutePath) } catch (_: Throwable) { null }
+                shared = full?.let { b ->
+                    val rows = b.height / FH
+                    sharedFrames = rows * 8
+                    val out = (0 until rows step 8).map { r0 -> Bitmap.createBitmap(b, 0, r0 * FH, minOf(b.width, 8 * FW), minOf(8, rows - r0) * FH) }
+                    if (out.none { it === b }) b.recycle()
+                    out
+                }
+                sharedStamp = f.lastModified() + f.length()
             }
-            shared
+            strips = shared; nFrames = sharedFrames
         }
-        return atlas != null
+        return strips != null
     }
     val ready get() = atlas != null
 
     /** frames in the loaded atlas; newer motions are used only when the atlas has them */
-    private val frames get() = atlas?.let { (it.height / FH) * 8 } ?: 64
+    private val frames get() = if (strips != null) nFrames else 64
     private fun has(n: String) = (CLIPS[n]?.maxOrNull() ?: 999) < frames
     private fun variant(n: String): String {
         if (!has("bow")) return n
@@ -138,11 +150,13 @@ class Sprite(private val ctx: Context, heightDp: Float = 92f) {
         return changed || talking
     }
 
-    fun frameRect(): Rect { val f = (CLIPS[clip] ?: listOf(0)).getOrElse(fi) { 0 }.let { if (it < frames) it else 51 }; return Rect((f % 8) * FW, (f / 8) * FH, (f % 8) * FW + FW, (f / 8) * FH + FH) }
+    private fun frameNo() = (CLIPS[clip] ?: listOf(0)).getOrElse(fi) { 0 }.let { if (it < frames) it else 51 }
+    fun frameRect(): Rect { val f = frameNo() % 64; return Rect((f % 8) * FW, (f / 8) * FH, (f % 8) * FW + FW, (f / 8) * FH + FH) }
 
     /** Draws the character (and its bubble) at its own position on the canvas. */
     fun draw(c: Canvas, ox: Float = x, oy: Float = y, withBubble: Boolean = true) {
-        val a = atlas ?: return
+        val st = strips ?: return
+        val a = st.getOrNull(frameNo() / 64) ?: return
         c.drawOval(RectF(ox + w * .22f, oy + h - 6 * density, ox + w * .78f, oy + h + 2 * density), shadow)
         if (clip in FLIP) { c.save(); c.scale(-1f, 1f, ox + w / 2f, oy + h / 2f); c.drawBitmap(a, frameRect(), RectF(ox, oy, ox + w, oy + h), paint); c.restore() }
         else c.drawBitmap(a, frameRect(), RectF(ox, oy, ox + w, oy + h), paint)

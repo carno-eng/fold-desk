@@ -432,6 +432,7 @@ body:not([data-mode="cover-p"]) #toast{bottom:28px}
 /* ---------- concierge ---------- */
 #cc{position:fixed;left:0;top:0;width:86px;height:93px;z-index:35;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;will-change:transform;opacity:0;transition:opacity .4s}
 #cc.on.art{opacity:1}
+#cc .spr canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #cc .spr{position:absolute;inset:0;background-size:800% 800%;background-repeat:no-repeat;transform-origin:50% 100%;
   filter:drop-shadow(0 6px 10px rgba(30,40,80,.18))}
 #cc::before{content:"";position:absolute;left:22%;right:22%;bottom:-3px;height:8px;border-radius:50%;background:rgba(10,20,50,.16);filter:blur(2px);transition:transform .2s}
@@ -2000,10 +2001,28 @@ const concierge = (() => {
   }
   const clamp = () => { const b = bounds(); pos.x = Math.min(b.right, Math.max(b.left, pos.x)); pos.y = Math.min(b.bottom, Math.max(b.top, pos.y)); };
   function play(name){ name = resolve(variant(name)); if(clip === name && LOOP[name]) return; clip = name; fi = 0; acc = 0; draw(); }
+  let artBmp = null, cv = null, lastDrawn = "";
+  function setArt(bm){
+    artBmp = bm;
+    if(!cv){ cv = document.createElement("canvas"); spr.appendChild(cv); }
+    spr.style.backgroundImage = "none"; spr.style.scale = ""; lastDrawn = ""; draw();
+  }
+  function paintFrame(f){
+    const dpr = Math.min(3, devicePixelRatio || 1), w = Math.round(W * dpr), h = Math.round(H * dpr), key = `${f}|${FLIP[clip] ? 1 : 0}|${w}`;
+    if(key === lastDrawn) return;
+    if(cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
+    const x = cv.getContext("2d"), fw = artBmp.width / 8, fh = fw * 208 / 192;
+    x.clearRect(0, 0, w, h); x.save();
+    if(FLIP[clip]){ x.translate(w, 0); x.scale(-1, 1); }
+    x.imageSmoothingEnabled = true; x.imageSmoothingQuality = "high";
+    x.drawImage(artBmp, (f % 8) * fw, Math.floor(f / 8) * fh, fw, fh, 0, 0, w, h);
+    x.restore(); lastDrawn = key;
+  }
   function draw(){
-    const f = CLIPS[clip][fi];
+    const f = CLIPS[clip][fi] ?? CLIPS.idle[0];
     spr.style.backgroundPosition = `${(f % 8) / 7 * 100}% ${Math.floor(f / 8) / (ROWS - 1) * 100}%`;
-    const fl = FLIP[clip] ? "-1 1" : ""; if(spr.style.scale !== fl) spr.style.scale = fl;
+    if(artBmp) paintFrame(f);
+    else { const fl = FLIP[clip] ? "-1 1" : ""; if(spr.style.scale !== fl) spr.style.scale = fl; }
     el.style.transform = `translate3d(${pos.x.toFixed(1)}px,${pos.y.toFixed(1)}px,0)`;
     if(bubOpen) placeBubble();
   }
@@ -2217,7 +2236,7 @@ const concierge = (() => {
     }
   }
   function setRows(n){ ROWS = Math.max(8, Math.min(40, n | 0)); spr.style.backgroundSize = `800% ${ROWS * 100}%`; if(!has(clip)){ clip = "idle"; fi = 0; } draw(); }
-  return { setRows, has, doActivity, close(){ closeBubble(); }, talkNow(){ const st = tstate(); st.last = 0; tsave(st); idleSince = 0; talk(); }, say, react, setCfg, get cfg(){ return cfg; }, think(on){ thinking = on; if(on) react("think"); else play("idle"); }, home(){ tgt = pickTarget(); } };
+  return { setRows, setArt, has, doActivity, close(){ closeBubble(); }, talkNow(){ const st = tstate(); st.last = 0; tsave(st); idleSince = 0; talk(); }, say, react, setCfg, get cfg(){ return cfg; }, think(on){ thinking = on; if(on) react("think"); else play("idle"); }, home(){ tgt = pickTarget(); } };
 })();
 
 /* ================= timetable & class-time editor (+ CSV / Google Sheets import) ================= */
@@ -2700,7 +2719,7 @@ async function loadConciergeArt(){
       await cache.put(KEYURL, res.clone());
     }
     if(res){ const blob = await res.blob(); spr.style.backgroundImage = `url(${URL.createObjectURL(blob)})`; document.getElementById("cc").classList.add("art");
-      try { const bm = await createImageBitmap(blob); concierge.setRows(Math.round(bm.height / (bm.width / 8 * 208 / 192))); } catch(e){}
+      try { const bm = await createImageBitmap(blob); concierge.setRows(Math.round(bm.height / (bm.width / 8 * 208 / 192))); concierge.setArt(bm); } catch(e){}
       try { if(window.FoldDeskNative && window.FoldDeskNative.isApp() && window.FoldDeskNative.artVersion && window.FoldDeskNative.artVersion() !== blob.size){
         const b64 = await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.readAsDataURL(blob); });
         window.FoldDeskNative.setConciergeArt(b64); } } catch(e){} }
