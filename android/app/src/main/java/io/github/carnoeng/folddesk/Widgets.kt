@@ -104,7 +104,7 @@ object Widgets {
     private const val DIM = 0x99FFFFFF.toInt()
     private const val RED = 0xFFE5483B.toInt()
     private const val BLUE = 0xFF0A62F5.toInt()
-    private const val L = 1.32f   // line height used for layout budgeting (CJK fonts run tall)
+    private const val L = 1.45f   // line height used for layout budgeting (CJK fonts run tall)
 
     private inline fun <reified T : Any> ids(c: Context, m: AppWidgetManager) = m.getAppWidgetIds(ComponentName(c, T::class.java))
 
@@ -194,8 +194,8 @@ object Widgets {
         // sizes from the width, then decide what fits in the height
         val stz = (w * 0.05f).coerceIn(15f, 22f); val sbz = stz * 0.84f; val eyz = (stz * 0.8f).coerceIn(12f, 16f)
         val dsMax = (w * 0.12f).coerceIn(28f, 62f)
-        fun top(p: Plan) = 29f + eyz * L + 2f + p.ds * 1.18f + 7f + stz * L + (if (p.sub && subA.isNotEmpty()) 4f + sbz * L else 0f) + (if (p.sub2 && subB.isNotEmpty()) 3f + sbz * L else 0f)
-        fun need(p: Plan) = top(p) + (if (p.seg) 50f else 0f) + (if (p.bar) 44f else 0f) + (if (p.labels) 19f else 0f) + (if (p.rows > 0) 10f + p.rows * 33f else 0f)
+        fun top(p: Plan) = 29f + eyz * L + 2f + p.ds * 1.45f + 7f + stz * L + (if (p.sub && subA.isNotEmpty()) 4f + sbz * L else 0f) + (if (p.sub2 && subB.isNotEmpty()) 3f + sbz * L else 0f)
+        fun need(p: Plan) = top(p) + (if (p.seg) 54f else 0f) + (if (p.bar) 46f else 0f) + (if (p.labels) 22f else 0f) + (if (p.rows > 0) 10f + p.rows * 36f else 0f)
         val canBar = Sched.hasItems(shown)
         val canSeg = segDay != null && segDay.optString("mk").isNotEmpty()
         val plans = listOf(
@@ -206,7 +206,7 @@ object Widgets {
         if (plan.ds == 0f) plan.ds = 26f
         val rowItems = items(shown).filter { it.optString("k") != "block" }.let { all ->
             if (!isToday) all else all.filter { Sched.at(shown!!.optString("date"), it.optString("e")) > now }.ifEmpty { all } }
-        if (plan.seg) { val extra = h - need(plan); if (extra >= 10f + 2 * 33f) plan.rows = minOf(rowItems.size, ((extra - 10f) / 33f).toInt()) }
+        if (plan.seg) { val extra = h - need(plan); if (extra >= 10f + 2 * 36f) plan.rows = minOf(rowItems.size, ((extra - 10f) / 36f).toInt()) }
 
         // header text
         val modeLbl = segDay?.optString("mode") ?: ""

@@ -78,7 +78,7 @@ class WidgetShots {
 
     @Test fun render() {
         val s = snap(false); val hol = snap(true)
-        for ((w, h) in listOf(340 to 170, 340 to 210, 340 to 280, 340 to 420, 560 to 250, 600 to 400)) {
+        for ((w, h) in listOf(340 to 170, 340 to 190, 340 to 240, 340 to 300, 340 to 440, 560 to 250, 600 to 420)) {
             shot("hero-${w}x$h", Widgets.hero(c, s, w.toFloat(), h.toFloat()), w, h)
         }
         shot("hero-holiday-340x210", Widgets.hero(c, hol, 340f, 210f), 340, 210)
