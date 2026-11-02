@@ -199,11 +199,11 @@ object WxScene {
         return when (kind) {
             "birds" -> {
                 val n = 3 + rnd.nextInt(4); val ph = FloatArray(n) { rnd.nextFloat() * 6f }
-                val frames = (0 until 3).map { f -> bmp(90, 40) { c, p ->
-                    p.style = Paint.Style.STROKE; p.strokeWidth = 1.6f; p.strokeCap = Paint.Cap.ROUND; p.color = if (warm) 0xCC2D1928.toInt() else 0xA0232A3C.toInt()
-                    for (i in 0 until n) { val k = (i + 1) / 2; val x = 78f - k * 20f; val y = 12f + (if (i % 2 == 1) 1 else -1) * k * 4f + k * 5f
-                        val wv = sin(ph[i] + f * 2.1f); val up = 7f * (.15f + .55f * wv)
-                        val path = android.graphics.Path(); path.moveTo(x - 7, y - up); path.quadTo(x - 3.2f, y - up * .2f - 1, x, y); path.quadTo(x + 3.2f, y - up * .2f - 1, x + 7, y - up); c.drawPath(path, p) } } }
+                val frames = (0 until 3).map { f -> bmp(90, 48) { c, p ->
+                    p.style = Paint.Style.STROKE; p.strokeWidth = 1.9f; p.strokeCap = Paint.Cap.ROUND; p.color = if (warm) 0xCC2D1928.toInt() else 0xA0232A3C.toInt()
+                    for (i in 0 until n) { val k = (i + 1) / 2; val x = 80f - k * 17f; val y = 25f + (if (i % 2 == 1) 1 else -1) * k * 6.5f
+                        val wv = sin(ph[i] + f * 2.1f); val up = 8f * (.15f + .55f * wv)
+                        val path = android.graphics.Path(); path.moveTo(x - 8, y - up); path.quadTo(x - 3.6f, y - up * .2f - 1, x, y); path.quadTo(x + 3.6f, y - up * .2f - 1, x + 8, y - up); c.drawPath(path, p) } } }
                 Visitor(kind, frames, 170, top)
             }
             "plane" -> if (st.night) Visitor(kind, (0 until 2).map { f -> bmp(30, 14) { c, p ->
