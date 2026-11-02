@@ -49,6 +49,22 @@
             <intent-filter><action android:name="android.service.wallpaper.WallpaperService" /></intent-filter>
             <meta-data android:name="android.service.wallpaper" android:resource="@xml/wallpaper" />
         </service>
+        <activity android:name=".ShareActivity" android:exported="true" android:label="Fold Desk" android:icon="@mipmap/ic_launcher"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" android:excludeFromRecents="true" android:noHistory="true">
+            <intent-filter android:label="Fold Desk に入れる">
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="application/pdf" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter android:label="Fold Desk に入れる">
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/pdf" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+        </activity>
         <activity android:name=".AodActivity" android:exported="false" android:theme="@style/AodTheme"
             android:showWhenLocked="true" android:excludeFromRecents="true" android:taskAffinity="io.github.carnoeng.folddesk.aod"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize" />

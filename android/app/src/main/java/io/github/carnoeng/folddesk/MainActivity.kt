@@ -54,6 +54,7 @@ class MainActivity : ComponentActivity() {
     private val pickCard = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { u ->
         if (u != null) { cardResult("{\"busy\":true}"); CardScan.read(this, u) { r -> cardResult(r) } } else cardResult("{\"cancel\":true}")
     }
+    fun scanCardFile(f: java.io.File) { cardResult("{\"busy\":true}"); CardScan.read(this, Uri.fromFile(f)) { r -> cardResult(r) } }
     fun scanCard(camera: Boolean) {
         if (camera) {
             val dir = java.io.File(cacheDir, "card").apply { mkdirs() }
@@ -135,6 +136,6 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         @Volatile var foreground = false
-        val ROUTES = setOf("today", "timetable", "tasks", "events", "people", "memo", "ask", "prep", "settings", "follow", "docs")
+        val ROUTES = setOf("today", "timetable", "tasks", "events", "people", "memo", "ask", "prep", "settings", "follow", "docs", "share")
     }
 }

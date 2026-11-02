@@ -1692,6 +1692,51 @@ function updatePg(){
 }
 function closeDoc(){ const st = pdfv; if(!st) return; pdfv = null; if(st.io) st.io.disconnect(); try { st.pdf && st.pdf.destroy(); } catch(e){} st.el.classList.remove("on"); setTimeout(() => st.el.remove(), 300); }
 
+/* ================= things shared from other apps (Android "共有") ================= */
+let shared = null;
+async function handleShare(){
+  if(!NATIVE || !NATIVE.takeShare) return;
+  let sh = null; try { sh = JSON.parse(NATIVE.takeShare() || "null"); } catch(e){}
+  if(!sh) return;
+  const files = sh.files || [], pdfs = files.filter(f => /pdf/i.test(f.mime) || /\.pdf$/i.test(f.name)), imgs = files.filter(f => /^image\//.test(f.mime));
+  if(pdfs.length){
+    go("docs");
+    const list = pdfs.map(f => { const b64 = NATIVE.shareFile(f.id); if(!b64) return null; const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+      return new File([bin], /\.pdf$/i.test(f.name) ? f.name : (f.name || "資料") + ".pdf", {type:"application/pdf"}); }).filter(Boolean);
+    try { NATIVE.shareDone(); } catch(e){}
+    if(list.length) await importDocs(list); else toast("PDF を受け取れませんでした");
+    return;
+  }
+  shared = sh;
+  const text = [sh.subject, sh.text].filter(Boolean).join("\n").trim();
+  const title = (sh.subject || text.split("\n").find(x => x.trim()) || "").replace(/https?:\/\/\S+/g, "").trim().slice(0, 80);
+  const url = (text.match(/https?:\/\/\S+/) || [""])[0];
+  openPane(`${paneHead("共有された内容")}
+    ${imgs.length ? `<p class="empty" style="margin-top:0">画像 ${imgs.length}枚を受け取りました。</p>` : ""}
+    ${text ? `<div class="card" style="box-shadow:none;background:var(--surface-2);margin-bottom:12px"><p style="margin:0;white-space:pre-wrap;overflow-wrap:anywhere;max-height:160px;overflow:auto;font-size:14px">${esc(text.slice(0, 1200))}</p></div>` : ""}
+    <div class="card" style="padding:4px 14px">
+      ${imgs.length ? `<button class="row" data-share="card" style="grid-template-columns:1fr auto;width:100%;text-align:left"><span class="main"><b>名刺として読み取る</b><small>文字を読んで「人」に登録します（写真は保存しません）</small></span><span class="when">${ico("right")}</span></button>` : ""}
+      ${text ? `<button class="row" data-share="ask" style="grid-template-columns:1fr auto;width:100%;text-align:left"><span class="main"><b>ひとことで振り分ける</b><small>タスク・予定・メモに自動で分けます</small></span><span class="when">${ico("right")}</span></button>
+      <button class="row" data-share="task" style="grid-template-columns:1fr auto;width:100%;text-align:left"><span class="main"><b>タスクにする</b><small>${esc(title || "（名前を入れます）")}</small></span><span class="when">${ico("right")}</span></button>
+      <button class="row" data-share="event" style="grid-template-columns:1fr auto;width:100%;text-align:left"><span class="main"><b>予定にする</b><small>日時を入れて保存します</small></span><span class="when">${ico("right")}</span></button>
+      <button class="row" data-share="memo" style="grid-template-columns:1fr auto;width:100%;text-align:left"><span class="main"><b>メモに保存</b><small>あとで振り分けられます</small></span><span class="when">${ico("right")}</span></button>` : ""}
+    </div>
+    ${url ? `<p class="hint" style="margin-top:10px">リンクはメモ欄に入れておきます。</p>` : ""}`);
+}
+async function shareAct(k){
+  const sh = shared; if(!sh) return;
+  const text = [sh.subject, sh.text].filter(Boolean).join("\n").trim();
+  const title = (sh.subject || text.split("\n").find(x => x.trim()) || "").replace(/https?:\/\/\S+/g, "").trim().slice(0, 80);
+  const imgs = (sh.files || []).filter(f => /^image\//.test(f.mime));
+  if(k === "card" && imgs.length){ NATIVE.scanShared(imgs[0].id); shared = null; return; }
+  try { NATIVE.shareDone(); } catch(e){}
+  shared = null;
+  if(k === "ask"){ askPane(); setTimeout(() => { const t = $("#pane textarea[name=text]"); if(t){ t.value = text.slice(0, 2000); t.focus(); } }, 80); }
+  else if(k === "task") taskForm({title:title || text.slice(0, 60), note:text.slice(0, 2000)});
+  else if(k === "event") eventForm({title:title || text.slice(0, 60), note:text.slice(0, 2000)});
+  else if(k === "memo"){ await put("memos", null, {text:text.slice(0, 4000), done:false, createdAt:new Date().toISOString()}); closePane(); toast("メモに保存しました"); concierge.say("メモしておいたよ！", "joy", 2200); }
+}
+
 /* ================= PANE ================= */
 function openPane(html, live){
   ui.pane = true; ui.paneLive = live || null;
@@ -2312,6 +2357,7 @@ document.addEventListener("click", async (ev) => {
     catch(e){ b.disabled = false; toast("保存できませんでした"); } return; }
   if(b.matches("[data-gcal-pick]")){ calendarsPane(); return; }
   if(b.matches("[data-school-guide]")){ schoolGuide(); return; }
+  if(d.share){ shareAct(d.share); return; }
   if(b.matches("[data-doc-add]")){ const inp = document.createElement("input"); inp.type = "file"; inp.accept = "application/pdf,.pdf"; inp.multiple = true; inp.onchange = () => inp.files.length && importDocs(inp.files); inp.click(); return; }
   if(d.docOpen){ openDoc(d.docOpen); return; }
   if(d.docEdit){ docEditPane(d.docEdit); return; }
@@ -3497,7 +3543,7 @@ if(paired()){
   window.__fdResume = () => { store.reload(); store.pull(); refreshSchool(); refreshDevice(); };
   addEventListener("online", () => store.pull());
 }
-if(["#ask","#prep","#settings","#follow"].includes(location.hash)) setTimeout(() => openRoute(location.hash), 500);
+if(["#ask","#prep","#settings","#follow","#share"].includes(location.hash)) setTimeout(() => openRoute(location.hash), 500);
 async function widgetAct(a){
   if(a.a === "task"){ const t = S.tasks.find(x => x.id === a.id); if(t && t.status !== "done"){ if(t.gcalId) await gcalDelete(t.gcalId); await put("tasks", t.id, {...t, status:"done", gcalId:""}); } }
   else if(a.a === "follow"){ const f = S.followups.find(x => x.id === a.id); if(f && f.status !== "done") await put("followups", f.id, {...f, status:"done"}); }
@@ -3525,6 +3571,7 @@ function openRoute(h){
   else if(h === "#prep"){ go("today"); setTimeout(() => prepPane(prepTarget()), 300); }
   else if(h === "#settings"){ go("today"); setTimeout(() => settingsPane(), 300); }
   else if(h === "#follow"){ go("tasks"); }
+  else if(h === "#share"){ history.replaceState(null, "", location.pathname + "#" + (view || "today")); handleShare(); }
 }
 addEventListener("hashchange", () => {
   if(location.hash.indexOf("#school=") === 0){ readPairing(); if(schoolJustPaired){ schoolJustPaired = false; toast("学校のアカウントを接続しました"); refreshSchool(true); } schoolHandoffPane(); return; }

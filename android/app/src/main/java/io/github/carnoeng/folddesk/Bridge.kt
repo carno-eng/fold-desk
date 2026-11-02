@@ -52,6 +52,12 @@ class Bridge(
         main.post { try { ctx.startActivity(Intent(Intent.ACTION_VIEW, android.content.ContentUris.withAppendedId(android.provider.CalendarContract.Events.CONTENT_URI, id)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) { } }
     }
 
+    /* things shared from other apps */
+    @JavascriptInterface fun takeShare(): String = ShareActivity.take(ctx)
+    @JavascriptInterface fun shareFile(id: String): String = ShareActivity.file(ctx, id)?.let { if (it.length() < 60_000_000) Base64.encodeToString(it.readBytes(), Base64.NO_WRAP) else "" } ?: ""
+    @JavascriptInterface fun shareDone() { ShareActivity.clear(ctx) }
+    @JavascriptInterface fun scanShared(id: String) { val f = ShareActivity.file(ctx, id) ?: return; main.post { activity?.scanCardFile(f) } }
+
     /* business cards: take or pick a photo, read it on the phone */
     @JavascriptInterface fun scanCard(source: String) { main.post { activity?.scanCard(source == "camera") } }
 
