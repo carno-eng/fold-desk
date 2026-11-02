@@ -786,6 +786,45 @@ body:not([data-mode="cover-p"]) .wx .wx-hours{grid-column:1/-1}
 .doc .tag{position:absolute;top:8px;left:8px;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:var(--accent);color:#fff}
 .doc .more{position:absolute;top:6px;right:6px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.9);color:#333;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .doc .more svg{width:16px;height:16px}
+.doc-tools{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.doc-tools .doc-search{flex:1;min-width:0;margin:0!important}
+.doc-tools select{flex:none;max-width:44%;height:42px;border-radius:12px;font-weight:700}
+.doc-cats .chip i.cd{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0}
+.doc .cat{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;padding:1px 7px;border-radius:999px;margin-top:5px;color:#fff;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.doc .evl{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--accent);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc .evl svg{width:13px;height:13px;flex:none}
+.doc .sel{position:absolute;inset:0;z-index:2;display:none;background:transparent;border-radius:20px}
+.docs.selecting .doc .sel{display:block}
+.docs.selecting .doc .more{display:none}
+.doc .sel[aria-pressed="true"]{box-shadow:inset 0 0 0 3px var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.doc .sel::after{content:"";position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.95);box-shadow:inset 0 0 0 2px var(--line)}
+.doc .sel[aria-pressed="true"]::after{background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/16px no-repeat;box-shadow:none}
+.doc-grp{margin:18px 2px 10px;display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px}
+.doc-grp i{width:10px;height:10px;border-radius:50%}
+.doc-grp small{color:var(--muted);font-weight:700}
+.selbar{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:32;display:flex;gap:8px;align-items:center;padding:8px 8px 8px 16px;border-radius:999px;background:var(--fg);color:var(--bg);box-shadow:0 12px 30px rgba(0,0,0,.3);font-weight:800;white-space:nowrap}
+body:not([data-mode="cover-p"]) .selbar{bottom:28px}
+.selbar button{border-radius:999px;padding:8px 14px;font-weight:800;background:color-mix(in srgb,var(--bg) 18%,transparent);color:inherit}
+.selbar button.pri{background:var(--accent);color:#fff}
+.catrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:.5px solid var(--line)}
+.catrow:first-child{border-top:0}
+.catrow input{min-width:0}
+.cols{display:flex;gap:6px;flex-wrap:wrap}
+.cols button{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(0,0,0,.08)}
+.cols button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--fg)}
+.pickrow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:.5px solid var(--line)}
+.pickrow:first-child{border-top:0}
+.pickrow b{display:block;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pickrow small{color:var(--muted);font-weight:700}
+.pickrow .tg{min-width:84px}
+.pickrow .tg[aria-pressed="true"]{background:var(--accent);color:#fff}
+.evdocs{display:grid;gap:4px}
+.evdocs .chip{justify-self:start;margin-top:4px}
+.td-ev{font-size:12px;font-weight:800;color:var(--muted);margin:10px 0 2px;display:flex;gap:6px;align-items:center}
+.td-ev:first-of-type{margin-top:2px}
+.docrow > svg,.td-ev svg{width:16px;height:16px;flex:none;color:var(--muted)}
+.prow-docs{display:flex;flex-wrap:wrap;gap:6px;padding:0 0 8px 44px}
+.prow-docs .chip svg{width:14px;height:14px}
 .docrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:.5px solid var(--line);width:100%;text-align:left}
 .docrow:first-of-type{border-top:0}
 .docrow img{width:34px;height:44px;object-fit:cover;object-position:top;border-radius:6px;background:var(--surface-2);flex:none}
@@ -1119,7 +1158,7 @@ function eventRow(e){
   const d = parse(e.date);
   return `<button class="row" data-open-event="${e.id}" style="grid-template-columns:auto 1fr">
     <span class="datebox ${e.date===todayS()?'today':''}"><b>${d.getDate()}</b><small>${d.getMonth()+1}月 ${WD[d.getDay()]}</small></span>
-    <span class="main"><b>${esc(e.title)}</b><small>${[...new Set([e, ...(evDups[e.id] || [])].map(x => x.account).filter(Boolean))].map(a => `<span class="chip mini ${a === '学校' ? 'accent' : ''}">${esc(a)}</span>`).join("")}${(evDups[e.id] || []).length ? `<span class="chip mini">${(evDups[e.id] || []).length + 1}件</span>` : ''}${e.remindMin ? `<span class="bell" style="vertical-align:-2px;margin-right:4px">${ico("bell")}</span>` : ''}${esc([e.time ? e.time + (e.endTime ? "–" + e.endTime : "") : "", e.place, e.kind].filter(Boolean).join(" · "))}</small></span>
+    <span class="main"><b>${esc(e.title)}</b><small>${[...new Set([e, ...(evDups[e.id] || [])].map(x => x.account).filter(Boolean))].map(a => `<span class="chip mini ${a === '学校' ? 'accent' : ''}">${esc(a)}</span>`).join("")}${(evDups[e.id] || []).length ? `<span class="chip mini">${(evDups[e.id] || []).length + 1}件</span>` : ''}${docsForEvent(e).length ? `<span class="chip mini accent">資料${docsForEvent(e).length}</span>` : ''}${e.remindMin ? `<span class="bell" style="vertical-align:-2px;margin-right:4px">${ico("bell")}</span>` : ''}${esc([e.time ? e.time + (e.endTime ? "–" + e.endTime : "") : "", e.place, e.kind].filter(Boolean).join(" · "))}</small></span>
   </button>`;
 }
 const openTasks = () => S.tasks.filter(t => t.status !== "done").sort((a,b) => (a.due||"9999").localeCompare(b.due||"9999") || ((a.priority==="high"?0:1)-(b.priority==="high"?0:1)));
@@ -1320,6 +1359,12 @@ function heroBack(){
     <div class="wxb-foot"><button class="chip" data-wx-place>場所：${esc(w.place)}</button><span>タップで戻る</span></div>
   </div>`;
 }
+document.addEventListener("input", e => { if(!e.target.matches || !e.target.matches("[data-pick-q]")) return;
+  const q = e.target.value.trim().toLowerCase(); document.querySelectorAll("#picklist .pickrow").forEach(r => { r.hidden = !!q && !r.dataset.pickText.includes(q); }); });
+document.addEventListener("change", e => {
+  if(e.target.matches && e.target.matches("[data-doc-sort]")){ ls.set("fd-docsort", e.target.value); schedule(); }
+  if(e.target.matches && e.target.matches("[data-cat-name]")){ renameCat(e.target.dataset.catName, e.target.value).then(() => catPane()); }
+});
 document.addEventListener("input", e => { if(!e.target.matches || !e.target.matches("[data-doc-q]")) return;
   const q = e.target.value.trim().toLowerCase(); document.querySelectorAll(".docs .doc").forEach(c => { c.hidden = !!q && !c.textContent.toLowerCase().includes(q); }); });
 /* tap the date area to flip to the weather; tap the weather (not its buttons) to flip back */
@@ -2064,6 +2109,7 @@ function dayCard(dateS){
       const attr = x.type === "extra" ? `data-extra="${dateS}:${x.idx}"` : `data-open-event="${x.id}"`;
       rows += `<button class="prow xrow ${isNow?'now':''}" ${attr}><span class="pno">${ico(x.type === "extra" ? "plus" : "events")}</span>
         <div class="t">${esc(x.label)}<small>${esc([x.kind, x.note].filter(Boolean).join(" · "))}</small></div><span class="tm">${x.start}<br>${x.end}</span></button>`;
+      if(x.type === "event" && !ui.edit){ const ev = S.events.find(y => y.id === x.id), dl = ev ? docsForEvent(ev) : []; if(dl.length) rows += `<div class="prow-docs">${dl.map(d => `<button class="chip accent" data-doc-open="${esc(d.id)}">${ico("docs")} ${esc(d.title)}</button>`).join("")}</div>`; }
       return;
     }
     const k = x.cancelled ? "free" : cellKind(x.cell), ahead = mins(x.end) > nowMin();
@@ -2321,28 +2367,124 @@ function loadPdfjs(){
 }
 const PDFOPT = {cMapUrl:"vendor/pdfjs/cmaps/", cMapPacked:true, standardFontDataUrl:"vendor/pdfjs/standard_fonts/", isEvalSupported:false};
 const fmtSize = n => n >= 1e6 ? (n / 1e6).toFixed(1) + "MB" : Math.max(1, Math.round(n / 1e3)) + "KB";
-const docCats = () => [...new Set((docsList || []).map(d => d.cat || "未分類"))].sort((a, b) => a === "未分類" ? 1 : b === "未分類" ? -1 : a.localeCompare(b, "ja"));
+const docCats = () => [...new Set([...(docsList || []).map(d => d.cat || "未分類"), ...((catCfg().extra) || [])])].sort((a, b) => a === "未分類" ? 1 : b === "未分類" ? -1 : a.localeCompare(b, "ja"));
+/* 分類（色つき）と並べ替え、予定とのひもづけ */
+const CATCOLS = ["#3B5BFF", "#12A594", "#E5484D", "#F59E0B", "#8B5CF6", "#EC4899", "#0EA5E9", "#64748B"];
+const catCfg = () => { try { return JSON.parse(localStorage.getItem("fd-doccats") || "null") || {cols:{}, extra:[]}; } catch(e){ return {cols:{}, extra:[]}; } };
+const saveCat = c => { try { localStorage.setItem("fd-doccats", JSON.stringify(c)); } catch(e){} };
+function catColor(c){ if(!c || c === "未分類") return "#94A3B8"; const g = catCfg(); if(g.cols[c]) return g.cols[c]; let h = 0; for(const ch of c) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return CATCOLS[h % CATCOLS.length]; }
+const evNorm = x => String(x || "").replace(/【[^】]*】|\[[^\]]*\]/g, "").replace(/\s+/g, "").trim();
+const evKey2 = e => evNorm(e.title) + "|" + (e.date || "");
+function docsForEvent(e){
+  if(!docsList || !e) return []; const ids = new Set([e.id, ...((evDups[e.id] || []).map(x => x.id))]), k = evKey2(e);
+  return docsList.filter(d => (d.ev || []).some(x => ids.has(x.id) || evKey2(x) === k));
+}
+function liveEvent(x){ return S.events.find(e => e.id === x.id) || S.events.find(e => evKey2(e) === evKey2(x)) || null; }
+async function linkDoc(docId, e, on){
+  const d = (docsList || []).find(x => x.id === docId); if(!d || !e) return;
+  d.ev = (d.ev || []).filter(x => !(x.id === e.id || evKey2(x) === evKey2(e)));
+  if(on){ d.ev.push({id:e.id, title:e.title, date:e.date, time:e.time || ""}); if(!d.date) d.date = e.date; }
+  try { await DOCS.put(d); } catch(x){ toast("保存できませんでした"); } schedule();
+}
+const DOCSORT = [["new", "追加が新しい順"], ["opened", "最近開いた順"], ["date", "使う日が近い順"], ["name", "名前順"], ["cat", "分類ごと"], ["old", "追加が古い順"]];
+function sortDocs(list, k){
+  const t = todayS(), L = list.slice(), byName = (a, b) => a.title.localeCompare(b.title, "ja", {numeric:true});
+  if(k === "name") return L.sort(byName);
+  if(k === "old") return L.sort((a, b) => (a.added || "").localeCompare(b.added || ""));
+  if(k === "opened") return L.sort((a, b) => (b.opened || b.added || "").localeCompare(a.opened || a.added || ""));
+  if(k === "date"){ const key = d => !d.date ? "3" : d.date >= t ? "1" + d.date : "2" + (99999999 - +d.date.replace(/-/g, "")); return L.sort((a, b) => key(a).localeCompare(key(b)) || byName(a, b)); }
+  if(k === "cat") return L.sort((a, b) => ((a.cat || "未分類") === "未分類") - ((b.cat || "未分類") === "未分類") || (a.cat || "").localeCompare(b.cat || "", "ja") || byName(a, b));
+  return L.sort((a, b) => (b.added || "").localeCompare(a.added || ""));
+}
+function catPane(){
+  const cats = docCats().filter(c => c !== "未分類"), g = catCfg();
+  openPane(`${paneHead("分類を編集")}
+    <p class="hint" style="margin-top:0">名前を変えると、その分類の資料がまとめて変わります。削除すると資料は「未分類」になります（資料は消えません）。</p>
+    <div class="group" id="catlist">${cats.length ? cats.map(c => `<div class="catrow" data-cat-row="${esc(c)}"><i style="width:14px;height:14px;border-radius:50%;background:${catColor(c)}"></i>
+        <div style="min-width:0"><input class="input" value="${esc(c)}" data-cat-name="${esc(c)}" aria-label="分類の名前"><div class="cols" style="margin-top:8px">${CATCOLS.map(x => `<button type="button" style="background:${x}" data-cat-col="${esc(c)}|${x}" aria-pressed="${catColor(c) === x}" aria-label="色"></button>`).join("")}</div></div>
+        <button class="btn danger" type="button" data-cat-del="${esc(c)}" style="padding:8px 12px">削除</button></div>`).join("") : `<p class="empty" style="margin:6px 0">まだ分類がありません。</p>`}</div>
+    <form data-form="newcat" style="margin-top:12px;display:flex;gap:8px"><input class="input" name="name" placeholder="新しい分類（例：漢検、研修、保護者会）" required style="flex:1"><button class="btn primary" type="submit">追加</button></form>
+    <div class="btns"><button class="btn primary" data-act="close">完了</button></div>`);
+}
+async function renameCat(from, to){
+  to = to.trim().slice(0, 30); if(!to || to === from) return;
+  const g = catCfg(); if(g.cols[from]){ g.cols[to] = g.cols[from]; delete g.cols[from]; } g.extra = (g.extra || []).map(x => x === from ? to : x); saveCat(g);
+  for(const d of (docsList || []).filter(x => (x.cat || "未分類") === from)){ d.cat = to; await DOCS.put(d).catch(() => {}); }
+  if(ui.docCat === from) ui.docCat = to; toast(`「${to}」に変えました`); schedule();
+}
+async function setDocsCat(ids, cat){ for(const d of (docsList || []).filter(x => ids.includes(x.id))){ d.cat = cat || "未分類"; await DOCS.put(d).catch(() => {}); } schedule(); }
+function moveCatPane(ids){
+  const cats = docCats();
+  openPane(`${paneHead(`${ids.length}件の分類を変える`)}<div class="doc-cats" style="flex-wrap:wrap">${cats.map(c => `<button class="chip" data-move-cat="${esc(c)}"><i class="cd" style="background:${catColor(c)}"></i>${esc(c)}</button>`).join("")}</div>
+    <form data-form="movecat" style="display:flex;gap:8px"><input class="input" name="name" placeholder="新しい分類名" style="flex:1"><button class="btn primary" type="submit">この分類にする</button></form>`);
+  ui.moveIds = ids;
+}
+function evPickPane(docId){
+  const d = (docsList || []).find(x => x.id === docId); if(!d) return; const t = todayS(), from = addDays(t, -14), to = addDays(t, 120);
+  const evs = S.events.filter(e => e.date >= from && e.date <= to && !(e.kind === "休み" && !e.time)).sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || "")));
+  const seen = new Set(), list = evs.filter(e => { const k = evKey2(e); if(seen.has(k)) return false; seen.add(k); return true; });
+  const on = e => (d.ev || []).some(x => x.id === e.id || evKey2(x) === evKey2(e));
+  openPane(`${paneHead("予定とひもづける")}<p class="hint" style="margin-top:0">「${esc(d.title)}」を使う予定をえらびます。予定の画面と「今日」からも開けるようになります。</p>
+    <input class="input" type="search" placeholder="予定をさがす" data-pick-q style="margin-bottom:8px">
+    <div class="group" id="picklist">${list.length ? list.map(e => `<div class="pickrow" data-pick-text="${esc((e.title + " " + md(e.date) + " " + (e.place || "")).toLowerCase())}"><span style="min-width:0"><b>${esc(e.title)}</b><small>${esc([md(e.date) + (e.date === t ? "（今日）" : ""), e.time ? e.time : "終日", e.place].filter(Boolean).join(" ・ "))}</small></span>
+      <button class="chip tg" data-link-ev="${esc(d.id)}|${esc(e.id)}" aria-pressed="${on(e)}">${on(e) ? "ひもづけ済み" : "ひもづける"}</button></div>`).join("") : `<p class="empty">近い予定がありません。</p>`}</div>
+    <div class="btns"><button class="btn primary" data-doc-edit="${esc(d.id)}">もどる</button></div>`);
+}
+function docPickPane(evId){
+  const e = S.events.find(x => x.id === evId); if(!e) return; const linked = new Set(docsForEvent(e).map(d => d.id));
+  const list = sortDocs(docsList || [], "opened").sort((a, b) => linked.has(b.id) - linked.has(a.id) || ((b.date === e.date) - (a.date === e.date)));
+  openPane(`${paneHead("資料をひもづける")}<p class="hint" style="margin-top:0">「${esc(e.title)}」（${esc(md(e.date))}）で使う資料をえらびます。</p>
+    ${list.length ? `<input class="input" type="search" placeholder="資料をさがす" data-pick-q style="margin-bottom:8px">
+    <div class="group" id="picklist">${list.map(d => `<div class="pickrow" data-pick-text="${esc((d.title + " " + (d.cat || "")).toLowerCase())}"><span style="min-width:0;display:flex;gap:10px;align-items:center">${d.thumb ? `<img src="${d.thumb}" alt="" style="width:30px;height:40px;object-fit:cover;object-position:top;border-radius:5px;flex:none">` : ""}<span style="min-width:0"><b>${esc(d.title)}</b><small>${esc([d.cat && d.cat !== "未分類" ? d.cat : "", d.date ? md(d.date) : ""].filter(Boolean).join(" ・ "))}</small></span></span>
+      <button class="chip tg" data-link-doc="${esc(d.id)}|${esc(e.id)}" aria-pressed="${linked.has(d.id)}">${linked.has(d.id) ? "ひもづけ済み" : "ひもづける"}</button></div>`).join("")}</div>`
+    : `<p class="empty">資料がまだありません。「資料」タブから PDF を追加してください。</p>`}
+    <div class="btns"><button class="btn" data-go="docs">資料タブへ</button><button class="btn primary" data-open-event="${esc(e.id)}">もどる</button></div>`);
+}
+function evDocsSection(e){
+  if(!e || !e.id) return ""; const ds = docsForEvent(e);
+  return `<div class="field"><label>資料</label><div class="evdocs">${ds.map(d => `<button type="button" class="docrow" data-doc-open="${esc(d.id)}">${d.thumb ? `<img src="${d.thumb}" alt="">` : ""}<b>${esc(d.title)}</b>${ico("right")}</button>`).join("")}
+    <button type="button" class="chip" data-ev-docs="${esc(e.id)}">${ico("plus")} ${ds.length ? "資料をえらびなおす" : "資料をひもづける"}</button></div></div>`;
+}
 function vDocs(){
   if(!docsList) return `<div class="page-h"><h1>資料</h1></div><p class="thinking">読み込んでいます…</p>`;
   const cat = ui.docCat || "all", cats = docCats(), t = todayS();
-  const list = docsList.filter(d => cat === "all" || (d.cat || "未分類") === cat);
+  const sortK = ls.get("fd-docsort", "new");
+  const list = sortDocs(docsList.filter(d => cat === "all" || (d.cat || "未分類") === cat), sortK);
   const soon = docsList.filter(d => d.date && d.date >= t && d.date <= addDays(t, 7)).sort((a, b) => a.date.localeCompare(b.date));
   const thumbIco = `<span class="th">${ico("docs")}</span>`;
   const card = d => `<div class="doc">
       <button data-doc-open="${esc(d.id)}" style="text-align:left;display:flex;flex-direction:column">
         ${d.thumb ? `<span class="th"><img src="${d.thumb}" alt=""></span>` : thumbIco}
-        <span class="tx"><b>${esc(d.title)}</b><small>${esc([d.cat && d.cat !== "未分類" ? d.cat : "", d.pages ? d.pages + "ページ" : "", fmtSize(d.size || 0)].filter(Boolean).join(" ・ "))}</small></span></button>
+        <span class="tx"><b>${esc(d.title)}</b><small>${esc([d.pages ? d.pages + "ページ" : "", fmtSize(d.size || 0), d.inked ? "書き込みあり" : ""].filter(Boolean).join(" ・ "))}</small>
+          ${d.cat && d.cat !== "未分類" ? `<span class="cat" style="background:${catColor(d.cat)}">${esc(d.cat)}</span>` : ""}
+          ${(d.ev || []).length ? `<span class="evl">${ico("events")}${esc(d.ev[0].title)}${d.ev.length > 1 ? ` ほか${d.ev.length - 1}` : ""}</span>` : ""}</span></button>
+      <button class="sel" data-doc-sel="${esc(d.id)}" aria-pressed="${!!(ui.docSel && ui.docSel.includes(d.id))}" aria-label="えらぶ"></button>
       ${d.date ? `<span class="tag">${esc(d.date === t ? "今日" : md(d.date))}</span>` : ""}
       <button class="more" data-doc-edit="${esc(d.id)}" aria-label="編集">${ico("dots")}</button></div>`;
   return `<div class="page-h"><h1>資料</h1><button class="pill-btn accent" data-doc-add>${ico("plus")}PDF を追加</button></div>
-    ${docsList.length ? `<input class="doc-search" type="search" placeholder="資料の名前でさがす" data-doc-q aria-label="資料をさがす">
-    <div class="doc-cats" role="group" aria-label="分類">${["all", ...cats].map(c => `<button class="chip" data-doc-cat="${esc(c)}" aria-pressed="${cat === c}">${c === "all" ? "すべて" : esc(c)} <span class="num" style="opacity:.6">${c === "all" ? docsList.length : docsList.filter(d => (d.cat || "未分類") === c).length}</span></button>`).join("")}</div>
+    ${docsList.length ? `<div class="doc-tools"><input class="doc-search" type="search" placeholder="資料の名前でさがす" data-doc-q aria-label="資料をさがす">
+      <select class="input" data-doc-sort aria-label="並べ替え">${DOCSORT.map(([k, l]) => `<option value="${k}" ${k === sortK ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+    <div class="doc-cats" role="group" aria-label="分類">${["all", ...cats].map(c => `<button class="chip" data-doc-cat="${esc(c)}" aria-pressed="${cat === c}">${c === "all" ? "" : `<i class="cd" style="background:${catColor(c)}"></i>`}${c === "all" ? "すべて" : esc(c)} <span class="num" style="opacity:.6">${c === "all" ? docsList.length : docsList.filter(d => (d.cat || "未分類") === c).length}</span></button>`).join("")}
+      <button class="chip" data-act="catpane">${ico("gear")} 分類を編集</button><button class="chip" data-act="docselect" aria-pressed="${!!ui.docSel}">${ui.docSel ? "選択をやめる" : "えらぶ"}</button></div>
     ${soon.length && cat === "all" ? `<div class="card" style="margin-bottom:14px"><h3>近いうちに使う資料</h3>${soon.map(d => `<button class="docrow" data-doc-open="${esc(d.id)}">${d.thumb ? `<img src="${d.thumb}" alt="">` : ""}<b>${esc(d.title)}</b><span class="chip mini ${d.date === t ? "accent" : ""}">${esc(d.date === t ? "今日" : md(d.date))}</span></button>`).join("")}</div>` : ""}
-    <div class="docs">${list.map(card).join("")}</div>`
+    ${sortK === "cat" && cat === "all" ? [...new Set(list.map(d => d.cat || "未分類"))].map(c => `<div class="doc-grp"><i style="background:${catColor(c)}"></i>${esc(c)}<small>${list.filter(d => (d.cat || "未分類") === c).length}件</small></div><div class="docs ${ui.docSel ? "selecting" : ""}">${list.filter(d => (d.cat || "未分類") === c).map(card).join("")}</div>`).join("")
+      : `<div class="docs ${ui.docSel ? "selecting" : ""}">${list.map(card).join("")}</div>`}
+    ${ui.docSel ? `<div class="selbar"><span>${ui.docSel.length}件</span><button class="pri" data-act="docmove" ${ui.docSel.length ? "" : "disabled"}>分類を変える</button><button data-act="docselect">やめる</button></div>` : ""}`
     : `<div class="card"><p class="empty" style="margin:0">説明会・研修・会議の資料（PDF）をここにまとめておけます。<br>入れた資料はこのスマホの中にだけ保存され、電波がなくても開けます。<br>「PDF を追加」から、スマホのファイルや Google ドライブの PDF を選んでください。</p></div>`}`;
 }
 function todayDocsCard(){
-  const t = todayS(), ds = (docsList || []).filter(d => d.date === t); if(!ds.length) return "";
+  const t = todayS(); if(!docsList || !docsList.length) return "";
+  const evs = S.events.filter(e => e.date === t).sort((a, b) => (a.time || "").localeCompare(b.time || "")), used = new Set(), groups = [];
+  const seen = new Set(); evs.forEach(e => { const k = evKey2(e); if(seen.has(k)) return; seen.add(k); const ds = docsForEvent(e); if(ds.length){ ds.forEach(d => used.add(d.id)); groups.push([e, ds]); } });
+  const rest = docsList.filter(d => d.date === t && !used.has(d.id));
+  if(groups.length || rest.length){
+    const row = d => `<button class="docrow" data-doc-open="${esc(d.id)}">${d.thumb ? `<img src="${d.thumb}" alt="">` : ""}<b>${esc(d.title)}</b>${d.inked ? `<span class="chip mini">書き込み</span>` : ""}${ico("right")}</button>`;
+    return `<div class="card"><h3>今日の資料<button class="more" data-go="docs" style="margin-left:auto">一覧</button></h3>
+      ${groups.map(([e, ds]) => `<div class="td-ev">${ico("events")}${esc([e.time, e.title].filter(Boolean).join(" "))}</div>${ds.map(row).join("")}`).join("")}
+      ${rest.length ? `${groups.length ? `<div class="td-ev">${ico("docs")}使う日が今日</div>` : ""}${rest.map(row).join("")}` : ""}</div>`;
+  }
+  return "";
+  const ds = [];
   return `<div class="card"><h3>今日の資料<button class="more" data-go="docs" style="margin-left:auto">一覧</button></h3>${ds.map(d => `<button class="docrow" data-doc-open="${esc(d.id)}">${d.thumb ? `<img src="${d.thumb}" alt="">` : ""}<b>${esc(d.title)}</b>${ico("right")}</button>`).join("")}</div>`;
 }
 async function importDocs(files){
@@ -2374,6 +2516,8 @@ function docEditPane(id, fresh){
       <div class="frow"><div class="field"><label for="dc-c">分類</label><input id="dc-c" name="cat" list="dc-cats" value="${esc(d.cat === "未分類" ? "" : d.cat)}" placeholder="例：説明会、研修、会議"><datalist id="dc-cats">${docCats().filter(c => c !== "未分類").map(c => `<option value="${esc(c)}">`).join("")}</datalist></div>
         <div class="field"><label for="dc-d">使う日</label><input id="dc-d" type="date" name="date" value="${esc(d.date || "")}"></div></div>
       <div class="field"><label for="dc-n">メモ</label><textarea id="dc-n" name="note" placeholder="例：配布は30部、受付で渡す">${esc(d.note || "")}</textarea></div>
+      <div class="field"><label>ひもづけた予定</label><div class="evdocs">${(d.ev || []).map(x => { const e = liveEvent(x) || x; return `<div class="pickrow" style="padding:6px 0"><span style="min-width:0"><b>${esc(e.title)}</b><small>${esc([md(e.date), e.time || ""].filter(Boolean).join(" "))}</small></span><button type="button" class="chip" data-unlink-ev="${esc(d.id)}|${esc(x.id)}">はずす</button></div>`; }).join("")}
+        <button type="button" class="chip" data-pick-ev="${esc(d.id)}">${ico("plus")} 予定とひもづける</button></div></div>
       <p class="hint">${d.pages ? d.pages + "ページ ・ " : ""}${fmtSize(d.size || 0)} ・ このスマホの中だけに保存されています。「使う日」を入れると、その日の「今日」に出ます。</p>
       <div class="btns"><button class="btn primary" type="submit">保存</button><button class="btn" type="button" data-doc-open="${esc(d.id)}">開く</button>${NATIVE ? `<button class="btn" type="button" data-doc-save="${esc(d.id)}">${ico("dl")} ダウンロードへ</button>` : ""}<button class="btn danger" type="button" data-doc-del="${esc(d.id)}">削除</button></div>
     </form>`);
@@ -2405,6 +2549,7 @@ async function openDoc(id){
     <div class="memo" aria-label="メモ"><div class="mh"><b>メモ</b><button class="icon-btn" data-pv="memo" aria-label="閉じる">${ico("close")}</button></div>
       <textarea class="input" placeholder="例：当日の流れ、気づいたこと、確認したいこと">${esc(d.note || "")}</textarea><small>自動で保存されます（このスマホの中だけ）</small></div>`;
   document.body.appendChild(el); document.body.classList.add("pdfv-on"); try { NATIVE && NATIVE.overlayHide && NATIVE.overlayHide(true); } catch(e){} requestAnimationFrame(() => el.classList.add("on"));
+  d.opened = new Date().toISOString(); DOCS.put(d).catch(() => {});
   const st = pdfv = {el, zoom:1, pdf:null, io:null, id, d, ink:JSON.parse(JSON.stringify(d.ink || {})), tool:null, col:{pen:INKCOL[0][0], hl:HLCOL[0][0]}, hist:[], saveT:0};
   const sc = el.querySelector(".sc");
   el.addEventListener("click", e => {
@@ -2727,6 +2872,7 @@ function schoolEventPane(e){
     <div class="group"><div class="setrow"><span class="main"><b>${esc(e.title)}</b><small>${esc([md(e.date), e.time ? e.time + (e.endTime ? "–" + e.endTime : "") : "終日", e.place].filter(Boolean).join(" · "))}</small></span><span class="chip mini accent">学校</span></div></div>
     ${dupNote(e)}${e.device ? `<p class="hint" style="margin-top:10px">スマホのカレンダー${e.calendar ? `「${esc(e.calendar)}」` : ""}（${esc(e.account)}）の予定です。表示しているだけで、Fold Desk のデータには保存していません。変更はカレンダーのアプリで行ってください。</p>`
       : `<p class="hint" style="margin-top:10px">学校の Google アカウントのカレンダー${e.calendar ? `「${esc(e.calendar)}」` : ""}の予定です。このスマホに表示しているだけで、個人のアカウントには保存していません。変更は学校の Google カレンダーで行ってください。</p>`}
+    <div style="margin-top:12px">${evDocsSection(e)}</div>
     <div class="btns">${e.device && e.eid ? `<button class="btn" data-dev-open="${esc(String(e.eid))}">カレンダーで開く</button>` : ""}<button class="btn primary" data-act="close">閉じる</button></div>`);
 }
 function eventForm(e = {}){
@@ -2743,6 +2889,7 @@ function eventForm(e = {}){
       ${googleRow(e)}
       <div class="field"><label for="e-note">メモ</label><textarea id="e-note" name="note">${esc(e.note)}</textarea></div>
       ${filesField(e.files)}
+      ${evDocsSection(e)}
       <div class="btns"><button class="btn primary" type="submit">保存</button>${e.id?`<button class="btn danger" type="button" data-del="events:${e.id}">${e.calId ? "削除（Google からも）" : "削除"}</button>`:''}</div>${srcLink(e)}
     </form>`);
 }
@@ -3313,6 +3460,19 @@ document.addEventListener("click", async (ev) => {
   if(d.docOpen){ openDoc(d.docOpen); return; }
   if(d.docEdit){ docEditPane(d.docEdit); return; }
   if(d.docCat){ ui.docCat = d.docCat; schedule(); return; }
+  if(d.act === "catpane"){ catPane(); return; }
+  if(d.act === "docselect"){ ui.docSel = ui.docSel ? null : []; schedule(); return; }
+  if(d.docSel){ const i = ui.docSel.indexOf(d.docSel); if(i >= 0) ui.docSel.splice(i, 1); else ui.docSel.push(d.docSel); b.setAttribute("aria-pressed", i < 0); const sb = document.querySelector(".selbar"); if(sb){ sb.firstElementChild.textContent = ui.docSel.length + "件"; sb.querySelector(".pri").disabled = !ui.docSel.length; } return; }
+  if(d.act === "docmove"){ if(ui.docSel && ui.docSel.length) moveCatPane(ui.docSel.slice()); return; }
+  if(d.moveCat){ await setDocsCat(ui.moveIds || [], d.moveCat); closePane(); toast(`「${d.moveCat}」にしました`); ui.docSel = null; schedule(); return; }
+  if(d.catCol){ const [c, col] = d.catCol.split("|"); const g = catCfg(); g.cols[c] = col; saveCat(g); b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); b.closest(".catrow").firstElementChild.style.background = col; schedule(); return; }
+  if(d.catDel){ if(!b.dataset.sure){ b.dataset.sure = "1"; b.textContent = "もう一度"; return; } const c = d.catDel; const g = catCfg(); delete g.cols[c]; g.extra = (g.extra || []).filter(x => x !== c); saveCat(g);
+    await setDocsCat((docsList || []).filter(x => x.cat === c).map(x => x.id), "未分類"); if(ui.docCat === c) ui.docCat = "all"; catPane(); return; }
+  if(d.pickEv){ evPickPane(d.pickEv); return; }
+  if(d.unlinkEv){ const [di, ei] = d.unlinkEv.split("|"); const dd = (docsList || []).find(x => x.id === di); if(dd){ const x = (dd.ev || []).find(y => y.id === ei); if(x){ await linkDoc(di, x, false); } } docEditPane(di); return; }
+  if(d.linkEv){ const [di, ei] = d.linkEv.split("|"); const e = S.events.find(x => x.id === ei); const on = b.getAttribute("aria-pressed") !== "true"; await linkDoc(di, e, on); b.setAttribute("aria-pressed", on); b.textContent = on ? "ひもづけ済み" : "ひもづける"; buzz(8); return; }
+  if(d.linkDoc){ const [di, ei] = d.linkDoc.split("|"); const e = S.events.find(x => x.id === ei); const on = b.getAttribute("aria-pressed") !== "true"; await linkDoc(di, e, on); b.setAttribute("aria-pressed", on); b.textContent = on ? "ひもづけ済み" : "ひもづける"; buzz(8); return; }
+  if(d.evDocs){ docPickPane(d.evDocs); return; }
   if(d.docDel){ const x = (docsList || []).find(y => y.id === d.docDel); if(x && b.dataset.sure){ await DOCS.del(x.id); closePane(); toast("削除しました"); loadDocs(); } else { b.dataset.sure = "1"; b.textContent = "もう一度押すと削除"; } return; }
   if(d.docSave){ const blob = await DOCS.file(d.docSave), x = (docsList || []).find(y => y.id === d.docSave);
     if(blob && x){ const b64 = await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.readAsDataURL(blob); });
@@ -3458,6 +3618,8 @@ document.addEventListener("submit", async (ev) => {
         const tid = await put("tasks", id, rec);
         if(rec.phone || old.gcalId){ const g = await gcalSyncTask({...rec, id:tid}); if(g !== (old.gcalId||"")) await put("tasks", tid, {...rec, gcalId:g}); }
         break; }
+      case "newcat": { const nm = (v.name || "").trim().slice(0, 30); if(!nm) return; const g = catCfg(); if(!docCats().includes(nm)){ g.extra = [...(g.extra || []), nm]; saveCat(g); } catPane(); toast(`「${nm}」を追加しました`); schedule(); return; }
+      case "movecat": { const nm = (v.name || "").trim().slice(0, 30); if(!nm) return; await setDocsCat(ui.moveIds || [], nm); closePane(); toast(`「${nm}」にしました`); ui.docSel = null; schedule(); return; }
       case "doc": {
         const x = (docsList || []).find(y => y.id === id); if(!x) return;
         await DOCS.put({...x, title:(v.title || x.title).trim().slice(0, 120), cat:(v.cat || "").trim().slice(0, 30) || "未分類", date:v.date || "", note:(v.note || "").slice(0, 1000)});
