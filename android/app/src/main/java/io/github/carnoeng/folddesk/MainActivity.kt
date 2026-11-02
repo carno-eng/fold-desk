@@ -53,8 +53,8 @@ class MainActivity : ComponentActivity() {
     private fun cameraForWeb(): Boolean = try {
         val dir = java.io.File(cacheDir, "shot").apply { mkdirs(); listFiles()?.filter { System.currentTimeMillis() - it.lastModified() > 3_600_000 }?.forEach { it.delete() } }
         val f = java.io.File(dir, "shot-${System.currentTimeMillis()}.jpg")
-        shotUri = androidx.core.content.FileProvider.getUriForFile(this, "$packageName.files", f)
-        takeShot.launch(shotUri); true
+        val u = androidx.core.content.FileProvider.getUriForFile(this, "$packageName.files", f)
+        shotUri = u; takeShot.launch(u); true
     } catch (_: Exception) { false }
 
     private var cardUri: Uri? = null
