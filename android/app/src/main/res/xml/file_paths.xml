@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<paths><cache-path name="card" path="card/" /></paths>
+<paths><cache-path name="card" path="card/" /><cache-path name="shot" path="shot/" /></paths>

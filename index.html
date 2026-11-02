@@ -806,6 +806,41 @@ body:not([data-mode="cover-p"]) .wx .wx-hours{grid-column:1/-1}
 .catpick .chip svg{width:14px;height:14px}
 .dlchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .dlchips .chip{font-size:13px}
+/* 授業の写真 */
+.dtabs{display:flex;gap:4px;padding:4px;border-radius:16px;background:color-mix(in srgb,var(--fg) 6%,transparent);margin:0 0 14px}
+.dtabs button{flex:1;border:0;background:transparent;font:inherit;font-weight:800;padding:9px 6px;border-radius:12px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px}
+.dtabs button svg{width:17px;height:17px}
+.dtabs button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.ph-day{margin:18px 2px 8px;font-weight:800;font-size:15px}
+.ph-day:first-of-type{margin-top:4px}
+.ph-slot{font-size:12.5px;font-weight:800;color:var(--muted);margin:10px 2px 6px;display:flex;gap:8px;align-items:center}
+.ph-slot .chip{font-size:11px}
+.ph-grid{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(104px,1fr))}
+.ph-grid button{position:relative;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:var(--surface-2);box-shadow:var(--shadow)}
+.ph-grid img{width:100%;height:100%;object-fit:cover;display:block}
+.ph-grid .k{position:absolute;left:6px;bottom:6px;font-size:10.5px;font-weight:800;padding:1px 6px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff}
+.ph-grid .n{position:absolute;right:6px;top:6px;width:9px;height:9px;border-radius:50%;background:#FFD43B;box-shadow:0 0 0 1.5px rgba(0,0,0,.3)}
+.phstrip{display:flex;gap:8px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}
+.phstrip img{height:84px;border-radius:10px;flex:none;box-shadow:var(--shadow)}
+.slotpick{display:flex;flex-wrap:wrap;gap:6px}
+.slotpick .chip[aria-pressed="true"],.kindpick .chip[aria-pressed="true"]{background:var(--accent);color:#fff}
+.kindpick{display:flex;flex-wrap:wrap;gap:6px}
+.chip svg{width:14px;height:14px;vertical-align:-2px}
+#pane .btns .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+#pane .btns .btn svg{width:18px;height:18px;flex:none}
+#phv{position:fixed;inset:0;z-index:80;background:#0D0F14;display:flex;flex-direction:column;opacity:0;transition:opacity .25s}
+#phv.on{opacity:1}
+#phv .bar{display:flex;align-items:center;gap:6px;padding:8px 10px;background:rgba(20,22,30,.85);color:#fff;position:relative;z-index:2}
+#phv .bar b{flex:1;min-width:0;font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#phv .bar small{display:block;font-size:11.5px;font-weight:700;color:rgba(255,255,255,.7)}
+#phv .bar button{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.1);flex:none}
+#phv .bar button svg{width:19px;height:19px}
+#phv .stage{flex:1;position:relative;overflow:hidden;touch-action:none}
+#phv .stage img{position:absolute;left:50%;top:50%;max-width:100%;max-height:100%;transform-origin:center;will-change:transform;user-select:none;-webkit-user-drag:none}
+#phv .note{position:absolute;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:2;color:#fff;background:rgba(0,0,0,.55);border-radius:12px;padding:8px 12px;font-size:13.5px;font-weight:700}
+#phv .note:empty{display:none}
+#phv .cnt{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:2;font-size:12px;font-weight:800;color:rgba(255,255,255,.8);background:rgba(0,0,0,.4);padding:2px 10px;border-radius:999px}
+body.phv-on #cc,body.phv-on #pills{display:none!important}
 .doc-grp{margin:18px 2px 10px;display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px}
 .doc-grp i{width:10px;height:10px;border-radius:50%}
 .doc-grp small{color:var(--muted);font-weight:700}
@@ -960,6 +995,8 @@ const I = {
   undo:'<path d="M9 7.5L4.5 12 9 16.5"/><path d="M5 12h9.5a5 5 0 0 1 0 10H12"/>',
   textT:'<path d="M5 6.5V5h14v1.5"/><path d="M12 5v14"/><path d="M9.5 19h5"/>',
   share2:'<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13"/>',
+  camera:'<path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.4-2h5.8l1.4 2h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.5"/>',
+  image:'<rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M20.5 16l-5-5-8 8"/>',
   timer:'<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.6 1.8"/><path d="M9.5 2.5h5"/><path d="M12 2.5V6"/><path d="M18.5 6.5l1.3-1.3"/>',
   play:'<path d="M8 5.5v13l10.5-6.5z"/>',
   pause:'<path d="M8.5 5.5v13"/><path d="M15.5 5.5v13"/>',
@@ -1398,6 +1435,7 @@ document.addEventListener("focusout", e => { if(e.target.matches && e.target.mat
 document.addEventListener("pointerdown", e => { const c = e.target.closest && e.target.closest("[data-dl]"); if(!c) return; e.preventDefault();
   const inp = c.parentNode.previousElementSibling; inp.value = c.dataset.dl; inp.dispatchEvent(new Event("input", {bubbles:true})); inp.dispatchEvent(new Event("change", {bubbles:true})); c.parentNode.remove(); buzz(6); });
 document.addEventListener("change", e => {
+  if(e.target.matches && e.target.matches("[data-photo-date]")){ const box = document.getElementById("pe-slots"); if(box) box.innerHTML = periodsOf(e.target.value).map(x => `<button type="button" class="chip" data-slot="${x.n}" aria-pressed="false">${x.n} ${esc(x.cell.subject || "空き")}${x.cell.cls ? " " + esc(x.cell.cls) : ""}</button>`).join("") + `<button type="button" class="chip" data-slot="0" aria-pressed="true">授業外</button>`; const f = e.target.closest("form"); f.querySelector('[name="n"]').value = "0"; }
   if(e.target.matches && e.target.matches("[data-doc-sort]")){ ls.set("fd-docsort", e.target.value); schedule(); }
 });
 document.addEventListener("input", e => { if(!e.target.matches || !e.target.matches("[data-doc-q]")) return;
@@ -2155,8 +2193,11 @@ function dayCard(dateS){
     const badge = x.changed && !x.cancelled ? `<span class="chip warn mini">変更</span>` : '';
     const right = ui.edit ? `<button class="chip" data-ov-cell="${dateS}:${x.n-1}">変更</button>` : `<span class="tm">${x.start}<br>${x.end}</span>`;
     const past = isT && !ui.edit && !isNow && !ahead;
+    const phs = !ui.edit && !x.cancelled && k !== "free" ? photosOf(dateS, x.n) : [];
+    const started = mins(x.start) <= nowMin() + 5 || dateS < todayS();
+    const shot = !ui.edit && !x.cancelled && k !== "free" && (phs.length || (isT && started && mins(x.end) + 30 > nowMin())) ? `<div class="suggest">${isT && started && mins(x.end) + 30 > nowMin() ? `<button class="chip" data-photo-shot="${dateS}:${x.n}">${ico("camera")} 板書を撮る</button>` : ""}${phs.length ? `<button class="chip accent" data-photo-slot="${dateS}:${x.n}">${ico("image")} 写真 ${phs.length}</button>` : ""}</div>` : "";
     rows += `<div class="prow ${isNow?'now':''} ${past?'past':''} ${k==='free'?'free':''} ${x.cancelled?'cancel':''}"><span class="pno">${x.n}</span>
-      <div class="t">${badge}${name}${x.cell.note && x.changed ? `<small>${esc(x.cell.note)}</small>` : ''}${sug}${prog}</div>${right}</div>`;
+      <div class="t">${badge}${name}${x.cell.note && x.changed ? `<small>${esc(x.cell.note)}</small>` : ''}${sug}${prog}${shot}</div>${right}</div>`;
   });
   if(!items.length) rows = `<p class="empty">${wk ? '日程はありません。' : '土日は授業がありません。'}</p>`;
   const foot = ui.edit
@@ -2403,6 +2444,138 @@ function loadPdfjs(){
 const PDFOPT = {cMapUrl:"vendor/pdfjs/cmaps/", cMapPacked:true, standardFontDataUrl:"vendor/pdfjs/standard_fonts/", isEvalSupported:false};
 const fmtSize = n => n >= 1e6 ? (n / 1e6).toFixed(1) + "MB" : Math.max(1, Math.round(n / 1e3)) + "KB";
 const docCats = () => [...new Set([...(docsList || []).map(d => d.cat || "未分類"), ...((catCfg().extra) || [])])].sort((a, b) => a === "未分類" ? 1 : b === "未分類" ? -1 : a.localeCompare(b, "ja"));
+/* ================= 授業の写真（板書・掲示）: 撮った時刻から授業に自動でひもづけ、このスマホの中だけに保存 ================= */
+const PHOTOS = (() => {
+  let dbp = null;
+  const open = () => dbp || (dbp = new Promise((ok, ng) => { const r = indexedDB.open("fd-photos", 1);
+    r.onupgradeneeded = () => { const d = r.result; if(!d.objectStoreNames.contains("meta")) d.createObjectStore("meta", {keyPath:"id"}); if(!d.objectStoreNames.contains("files")) d.createObjectStore("files"); };
+    r.onsuccess = () => ok(r.result); r.onerror = () => ng(r.error); }));
+  const tx = async (stores, mode, fn) => { const d = await open(); return new Promise((ok, ng) => { const t = d.transaction(stores, mode); const req = fn(t); t.oncomplete = () => ok(req && "result" in req ? req.result : undefined); t.onerror = () => ng(t.error); t.onabort = () => ng(t.error); }); };
+  return { list:() => tx(["meta"], "readonly", t => t.objectStore("meta").getAll()), file:id => tx(["files"], "readonly", t => t.objectStore("files").get(id)),
+    put:(m, blob) => tx(["meta", "files"], "readwrite", t => { if(blob) t.objectStore("files").put(blob, m.id); return t.objectStore("meta").put(m); }),
+    del:id => tx(["meta", "files"], "readwrite", t => { t.objectStore("files").delete(id); return t.objectStore("meta").delete(id); }) };
+})();
+let photoList = null;
+async function loadPhotos(){ try { photoList = (await PHOTOS.list()).sort((a, b) => (b.at || "").localeCompare(a.at || "")); } catch(e){ photoList = []; } schedule(); }
+loadPhotos();
+const PHKINDS = ["板書", "掲示", "ノート・作品", "その他"];
+const slotKey = (date, n) => `${date}:${n}`;
+const photosOf = (date, n) => (photoList || []).filter(p => p.date === date && String(p.n) === String(n));
+const periodsOf = date => (dayItems(date) || []).filter(x => x.type === "period" && !x.cancelled);
+function slotLabel(p){ return [p.n ? `${p.n}時間目` : "授業外", p.subject, p.cls].filter(Boolean).join(" "); }
+/* which period was it? during the period, or up to 12 minutes after it (the board is often photographed at the end) */
+function autoSlot(when){
+  const d = new Date(when), date = d.toLocaleDateString("sv"), m = d.getHours() * 60 + d.getMinutes(), ps = periodsOf(date);
+  let x = ps.find(p => m >= mins(p.start) - 3 && m < mins(p.end) + 12);
+  if(!x){ const before = ps.filter(p => mins(p.end) <= m && m - mins(p.end) <= 30).pop(); x = before || null; }
+  return x ? {date, n:x.n, subject:x.cell.subject || "", cls:x.cell.cls || "", start:x.start} : {date, n:0, subject:"", cls:"", start:""};
+}
+function slotFromPeriod(date, n){
+  const x = periodsOf(date).find(p => String(p.n) === String(n));
+  return x ? {date, n:x.n, subject:x.cell.subject || "", cls:x.cell.cls || "", start:x.start} : {date, n:0, subject:"", cls:"", start:""};
+}
+function timeFromName(name){ const m = String(name || "").match(/(20\d{2})(\d{2})(\d{2})[_-]?(\d{2})(\d{2})(\d{2})/); if(!m) return 0; const t = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime(); return isNaN(t) ? 0 : t; }
+async function shrink(file, max, q){
+  const bmp = await createImageBitmap(file); const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k); c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  const blob = await new Promise(ok => c.toBlob(ok, "image/jpeg", q)); return {blob, w:c.width, h:c.height, canvas:c};
+}
+async function savePhotos(files, target, fromShare){
+  files = [...files].filter(f => /^image\//.test(f.type) || /\.(jpe?g|png|heic|webp)$/i.test(f.name || "")); if(!files.length){ toast("写真を選んでください"); return; }
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch(e){}
+  toast(`${files.length}枚を保存しています…`);
+  const saved = [];
+  for(const f of files){
+    try {
+      const when = target && target !== "auto" ? null : (fromShare ? timeFromName(f.name) || Date.now() : Math.max(f.lastModified || 0, 0) > Date.now() - 6 * 3600e3 ? f.lastModified : timeFromName(f.name) || f.lastModified || Date.now());
+      const slot = target && target !== "auto" ? slotFromPeriod(...target.split(":")) : autoSlot(when);
+      const big = await shrink(f, 2400, .86), th = await shrink(f, 420, .72);
+      const lp = slot.subject ? lastProg(slot.subject, slot.cls) : null;
+      const m = {id:"p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), at:new Date(when || Date.now()).toISOString(), ...slot, kind:"板書", note:"", unit:lp ? progLabel(lp) : "",
+        w:big.w, h:big.h, size:big.blob.size, thumb:th.canvas.toDataURL("image/jpeg", .72)};
+      await PHOTOS.put(m, big.blob); saved.push(m);
+    } catch(e){ toast("保存できない写真がありました"); }
+  }
+  await loadPhotos();
+  if(saved.length){ buzz(15); photoSavedPane(saved.map(x => x.id)); try { concierge.say(pickOne(["板書、しまっておいたよ！", "授業の記録、ばっちり！"]), "joy", 2400); } catch(e){} }
+}
+function shoot(target, gallery){
+  ui.shotTarget = target || "auto";
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";
+  if(gallery) inp.multiple = true; else inp.setAttribute("capture", "environment");
+  inp.onchange = () => { if(inp.files.length) savePhotos(inp.files, gallery && target === "auto" ? "auto" : ui.shotTarget); };
+  inp.click();
+}
+function photoSavedPane(ids){
+  const ps = (photoList || []).filter(p => ids.includes(p.id)); if(!ps.length) return; const p0 = ps[0];
+  const same = ps.every(p => p.date === p0.date && p.n === p0.n), per = periodsOf(p0.date);
+  openPane(`${paneHead(`${ps.length}枚を保存しました`)}
+    <div class="phstrip">${ps.map(p => `<img src="${p.thumb}" alt="">`).join("")}</div>
+    <form data-form="photos" data-id="${esc(ids.join(","))}">
+      <div class="field"><label>授業</label><p class="hint" style="margin:0 0 6px">${esc(md(p0.date))} ・ ${same ? (p0.n ? "撮った時刻から自動で選びました" : "授業の時間外でした") : "撮った時刻ごとに振り分けました"}</p>
+        ${same ? `<div class="slotpick">${per.map(x => `<button type="button" class="chip" data-slot="${x.n}" aria-pressed="${String(p0.n) === String(x.n)}">${x.n} ${esc(x.cell.subject || "空き")}${x.cell.cls ? " " + esc(x.cell.cls) : ""}</button>`).join("")}<button type="button" class="chip" data-slot="0" aria-pressed="${!p0.n}">授業外</button></div><input type="hidden" name="n" value="${esc(String(p0.n || 0))}">` : `<p style="margin:0;font-weight:700">${[...new Set(ps.map(slotLabel))].map(esc).join("、")}</p>`}</div>
+      <div class="field"><label>種類</label><div class="kindpick">${PHKINDS.map(k => `<button type="button" class="chip" data-kind="${k}" aria-pressed="${k === p0.kind}">${k}</button>`).join("")}</div><input type="hidden" name="kind" value="${esc(p0.kind)}"></div>
+      <div class="field"><label for="ph-note">メモ</label><input id="ph-note" class="input" name="note" placeholder="例：まとめの板書、次回は続きから"></div>
+      ${p0.unit ? `<p class="hint">記録してある進度：${esc(p0.unit)}</p>` : ""}
+      <p class="hint">写真はこのスマホの中だけに保存されます。子どもの名前や顔が写っていないか確かめてください。</p>
+      <div class="btns"><button class="btn" type="button" data-photo-shot="${esc(slotKey(p0.date, p0.n))}">${ico("camera")} もう1枚</button><button class="btn primary" type="submit">完了</button></div></form>`);
+}
+function photoEditPane(id){
+  const p = (photoList || []).find(x => x.id === id); if(!p) return; const per = periodsOf(p.date);
+  openPane(`${paneHead("写真")}<div class="phstrip"><img src="${p.thumb}" alt=""></div>
+    <form data-form="photoedit" data-id="${esc(p.id)}">
+      <div class="field"><label for="pe-d">日付</label><input id="pe-d" class="input" type="date" name="date" value="${esc(p.date)}" data-photo-date></div>
+      <div class="field"><label>授業</label><div class="slotpick" id="pe-slots">${per.map(x => `<button type="button" class="chip" data-slot="${x.n}" aria-pressed="${String(p.n) === String(x.n)}">${x.n} ${esc(x.cell.subject || "空き")}${x.cell.cls ? " " + esc(x.cell.cls) : ""}</button>`).join("")}<button type="button" class="chip" data-slot="0" aria-pressed="${!p.n}">授業外</button></div><input type="hidden" name="n" value="${esc(String(p.n || 0))}"></div>
+      <div class="field"><label>種類</label><div class="kindpick">${PHKINDS.map(k => `<button type="button" class="chip" data-kind="${k}" aria-pressed="${k === p.kind}">${k}</button>`).join("")}</div><input type="hidden" name="kind" value="${esc(p.kind)}"></div>
+      <div class="field"><label for="pe-n">メモ</label><input id="pe-n" class="input" name="note" value="${esc(p.note || "")}"></div>
+      <p class="hint">${esc(new Date(p.at).toLocaleString("ja-JP", {month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit"}))} に撮影 ・ ${fmtSize(p.size || 0)}</p>
+      <div class="btns"><button class="btn primary" type="submit">保存</button>${NATIVE ? `<button class="btn" type="button" data-photo-dl="${esc(p.id)}">${ico("dl")} ダウンロードへ</button>` : ""}<button class="btn danger" type="button" data-photo-del="${esc(p.id)}">削除</button></div></form>`);
+}
+function vPhotos(){
+  const all = photoList || [], subs = [...new Set(all.map(p => p.subject).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ja"));
+  const f = ui.phSub || "all", list = all.filter(p => f === "all" || (f === "_none" ? !p.subject : p.subject === f));
+  const days = [...new Set(list.map(p => p.date))].sort().reverse();
+  const thumb = p => `<button data-photo-open="${esc(p.id)}" aria-label="${esc(slotLabel(p))}"><img src="${p.thumb}" alt="" loading="lazy"><span class="k">${esc(p.kind)}</span>${p.note ? `<i class="n"></i>` : ""}</button>`;
+  return `${all.length ? `<div class="doc-cats" role="group" aria-label="教科">${[["all", "すべて"], ...subs.map(x => [x, x]), ...(all.some(p => !p.subject) ? [["_none", "授業外"]] : [])].map(([k, l]) => `<button class="chip" data-ph-sub="${esc(k)}" aria-pressed="${f === k}">${esc(l)} <span class="num" style="opacity:.6">${k === "all" ? all.length : all.filter(p => k === "_none" ? !p.subject : p.subject === k).length}</span></button>`).join("")}</div>
+    ${days.map(d => { const ps = list.filter(p => p.date === d), slots = [...new Set(ps.map(p => String(p.n)))].sort((a, b) => +a - +b);
+      return `<div class="ph-day">${esc(md(d))}${d === todayS() ? "　今日" : ""}</div>${slots.map(n => { const g = ps.filter(p => String(p.n) === n), p0 = g[0];
+        return `<div class="ph-slot">${esc(slotLabel(p0))}${p0.unit ? `<span class="chip mini">${esc(p0.unit)}</span>` : ""}</div><div class="ph-grid">${g.slice().sort((a, b) => a.at.localeCompare(b.at)).map(thumb).join("")}</div>`; }).join("")}`; }).join("")}`
+    : `<div class="card"><p class="empty" style="margin:0">授業の板書や掲示を撮ると、撮った時刻から「何時間目の何の授業か」を自動で判断してここに整理します。<br>写真はこのスマホの中にだけ保存されます。<br>「撮る」か、「今日」の授業の行にあるカメラのボタンから始めてください。</p></div>`}`;
+}
+/* full-screen photo viewer: pinch / double-tap to zoom, swipe to the next photo */
+let phv = null;
+async function openPhoto(id, ids){
+  const list = ids || (photoList || []).map(p => p.id); let i = Math.max(0, list.indexOf(id));
+  const el = document.createElement("div"); el.id = "phv"; el.setAttribute("role", "dialog");
+  el.innerHTML = `<div class="bar"><button data-pz="close" aria-label="閉じる">${ico("left")}</button><b></b><button data-pz="edit" aria-label="編集">${ico("pen")}</button></div><div class="stage"><img alt=""><span class="cnt"></span><div class="note"></div></div>`;
+  document.body.appendChild(el); document.body.classList.add("phv-on"); requestAnimationFrame(() => el.classList.add("on"));
+  const st = phv = {el, list, i, k:1, x:0, y:0, url:null};
+  const img = el.querySelector("img"), stage = el.querySelector(".stage");
+  const apply = () => { img.style.transform = `translate(calc(-50% + ${st.x}px), calc(-50% + ${st.y}px)) scale(${st.k})`; };
+  async function show(){
+    const p = (photoList || []).find(x => x.id === st.list[st.i]); if(!p){ closePhoto(); return; }
+    el.querySelector(".bar b").innerHTML = `${esc(slotLabel(p))}<small>${esc(md(p.date))} ・ ${esc(p.kind)}${p.unit ? " ・ " + esc(p.unit) : ""}</small>`;
+    el.querySelector(".note").textContent = p.note || ""; el.querySelector(".cnt").textContent = st.list.length > 1 ? `${st.i + 1} / ${st.list.length}` : "";
+    img.src = p.thumb; st.k = 1; st.x = 0; st.y = 0; apply();
+    const blob = await PHOTOS.file(p.id); if(phv !== st) return; if(st.url) URL.revokeObjectURL(st.url); if(blob){ st.url = URL.createObjectURL(blob); img.src = st.url; }
+  }
+  st.show = show; show();
+  el.addEventListener("click", e => { const b = e.target.closest("[data-pz]"); if(!b) return; if(b.dataset.pz === "close") closePhoto(); else { const id2 = st.list[st.i]; closePhoto(); photoEditPane(id2); } });
+  let t0 = null, last = 0;
+  stage.addEventListener("touchstart", e => { e.preventDefault(); const T = e.touches;
+    if(T.length === 2) t0 = {pinch:true, d:Math.hypot(T[0].clientX - T[1].clientX, T[0].clientY - T[1].clientY), k:st.k};
+    else if(T.length === 1){ const n = Date.now(); if(n - last < 280){ st.k = st.k > 1.05 ? 1 : 2.5; st.x = 0; st.y = 0; apply(); last = 0; t0 = null; return; } last = n; t0 = {x:T[0].clientX, y:T[0].clientY, sx:st.x, sy:st.y}; } }, {passive:false});
+  stage.addEventListener("touchmove", e => { e.preventDefault(); const T = e.touches; if(!t0) return;
+    if(t0.pinch && T.length === 2){ st.k = Math.max(1, Math.min(6, t0.k * Math.hypot(T[0].clientX - T[1].clientX, T[0].clientY - T[1].clientY) / t0.d)); apply(); }
+    else if(!t0.pinch && T.length === 1){ const dx = T[0].clientX - t0.x, dy = T[0].clientY - t0.y; if(st.k > 1.02){ st.x = t0.sx + dx; st.y = t0.sy + dy; } else { st.x = dx; } apply(); t0.dx = dx; } }, {passive:false});
+  stage.addEventListener("touchend", e => { if(!t0 || e.touches.length) return;
+    if(!t0.pinch && st.k <= 1.02){ const dx = t0.dx || 0; if(Math.abs(dx) > 70){ st.i = (st.i + (dx < 0 ? 1 : -1) + st.list.length) % st.list.length; show(); buzz(6); } else { st.x = 0; apply(); } }
+    if(st.k <= 1.02){ st.k = 1; st.x = 0; st.y = 0; apply(); } t0 = null; });
+  stage.addEventListener("wheel", e => { e.preventDefault(); st.k = Math.max(1, Math.min(6, st.k * (e.deltaY < 0 ? 1.15 : 1 / 1.15))); if(st.k === 1){ st.x = 0; st.y = 0; } apply(); }, {passive:false});
+  el.addEventListener("keydown", e => { if(e.key === "ArrowRight"){ st.i = (st.i + 1) % st.list.length; show(); } else if(e.key === "ArrowLeft"){ st.i = (st.i - 1 + st.list.length) % st.list.length; show(); } else if(e.key === "Escape") closePhoto(); });
+  el.tabIndex = -1; el.focus();
+}
+function closePhoto(){ const st = phv; if(!st) return; phv = null; if(st.url) URL.revokeObjectURL(st.url); document.body.classList.remove("phv-on"); st.el.classList.remove("on"); setTimeout(() => st.el.remove(), 250); }
 /* 分類（色つき）と並べ替え、予定とのひもづけ */
 const CATCOLS = ["#3B5BFF", "#12A594", "#E5484D", "#F59E0B", "#8B5CF6", "#EC4899", "#0EA5E9", "#64748B"];
 const catCfg = () => { try { return JSON.parse(localStorage.getItem("fd-doccats") || "null") || {cols:{}, extra:[]}; } catch(e){ return {cols:{}, extra:[]}; } };
@@ -2494,6 +2667,12 @@ function evDocsSection(e){
     <button type="button" class="chip" data-ev-docs="${esc(e.id)}">${ico("plus")} ${ds.length ? "資料をえらびなおす" : "資料をひもづける"}</button></div></div>`;
 }
 function vDocs(){
+  const dt = ui.docTab || ls.get("fd-doctab", "docs");
+  const tabs = `<div class="dtabs" role="tablist"><button role="tab" data-doctab="docs" aria-pressed="${dt === "docs"}">${ico("docs")} PDF資料</button><button role="tab" data-doctab="photos" aria-pressed="${dt === "photos"}">${ico("image")} 授業の写真${(photoList || []).length ? ` <span class="num" style="opacity:.6">${photoList.length}</span>` : ""}</button></div>`;
+  if(dt === "photos") return `<div class="page-h"><h1>資料</h1><button class="pill-btn" data-photo-add>${ico("image")}写真から</button><button class="pill-btn accent" data-photo-shot="auto">${ico("camera")}撮る</button></div>${tabs}${vPhotos()}`;
+  return vDocsInner(tabs);
+}
+function vDocsInner(tabs){
   if(!docsList) return `<div class="page-h"><h1>資料</h1></div><p class="thinking">読み込んでいます…</p>`;
   const cat = ui.docCat || "all", cats = docCats(), t = todayS();
   let sortK = ls.get("fd-docsort", "smart"); if(!DOCSORT.some(x => x[0] === sortK)) sortK = "smart";
@@ -2509,7 +2688,7 @@ function vDocs(){
       <button class="sel" data-doc-sel="${esc(d.id)}" aria-pressed="${!!(ui.docSel && ui.docSel.includes(d.id))}" aria-label="えらぶ"></button>
       ${nextUse(d) ? `<span class="tag">${esc(nextUse(d) === t ? "今日" : nextUse(d) === addDays(t, 1) ? "明日" : md(nextUse(d)))}</span>` : ""}
       <button class="more" data-doc-edit="${esc(d.id)}" aria-label="編集">${ico("dots")}</button></div>`;
-  return `<div class="page-h"><h1>資料</h1><button class="pill-btn accent" data-doc-add>${ico("plus")}PDF を追加</button></div>
+  return `<div class="page-h"><h1>資料</h1><button class="pill-btn accent" data-doc-add>${ico("plus")}PDF を追加</button></div>${tabs}
     ${docsList.length ? `<div class="doc-tools"><input class="doc-search" type="search" placeholder="資料の名前でさがす" data-doc-q aria-label="資料をさがす">
       <select class="input" data-doc-sort aria-label="並べ替え">${DOCSORT.map(([k, l]) => `<option value="${k}" ${k === sortK ? "selected" : ""}>${l}</option>`).join("")}</select></div>
     <div class="doc-cats" role="group" aria-label="分類">${["all", ...cats].map(c => `<button class="chip" data-doc-cat="${esc(c)}" aria-pressed="${cat === c}">${c === "all" ? "" : `<i class="cd" style="background:${catColor(c)}"></i>`}${c === "all" ? "すべて" : esc(c)} <span class="num" style="opacity:.6">${c === "all" ? docsList.length : docsList.filter(d => (d.cat || "未分類") === c).length}</span></button>`).join("")}
@@ -2856,6 +3035,7 @@ async function handleShare(){
     ${imgs.length ? `<p class="empty" style="margin-top:0">画像 ${imgs.length}枚を受け取りました。</p>` : ""}
     ${text ? `<div class="card" style="box-shadow:none;background:var(--surface-2);margin-bottom:12px"><p style="margin:0;white-space:pre-wrap;overflow-wrap:anywhere;max-height:160px;overflow:auto;font-size:14px">${esc(text.slice(0, 1200))}</p></div>` : ""}
     <div class="card" style="padding:4px 14px">
+      ${imgs.length ? `<button class="row" data-share="photos" style="grid-template-columns:1fr auto;width:100%;text-align:left"><span class="main"><b>授業の写真として保存</b><small>撮った時刻から授業を判断して「資料 › 授業の写真」へ</small></span><span class="when">${ico("right")}</span></button>` : ""}
       ${imgs.length ? `<button class="row" data-share="card" style="grid-template-columns:1fr auto;width:100%;text-align:left"><span class="main"><b>名刺として読み取る</b><small>文字を読んで「人」に登録します（写真は保存しません）</small></span><span class="when">${ico("right")}</span></button>` : ""}
       ${text ? `<button class="row" data-share="ask" style="grid-template-columns:1fr auto;width:100%;text-align:left"><span class="main"><b>ひとことで振り分ける</b><small>タスク・予定・メモに自動で分けます</small></span><span class="when">${ico("right")}</span></button>
       <button class="row" data-share="task" style="grid-template-columns:1fr auto;width:100%;text-align:left"><span class="main"><b>タスクにする</b><small>${esc(title || "（名前を入れます）")}</small></span><span class="when">${ico("right")}</span></button>
@@ -2865,6 +3045,9 @@ async function handleShare(){
     ${url ? `<p class="hint" style="margin-top:10px">リンクはメモ欄に入れておきます。</p>` : ""}`);
 }
 async function shareAct(k){
+  if(k === "photos" && shared && NATIVE){ const files = (shared.files || []).filter(f => /^image\//.test(f.mime)).map(f => { const b64 = NATIVE.shareFile(f.id); if(!b64) return null;
+      return new File([Uint8Array.from(atob(b64), c => c.charCodeAt(0))], f.name || "photo.jpg", {type:f.mime || "image/jpeg"}); }).filter(Boolean);
+    try { NATIVE.shareDone(); } catch(e){} shared = null; closePane(); ui.docTab = "photos"; ls.set("fd-doctab", "photos"); go("docs"); if(files.length) await savePhotos(files, "auto", true); else toast("写真を受け取れませんでした"); return; }
   const sh = shared; if(!sh) return;
   const text = [sh.subject, sh.text].filter(Boolean).join("\n").trim();
   const title = (sh.subject || text.split("\n").find(x => x.trim()) || "").replace(/https?:\/\/\S+/g, "").trim().slice(0, 80);
@@ -3518,6 +3701,17 @@ document.addEventListener("click", async (ev) => {
   if(d.docSel){ const i = ui.docSel.indexOf(d.docSel); if(i >= 0) ui.docSel.splice(i, 1); else ui.docSel.push(d.docSel); b.setAttribute("aria-pressed", i < 0); const sb = document.querySelector(".selbar"); if(sb){ sb.firstElementChild.textContent = ui.docSel.length + "件"; sb.querySelector(".pri").disabled = !ui.docSel.length; } return; }
   if(d.act === "docmove"){ if(ui.docSel && ui.docSel.length) moveCatPane(ui.docSel.slice()); return; }
   if(d.moveCat){ await setDocsCat(ui.moveIds || [], d.moveCat); closePane(); toast(`「${d.moveCat}」にしました`); ui.docSel = null; schedule(); return; }
+  if(d.doctab){ ui.docTab = d.doctab; ls.set("fd-doctab", d.doctab); schedule(); return; }
+  if(d.photoShot){ shoot(d.photoShot === "auto" ? "auto" : d.photoShot, false); return; }
+  if(b.matches("[data-photo-add]")){ shoot("auto", true); return; }
+  if(d.phSub){ ui.phSub = d.phSub; schedule(); return; }
+  if(d.photoOpen){ const vis = [...document.querySelectorAll("[data-photo-open]")].map(x => x.dataset.photoOpen); openPhoto(d.photoOpen, vis.length ? vis : null); return; }
+  if(d.photoSlot){ const [dd, n] = d.photoSlot.split(":"); const g = photosOf(dd, n).sort((a, b) => a.at.localeCompare(b.at)); if(g.length) openPhoto(g[0].id, g.map(p => p.id)); return; }
+  if(d.slot !== undefined){ const f = b.closest("form"); f.querySelector('[name="n"]').value = d.slot; b.parentNode.querySelectorAll("[data-slot]").forEach(x => x.setAttribute("aria-pressed", x === b)); buzz(6); return; }
+  if(d.kind && b.closest(".kindpick")){ const f = b.closest("form"); f.querySelector('[name="kind"]').value = d.kind; b.parentNode.querySelectorAll("[data-kind]").forEach(x => x.setAttribute("aria-pressed", x === b)); buzz(6); return; }
+  if(d.photoDel){ if(!b.dataset.sure){ b.dataset.sure = "1"; b.textContent = "もう一度押すと削除"; return; } await PHOTOS.del(d.photoDel); closePane(); toast("削除しました"); loadPhotos(); return; }
+  if(d.photoDl){ const blob = await PHOTOS.file(d.photoDl), p = (photoList || []).find(x => x.id === d.photoDl); if(blob && p){ const b64 = await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.readAsDataURL(blob); });
+      toast(NATIVE.saveFile(`${p.date}_${p.n}時間目_${(p.subject || "写真").replace(/[\\/:*?"<>|]/g, "_")}.jpg`, "image/jpeg", b64) ? "「ダウンロード」に保存しました" : "保存できませんでした"); } return; }
   if(d.catAdd !== undefined){ catNamePane(""); return; }
   if(d.catRen){ catNamePane(d.catRen); return; }
   if(d.catColopen){ catPane(b.getAttribute("aria-pressed") === "true" ? null : d.catColopen); return; }
@@ -3676,6 +3870,13 @@ document.addEventListener("submit", async (ev) => {
         const tid = await put("tasks", id, rec);
         if(rec.phone || old.gcalId){ const g = await gcalSyncTask({...rec, id:tid}); if(g !== (old.gcalId||"")) await put("tasks", tid, {...rec, gcalId:g}); }
         break; }
+      case "photos": case "photoedit": {
+        const ids = (id || "").split(",").filter(Boolean); const n = +(v.n || 0);
+        for(const pid of ids){ const p = (photoList || []).find(x => x.id === pid); if(!p) continue;
+          const date = v.date || p.date, slot = String(n) !== String(p.n) || date !== p.date ? slotFromPeriod(date, n) : {};
+          if(ids.length > 1 && f.dataset.form === "photos" && !f.querySelector('[name="n"]')) Object.keys(slot).forEach(k2 => delete slot[k2]);
+          await PHOTOS.put({...p, ...slot, date, kind:v.kind || p.kind, note:(v.note != null ? v.note : p.note || "").slice(0, 300)}); }
+        closePane(); toast("保存しました"); loadPhotos(); return; }
       case "catname": { const nm = (v.name || "").trim().slice(0, 30); if(!nm) return;
         if(id){ await renameCat(id, nm); }
         else { const g = catCfg(); if(!docCats().includes(nm)){ g.extra = [...(g.extra || []), nm]; saveCat(g); toast(`「${nm}」を追加しました`); } else toast("同じ名前の分類があります"); }
@@ -4342,6 +4543,7 @@ function pushSnapshot(now){
   if(now) go2(); else snapT = setTimeout(go2, 1500);
 }
 window.__fdBack = () => {
+  if(phv){ closePhoto(); return true; }
   if(pdfv){ closeDoc(); return true; }
   const pk = $("#picker"); if(pk && pk.classList.contains("on")){ pk.classList.remove("on"); return true; }
   if(ui.pane){ closePane(); return true; }
@@ -4767,7 +4969,7 @@ function schoolHandoffPane(){
     <div class="btns"><a class="btn primary" href="${esc(link)}">アプリで接続する</a><button class="btn" data-act="close">このままでよい</button></div>`);
 }
 setTimeout(schoolHandoffPane, 900);
-if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, concierge, dayMode, eventForm, closePane, wxfx, wxmini, pomo, cdown, swatch, get pdfv(){ return pdfv; }, openDoc};
+if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, concierge, dayMode, eventForm, closePane, wxfx, wxmini, pomo, cdown, swatch, get pdfv(){ return pdfv; }, openDoc, savePhotos, get photoList(){ return photoList; }, autoSlot, get phv(){ return phv; }};
 })();
 </script>
 </body>

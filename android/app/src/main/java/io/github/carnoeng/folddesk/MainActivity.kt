@@ -44,6 +44,19 @@ class MainActivity : ComponentActivity() {
     }
     fun askCalendar() { calPerm.launch(arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)) }
 
+    // <input capture> from the web (板書を撮る): open the camera directly and hand the photo back to the page
+    private var shotUri: Uri? = null
+    private val takeShot = registerForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
+        val u = shotUri
+        fileCb?.onReceiveValue(if (ok && u != null) arrayOf(u) else null); fileCb = null
+    }
+    private fun cameraForWeb(): Boolean = try {
+        val dir = java.io.File(cacheDir, "shot").apply { mkdirs(); listFiles()?.filter { System.currentTimeMillis() - it.lastModified() > 3_600_000 }?.forEach { it.delete() } }
+        val f = java.io.File(dir, "shot-${System.currentTimeMillis()}.jpg")
+        shotUri = androidx.core.content.FileProvider.getUriForFile(this, "$packageName.files", f)
+        takeShot.launch(shotUri); true
+    } catch (_: Exception) { false }
+
     private var cardUri: Uri? = null
     private fun cardResult(json: String) { web.evaluateJavascript("window.__fdCard && window.__fdCard(" + org.json.JSONObject.quote(json) + ")", null) }
     private val takeCard = registerForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
@@ -89,6 +102,7 @@ class MainActivity : ComponentActivity() {
             override fun onShowFileChooser(w: WebView?, cb: ValueCallback<Array<Uri>>?, p: FileChooserParams?): Boolean {
                 fileCb?.onReceiveValue(null)
                 fileCb = cb
+                if (p != null && p.isCaptureEnabled && p.acceptTypes.any { it.startsWith("image") } && cameraForWeb()) return true
                 return try { pickFile.launch(p!!.createIntent()); true } catch (_: Exception) { fileCb = null; false }
             }
         }
