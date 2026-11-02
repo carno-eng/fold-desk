@@ -21,6 +21,7 @@ class AlarmReceiver : BroadcastReceiver() {
                 OverlayService.say(c, t, b)
                 if (!MainActivity.foreground) Notifier.show(c, i.getIntExtra("code", 1000), t, b)
             }
+            Pomo.A_END, Pomo.A_PAUSE, Pomo.A_RESUME, Pomo.A_STOP, Pomo.A_GO, Pomo.A_SKIP -> Pomo.action(c, i.action!!)
             ACTION_SNOOZE -> {
                 val code = i.getIntExtra("code", 1000)
                 androidx.core.app.NotificationManagerCompat.from(c).cancel(code)
@@ -40,6 +41,7 @@ class BootReceiver : BroadcastReceiver() {
         Widgets.updateAll(c)
         Quiet.apply(c)
         NowNotif.update(c)
+        Pomo.due(c, false); Pomo.apply(c)
         if (OverlayService.enabled(c) && android.provider.Settings.canDrawOverlays(c))
             try { androidx.core.content.ContextCompat.startForegroundService(c, Intent(c, OverlayService::class.java)) } catch (_: Exception) { }
     }

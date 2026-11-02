@@ -81,6 +81,9 @@ class Bridge(
     }
     @JavascriptInterface fun openAod() { main.post { try { ctx.startActivity(Intent(ctx, AodActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) { } } }
     @JavascriptInterface fun openDreamSettings() { main.post { try { ctx.startActivity(Intent(android.provider.Settings.ACTION_DREAM_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) { try { ctx.startActivity(Intent(android.provider.Settings.ACTION_DISPLAY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) { } } } }
+    @JavascriptInterface fun pomoGet(): String = Pomo.get(ctx).toString()
+    @JavascriptInterface fun pomoSet(json: String) { Pomo.set(ctx, json) }
+    @JavascriptInterface fun pomoDue(): String { Pomo.due(ctx, true); return Pomo.get(ctx).toString() }
     @JavascriptInterface fun nowOn(): Boolean = NowNotif.enabled(ctx)
     @JavascriptInterface fun setNow(on: Boolean) { main.post { NowNotif.setEnabled(ctx, on) } }
     @JavascriptInterface fun quietOn(): Boolean = Quiet.enabled(ctx)

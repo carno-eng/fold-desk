@@ -410,6 +410,38 @@ button.prow{width:100%;text-align:left}
 .tip .main small{color:var(--muted);font-size:12.5px}
 
 /* ---------- toast & banner (in-app notification) ---------- */
+/* pomodoro */
+#pomo-pill{position:fixed;z-index:31;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translate(-50%,-140%);display:flex;align-items:center;gap:7px;
+  padding:7px 14px 7px 10px;border-radius:999px;border:0;font:inherit;font-weight:800;font-size:14px;font-variant-numeric:tabular-nums;color:#fff;
+  background:linear-gradient(135deg,#E5484D,#FF7A59);box-shadow:0 8px 24px rgba(229,72,77,.35);transition:transform .5s var(--spring),background .4s;cursor:pointer}
+#pomo-pill.on{transform:translate(-50%,0)}
+#pomo-pill.brk{background:linear-gradient(135deg,#12A594,#3DD6B0);box-shadow:0 8px 24px rgba(18,165,148,.32)}
+#pomo-pill.idle{background:linear-gradient(135deg,#6B7280,#9CA3AF);box-shadow:0 8px 24px rgba(0,0,0,.18)}
+#pomo-pill svg{width:16px;height:16px}
+#pomo-pill .pp-t{min-width:3.2em;text-align:left}
+body.pane-open #pomo-pill{transform:translate(-50%,-140%)}
+.pomo{display:grid;justify-items:center;gap:10px;padding:4px 0 6px}
+.pomo-ring{position:relative;width:min(240px,64vw);aspect-ratio:1}
+.pomo-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.pomo-ring circle{fill:none;stroke-width:12}
+.pomo-ring .bg{stroke:var(--line)}
+.pomo-ring .arc{stroke:url(#pomo-g);stroke-linecap:round;transition:stroke-dashoffset .3s linear}
+.pomo-ring .in{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.pomo-ring .in b{font-size:clamp(40px,13vw,56px);font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+.pomo-ring .in small{display:block;margin-top:6px;font-weight:700;color:var(--muted)}
+.pomo.brk .pomo-ring .arc{stroke:url(#pomo-g2)}
+.pomo.run .pomo-ring{animation:pomoBreath 4s ease-in-out infinite}
+@keyframes pomoBreath{50%{transform:scale(1.015)}}
+.pomo-dots{display:flex;gap:7px}
+.pomo-dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.pomo-dots i.on{background:#E5484D}
+.pomo .task{font-weight:700;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pomo-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%}
+.pomo-btns .btn{min-width:120px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.pomo-btns .btn svg,.pomo .task svg,.suggest .chip svg{width:17px;height:17px;flex:none}
+.pomo .task{display:inline-flex;align-items:center;gap:6px}
+.pomo-tasks{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.pomo-cfg .seg{display:flex;flex-wrap:wrap;gap:6px}
 #toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));transform:translate(-50%,24px) scale(.9);background:var(--fg);color:var(--bg);
   padding:11px 18px;border-radius:999px;font-size:14px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .25s,transform .5s var(--spring);z-index:60;max-width:calc(100% - 32px);box-shadow:var(--shadow-lg)}
 #toast.on{opacity:1;transform:translate(-50%,0) scale(1)}
@@ -781,6 +813,9 @@ const I = {
   left:'<path d="m14.5 6-6 6 6 6"/>', right:'<path d="m9.5 6 6 6-6 6"/>',
   card:'<rect x="3" y="6" width="18" height="12" rx="2.5"/><circle cx="8.5" cy="11.2" r="1.8"/><path d="M6 15.2c.5-1.2 1.4-1.8 2.5-1.8s2 .6 2.5 1.8M13.5 10h5M13.5 13h3.5"/>',
   spark:'<path d="M12 3.5l1.7 4.8 4.8 1.7-4.8 1.7L12 16.5l-1.7-4.8L5.5 10l4.8-1.7z"/><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/>',
+  timer:'<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.6 1.8"/><path d="M9.5 2.5h5"/><path d="M12 2.5V6"/><path d="M18.5 6.5l1.3-1.3"/>',
+  play:'<path d="M8 5.5v13l10.5-6.5z"/>',
+  pause:'<path d="M8.5 5.5v13"/><path d="M15.5 5.5v13"/>',
   bell:'<path d="M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5l1.5 1.5H5z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.5 7.5 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.5 7.5 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.5 7.5 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.5 7.5 0 0 0 2.6-1.5l2.4 1 2-3.4z"/>',
   home:'<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/><path d="M12 7v6M9 10h6"/>',
@@ -1496,6 +1531,164 @@ const wxfx = (() => {
   });
   return {sync, state:() => st, spawn:(k, at) => { if(st) spawn(k, at); }, get visitors(){ return vis.map(v => v.kind); }};
 })();
+/* ================= ポモドーロ ================= */
+const POMO_DEF = {f:25, s:5, l:15, n:4, auto:true};
+const pomo = (() => {
+  const K = "fd-pomo";
+  let st = load(), iv = 0, lastDue = 0;
+  function load(){
+    let x = null; try { x = JSON.parse(localStorage.getItem(K) || "null"); } catch(e){}
+    x = Object.assign({mode:"idle", end:0, left:0, full:0, round:0, task:"", taskId:"", cfg:{...POMO_DEF}, log:{d:"", n:0, min:0}, at:0}, x || {});
+    x.cfg = Object.assign({...POMO_DEF}, x.cfg || {}); x.log = Object.assign({d:"", n:0, min:0}, x.log || {}); return x;
+  }
+  const dur = m => (m === "focus" ? st.cfg.f : m === "long" ? st.cfg.l : st.cfg.s) * 60000;
+  const remain = () => st.end ? Math.max(0, st.end - Date.now()) : st.left;
+  const isBrk = () => st.mode === "short" || st.mode === "long";
+  const ready = () => st.mode !== "idle" && !st.end && !!st.rdy;
+  const todayLog = () => st.log.d === todayS() ? st.log : {d:todayS(), n:0, min:0};
+  function save(push = true){
+    st.at = Date.now(); try { localStorage.setItem(K, JSON.stringify(st)); } catch(e){}
+    if(push && NATIVE && NATIVE.pomoSet) try { NATIVE.pomoSet(JSON.stringify(st)); } catch(e){}
+    run(); paint(true);
+  }
+  function start(mode, ms){ st.mode = mode; st.full = ms || dur(mode); st.end = Date.now() + st.full; st.left = 0; st.rdy = false; save(); buzz(20); }
+  function pause(){ if(!st.end) return; st.left = remain(); st.end = 0; save(); }
+  function resume(){ if(st.end || st.mode === "idle") return; st.end = Date.now() + st.left; st.left = 0; save(); buzz(20); }
+  function stop(){ st.mode = "idle"; st.end = 0; st.left = 0; st.full = 0; st.round = 0; st.rdy = false; save(); }
+  function skip(){ if(st.mode === "idle") return; st.end = Date.now() - 1; finish(true); }
+  // same rules as the Android side (Pomo.kt)
+  function finish(skipped){
+    if(st.mode === "focus"){
+      const L = todayLog(); if(!skipped){ L.n++; L.min += Math.round(st.full / 60000); } st.log = L; if(!skipped) st.round++;
+      const next = st.round > 0 && st.round % st.cfg.n === 0 ? "long" : "short";
+      st.mode = next; st.full = dur(next);
+      if(st.cfg.auto){ st.end = Date.now() + st.full; st.left = 0; st.rdy = false; } else { st.end = 0; st.left = st.full; st.rdy = true; }
+      save(); if(!skipped) celebrate("focus");
+    } else {
+      st.mode = "focus"; st.full = dur("focus"); st.end = 0; st.left = st.full; st.rdy = true; save(); if(!skipped) celebrate("break");
+    }
+  }
+  function adopt(n, quiet){
+    if(!n || !n.at || n.at <= st.at) return false;
+    const prev = st; st = Object.assign(load(), n); try { localStorage.setItem(K, JSON.stringify(st)); } catch(e){}
+    if(!quiet){
+      if(prev.mode === "focus" && (st.mode === "short" || st.mode === "long") && (st.log.n || 0) > (prev.log.n || 0)) celebrate("focus");
+      else if((prev.mode === "short" || prev.mode === "long") && st.mode === "focus" && !st.end) celebrate("break");
+    }
+    run(); paint(true); return true;
+  }
+  function syncNative(quiet){ if(!(NATIVE && NATIVE.pomoGet)) return; try { adopt(JSON.parse(NATIVE.pomoGet() || "null"), quiet); } catch(e){} }
+  function celebrate(kind){
+    buzz([70, 50, 70]);
+    const L = todayLog(), tk = st.task ? `「${st.task}」` : "";
+    if(kind === "focus"){
+      toast(`集中おわり！ 今日${L.n}回目　${st.cfg.auto ? "休憩スタート" : "休憩しよう"}`);
+      try { concierge.say(pickOne([`${tk}おつかれさま！ちょっと休もう`, "よくがんばったね！ひと息つこ〜", "いい集中だった！お茶でもどう？", "ナイス！目をやすめてね"]), pickOne(["joy", "sparkle", "tea"]), 4200); } catch(e){}
+      notify("集中おわり！", `今日${L.n}回目。${st.mode === "long" ? "長めの休憩" : "休憩"}${st.cfg.auto ? "が始まりました" : "しましょう"}`);
+    } else {
+      toast("休憩おわり。次の集中をはじめよう");
+      try { concierge.say(pickOne(["よーし、もうひとがんばり！", "休めた？つぎいこ！", "準備できたらスタートだよ"]), "wave", 3600); } catch(e){}
+      notify("休憩おわり", "次の集中をはじめましょう");
+    }
+  }
+  function notify(title, body){
+    if(NATIVE || !document.hidden) return;
+    try { if("Notification" in window && Notification.permission === "granted") navigator.serviceWorker.ready.then(r => r.showNotification(title, {body, icon:"icons/icon-192.png", badge:"icons/badge-96.png", tag:"pomo", data:{go:"today"}})); } catch(e){}
+  }
+  function tick(){
+    if(st.mode === "idle"){ paint(); return; }
+    if(st.end && Date.now() >= st.end){
+      if(NATIVE && NATIVE.pomoDue){ if(Date.now() - lastDue > 800){ lastDue = Date.now(); try { adopt(JSON.parse(NATIVE.pomoDue() || "null")); } catch(e){} } }
+      else finish(false);
+    }
+    paint();
+  }
+  function run(){ const want = st.mode !== "idle"; if(want && !iv) iv = setInterval(tick, 250); else if(!want && iv){ clearInterval(iv); iv = 0; } }
+  const fmt = ms => { const t = Math.ceil(ms / 1000), m = Math.floor(t / 60), x = t % 60; return `${m}:${String(x).padStart(2, "0")}`; };
+  const label = () => st.mode === "idle" ? `集中 ${st.cfg.f}分` : st.mode === "focus" ? (ready() ? "集中の準備OK" : st.end ? "集中" : "一時停止") : (ready() ? "休憩の準備OK" : st.end ? (st.mode === "long" ? "長い休憩" : "休憩") : "一時停止");
+  function pill(){
+    let el = document.getElementById("pomo-pill");
+    if(!el){ el = document.createElement("button"); el.id = "pomo-pill"; el.type = "button"; el.dataset.act = "pomo"; el.setAttribute("aria-label", "ポモドーロを開く"); document.body.appendChild(el); }
+    const on = st.mode !== "idle";
+    el.classList.toggle("on", on); el.classList.toggle("brk", isBrk()); el.classList.toggle("idle", on && !st.end);
+    const html = on ? `${ico(st.end ? "timer" : "pause")}<span class="pp-l">${st.end ? (isBrk() ? "休憩" : "集中") : ready() ? "次へ" : "停止中"}</span><span class="pp-t">${fmt(remain())}</span>` : "";
+    if(el.innerHTML !== html) el.innerHTML = html;
+  }
+  function paint(full){
+    pill();
+    const root = document.getElementById("pomo"); if(!root) return;
+    const r = remain(), tot = st.full || dur("focus"), C = 2 * Math.PI * 88;
+    root.classList.toggle("brk", isBrk()); root.classList.toggle("run", !!st.end);
+    const arc = document.getElementById("pomo-arc"); if(arc) arc.style.strokeDashoffset = st.mode === "idle" ? 0 : C * (1 - r / tot);
+    const tm = document.getElementById("pomo-time"), t2 = st.mode === "idle" ? fmt(dur("focus")) : fmt(r); if(tm && tm.textContent !== t2) tm.textContent = t2;
+    const lb = document.getElementById("pomo-mode"), l2 = label(); if(lb && lb.textContent !== l2) lb.textContent = l2;
+    if(full){ const b = document.getElementById("pomo-btns"); if(b) b.innerHTML = buttons(); const d = document.getElementById("pomo-dots"); if(d) d.innerHTML = dots(); const lg = document.getElementById("pomo-log"); if(lg) lg.textContent = logText(); const tk = document.getElementById("pomo-task"); if(tk) tk.innerHTML = taskLine(); }
+  }
+  function freeLeft(){
+    const c = currentState(); if(!c.cur || c.cur.type === "block") return 0;
+    const free = c.cur.cancelled || (c.cur.cell && cellKind(c.cur.cell) === "free"); return free ? c.left : 0;
+  }
+  const dots = () => Array.from({length:st.cfg.n}, (_, i) => `<i class="${i < (st.round % st.cfg.n || (st.round && isBrk() && st.mode === "long" ? st.cfg.n : 0)) ? "on" : ""}"></i>`).join("");
+  const logText = () => { const L = todayLog(); return L.n ? `今日 ${L.n}回・${L.min}分 集中しました` : "今日はまだ集中していません"; };
+  const taskLine = () => st.task ? `<span class="task">${ico("check")} ${esc(st.task)}</span>` : "";
+  function buttons(){
+    const fl = freeLeft(), fit = st.mode === "idle" && fl >= 8 ? `<button class="btn" data-pomo="fit">空きコマの残り ${fl - 2}分で集中</button>` : "";
+    if(st.mode === "idle") return `<button class="btn primary" data-pomo="start">${ico("play")} 集中をはじめる</button>${fit}`;
+    if(ready()) return st.mode === "focus" ? `<button class="btn primary" data-pomo="go">${ico("play")} 集中をはじめる</button><button class="btn" data-pomo="stop">おわる</button>`
+      : `<button class="btn primary" data-pomo="go">${ico("play")} 休憩をはじめる</button><button class="btn" data-pomo="skip">休憩せず次へ</button><button class="btn" data-pomo="stop">おわる</button>`;
+    if(st.end) return `<button class="btn primary" data-pomo="pause">${ico("pause")} 一時停止</button><button class="btn" data-pomo="skip">${isBrk() ? "休憩を切り上げる" : "スキップ"}</button><button class="btn" data-pomo="stop">おわる</button>`;
+    return `<button class="btn primary" data-pomo="resume">${ico("play")} 再開</button><button class="btn" data-pomo="stop">おわる</button>`;
+  }
+  function pane(){
+    syncNative(true);
+    const tasks = openTasks().slice(0, 6), C = 2 * Math.PI * 88;
+    const chips = (k, arr, cur, unit) => arr.map(v => `<button class="chip" data-pomo-cfg="${k}:${v}" aria-pressed="${cur === v}">${v}${unit}</button>`).join("");
+    openPane(`${paneHead("ポモドーロ")}
+      <div class="pomo ${isBrk() ? "brk" : ""} ${st.end ? "run" : ""}" id="pomo">
+        <div class="pomo-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><defs>
+          <linearGradient id="pomo-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A59"/><stop offset="1" stop-color="#E5484D"/></linearGradient>
+          <linearGradient id="pomo-g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3DD6B0"/><stop offset="1" stop-color="#12A594"/></linearGradient></defs>
+          <circle class="bg" cx="100" cy="100" r="88"/><circle class="arc" id="pomo-arc" cx="100" cy="100" r="88" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="0"/></svg>
+          <div class="in"><b id="pomo-time" aria-live="off"></b><small id="pomo-mode"></small></div></div>
+        <div class="pomo-dots" id="pomo-dots" aria-label="${st.cfg.n}回ごとに長い休憩">${dots()}</div>
+        <div id="pomo-task">${taskLine()}</div>
+        <div class="pomo-btns" id="pomo-btns">${buttons()}</div>
+        <small class="hint" id="pomo-log">${logText()}</small>
+      </div>
+      ${tasks.length ? `<div class="sec" style="margin-top:10px">いま取り組むこと</div><div class="pomo-tasks">${tasks.map(t => `<button class="chip" data-pomo-task="${t.id}" aria-pressed="${st.taskId === t.id}">${esc(t.title)}</button>`).join("")}${st.task ? `<button class="chip" data-pomo-task="">えらばない</button>` : ""}</div>` : ""}
+      <details class="pomo-cfg" style="margin-top:14px"><summary class="sec" style="cursor:pointer">時間の設定</summary>
+        <div class="sec" style="margin-top:8px">集中</div><div class="seg">${chips("f", [15, 20, 25, 30, 45, 50], st.cfg.f, "分")}</div>
+        <div class="sec" style="margin-top:8px">休憩</div><div class="seg">${chips("s", [3, 5, 10], st.cfg.s, "分")}</div>
+        <div class="sec" style="margin-top:8px">長い休憩</div><div class="seg">${chips("l", [15, 20, 30], st.cfg.l, "分")}</div>
+        <div class="sec" style="margin-top:8px">長い休憩までの回数</div><div class="seg">${chips("n", [2, 3, 4], st.cfg.n, "回")}</div>
+        <div class="setrow" style="margin-top:8px"><span class="main"><b>休憩を自動で始める</b><small>集中が終わったらそのまま休憩のカウントへ</small></span><button class="switch" role="switch" aria-checked="${!!st.cfg.auto}" data-pomo-cfg="auto:${st.cfg.auto ? 0 : 1}" aria-label="休憩を自動で始める"></button></div>
+      </details>
+      <p class="hint" style="margin-top:10px">${NATIVE ? "アプリを閉じても通知とロック画面でカウントが続き、終わるとお知らせします。" : "このページを開いている間カウントします。終わったら通知でお知らせします（通知を許可している場合）。"}</p>`);
+    paint(true);
+  }
+  function click(b){
+    const d = b.dataset;
+    if(d.pomo){
+      const k = d.pomo;
+      if(k === "start") start("focus");
+      else if(k === "fit"){ const fl = freeLeft(); start("focus", Math.max(5, fl - 2) * 60000); toast(`空きコマの終わりに合わせて ${Math.max(5, fl - 2)}分`); }
+      else if(k === "go") start(st.mode, st.full || dur(st.mode));
+      else if(k === "pause") pause(); else if(k === "resume") resume(); else if(k === "skip") skip(); else if(k === "stop"){ stop(); toast("ポモドーロをおわりました"); }
+      return true;
+    }
+    if(d.pomoTask !== undefined){ const t = S.tasks.find(x => x.id === d.pomoTask); st.task = t ? t.title : ""; st.taskId = t ? t.id : ""; save();
+      b.parentNode.querySelectorAll("[data-pomo-task]").forEach(x => x.setAttribute("aria-pressed", x === b && !!t)); return true; }
+    if(d.pomoCfg){ const [k, v] = d.pomoCfg.split(":"); st.cfg[k] = k === "auto" ? v === "1" : +v;
+      if(k === "auto"){ b.setAttribute("aria-checked", st.cfg.auto); b.dataset.pomoCfg = `auto:${st.cfg.auto ? 0 : 1}`; }
+      else b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+      if(ready() || st.mode === "idle"){ if(st.mode !== "idle"){ st.full = dur(st.mode); st.left = st.full; } }
+      save(); return true; }
+    return false;
+  }
+  document.addEventListener("visibilitychange", () => { if(!document.hidden){ syncNative(true); paint(true); } });
+  setTimeout(() => { syncNative(true); run(); paint(true); }, 0);
+  return {pane, click, get state(){ return st; }, start, stop, finishNow:() => { st.end = Date.now() - 1; tick(); }, freeLeft};
+})();
 function heroMood(){
   const st = currentState(), d = new Date(), m = d.getHours() * 60 + d.getMinutes(), sec = m * 60 + d.getSeconds();
   const t = todayS(), dis = isWeekday(t) && OFFICIAL[dayMode(t)] ? mins(OFFICIAL[dayMode(t)].dismiss) : 15 * 60;
@@ -1629,7 +1822,8 @@ function dayCard(dateS){
       return;
     }
     const k = x.cancelled ? "free" : cellKind(x.cell), ahead = mins(x.end) > nowMin();
-    const sug = !ui.edit && k === "free" && !x.cancelled && freeTasks.length && ahead ? `<div class="suggest">${freeTasks.map(y => `<button class="chip accent" data-open-task="${y.id}">${esc(y.title)}</button>`).join("")}</div>` : "";
+    const nowFree = ahead && mins(x.start) <= nowMin();
+    const sug = !ui.edit && k === "free" && !x.cancelled && (freeTasks.length || nowFree) && ahead ? `<div class="suggest">${nowFree ? `<button class="chip" data-act="pomo">${ico("timer")} 集中タイマー</button>` : ""}${freeTasks.map(y => `<button class="chip accent" data-open-task="${y.id}">${esc(y.title)}</button>`).join("")}</div>` : "";
     const prog = !ui.edit && !x.cancelled && k !== "free" && x.cell.kind !== "meeting" && !NOPROG.test(x.cell.subject||'') ? (() => { const sb = x.cell.subject, lp = lastProg(sb, x.cell.cls); const po = prepOpen(lp); return `<div class="suggest"><button class="chip ${behind(sb, x.cell.cls)>0?'warn':lp?'accent':''}" data-progress="${esc(pkey(sb, x.cell.cls))}">${lp ? '前回 '+esc(progLabel(lp)) : '進度を記録'}</button>${po.length ? `<button class="chip warn" data-prep-day="${dateS}">準備 ${po.length}</button>` : (lp && (lp.prep||[]).length ? `<span class="chip muted">準備OK</span>` : '')}</div>`; })() : '';
     const name = x.cancelled ? `<span class="chip warn mini">なし</span><s>${esc(cellText(x.base))}</s>` : `${k==='free' ? '空きコマ' : esc(x.cell.subject)}${x.cell.cls ? `<small>${esc(x.cell.cls)}${bandOf(x.cell)==='upper'?'（高学年の時程）':''}</small>` : ''}`;
     const badge = x.changed && !x.cancelled ? `<span class="chip warn mini">変更</span>` : '';
@@ -1741,7 +1935,7 @@ function vToday(){
       <div class="hero-top"><div style="min-width:0"><div class="eyebrow">${d.getFullYear()}年 ${WD[d.getDay()]}曜日${wxMini()}</div>
       <div class="date"><b class="num">${d.getMonth()+1}月${d.getDate()}日</b></div>
       <div class="now">${esc(nowLine)}<small>${esc(nowSub)}</small></div>${moodBadge}</div>${ring}</div>${modeSeg}${dayBar}</div>${heroBack()}</div></section>`;
-  const head = `<div class="page-h"><h1>今日</h1><button class="icon-btn" data-act="settings" aria-label="通知と設定">${ico("bell")}</button></div>`;
+  const head = `<div class="page-h"><h1>今日</h1><button class="icon-btn" data-act="pomo" aria-label="ポモドーロ">${ico("timer")}</button><button class="icon-btn" data-act="settings" aria-label="通知と設定">${ico("bell")}</button></div>`;
   const tip = !NATIVE && !ls.get("fd-home-tip-off", false) && document.body.dataset.mode === "cover-p"
     ? `<div class="card span-all tip"><span class="ic">${ico("home")}</span><span class="main"><b>ホーム画面に置く</b><small>アプリのようにワンタップで開けます</small></span><button class="pill-btn accent" data-act="homeguide">方法</button><button class="icon-btn sm" data-act="tipoff" aria-label="閉じる">${ico("close")}</button></div>` : "";
   const m = document.body.dataset.mode;
@@ -2696,6 +2890,8 @@ document.addEventListener("click", async (ev) => {
   if(d.gToggle){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); await putGoogle({[d.gToggle]:on}); if(on && d.gToggle === "tasks") googleSyncNow(); return; }
   if(b.matches("[data-g-sync]")){ b.disabled = true; await googleSyncNow(); b.disabled = false; return; }
   if(d.act === "settings"){ settingsPane(); return; }
+  if(d.act === "pomo"){ pomo.pane(); return; }
+  if(d.pomo || d.pomoTask !== undefined || d.pomoCfg){ pomo.click(b); return; }
   if(d.act === "install"){ if(installEvt){ installEvt.prompt(); installEvt = null; } closePane(); return; }
   if(d.act === "syncnow"){ toast("同期しています…"); await store.pull("sync"); toast(syncState === "ok" ? "同期しました" : "同期できませんでした"); return; }
   if(d.act === "notifyperm" && NATIVE){ NATIVE.requestNotifications(); return; }
@@ -3848,7 +4044,7 @@ if(paired()){
   window.__fdResume = () => { store.reload(); store.pull(); refreshSchool(); refreshDevice(); };
   addEventListener("online", () => store.pull());
 }
-if(["#ask","#prep","#settings","#follow","#share"].includes(location.hash)) setTimeout(() => openRoute(location.hash), 500);
+if(["#ask","#prep","#settings","#follow","#share","#pomo"].includes(location.hash)) setTimeout(() => openRoute(location.hash), 500);
 async function widgetAct(a){
   if(a.a === "task"){ const t = S.tasks.find(x => x.id === a.id); if(t && t.status !== "done"){ if(t.gcalId) await gcalDelete(t.gcalId); await put("tasks", t.id, {...t, status:"done", gcalId:""}); } }
   else if(a.a === "follow"){ const f = S.followups.find(x => x.id === a.id); if(f && f.status !== "done") await put("followups", f.id, {...f, status:"done"}); }
@@ -3876,6 +4072,7 @@ function openRoute(h){
   else if(h === "#prep"){ go("today"); setTimeout(() => prepPane(prepTarget()), 300); }
   else if(h === "#settings"){ go("today"); setTimeout(() => settingsPane(), 300); }
   else if(h === "#follow"){ go("tasks"); }
+  else if(h === "#pomo"){ go("today"); setTimeout(() => pomo.pane(), 300); }
   else if(h === "#share"){ history.replaceState(null, "", location.pathname + "#" + (view || "today")); handleShare(); }
 }
 addEventListener("hashchange", () => {
@@ -3889,7 +4086,7 @@ function schoolHandoffPane(){
     <div class="btns"><a class="btn primary" href="${esc(link)}">アプリで接続する</a><button class="btn" data-act="close">このままでよい</button></div>`);
 }
 setTimeout(schoolHandoffPane, 900);
-if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, concierge, dayMode, eventForm, closePane, wxfx};
+if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, concierge, dayMode, eventForm, closePane, wxfx, pomo};
 })();
 </script>
 </body>

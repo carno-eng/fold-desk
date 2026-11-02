@@ -57,7 +57,7 @@ jobs:
         continue-on-error: true
         working-directory: android
         run: |
-          "$RUNNER_TEMP/gradle-8.10.2/bin/gradle" --no-daemon --console=plain testDebugUnitTest --tests '*WidgetShots*' > "$RUNNER_TEMP/shots.log" 2>&1 || true
+          "$RUNNER_TEMP/gradle-8.10.2/bin/gradle" --no-daemon --console=plain testDebugUnitTest --tests '*WidgetShots*' --tests '*PomoTest*' > "$RUNNER_TEMP/shots.log" 2>&1 || true
           tail -c 60000 "$RUNNER_TEMP/shots.log" > "$RUNNER_TEMP/shots-tail.log"
           ls app/build/shots >> "$RUNNER_TEMP/shots-tail.log" 2>&1 || true
 
