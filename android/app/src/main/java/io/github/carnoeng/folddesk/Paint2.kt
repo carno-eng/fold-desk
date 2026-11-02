@@ -14,14 +14,20 @@ object Paint2 {
     private fun dp(c: Context, v: Float) = v * c.resources.displayMetrics.density
     fun dark(c: Context) = (c.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
-    fun ring(c: Context, frac: Float, idle: Boolean, sizeDp: Float = 92f): Bitmap {
+    fun ring(c: Context, frac: Float, idle: Boolean, sizeDp: Float = 92f, color: Int = 0xFFFFFFFF.toInt(), dashed: Boolean = false): Bitmap {
         val s = dp(c, sizeDp).toInt(); val b = Bitmap.createBitmap(s, s, Bitmap.Config.ARGB_8888); val cv = Canvas(b)
         val sw = dp(c, sizeDp * 0.095f); val r = RectF(sw / 2 + 2, sw / 2 + 2, s - sw / 2 - 2, s - sw / 2 - 2)
         val p = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = sw; strokeCap = Paint.Cap.ROUND }
         p.color = 0x33FFFFFF; cv.drawArc(r, 0f, 360f, false, p)
-        p.color = if (idle) 0x59FFFFFF else 0xFFFFFFFF.toInt()
+        p.color = if (idle) 0x59FFFFFF else color
         val sweep = if (idle) 360f else 360f * frac.coerceIn(0f, 1f)
         if (sweep > 0.5f) cv.drawArc(r, -90f, sweep, false, p)
+        if (dashed) {
+            val inset = sw * 1.15f
+            val d = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeWidth = dp(c, 1.6f); this.color = 0x66FFFFFF
+                pathEffect = android.graphics.DashPathEffect(floatArrayOf(dp(c, 4f), dp(c, 5f)), 0f) }
+            cv.drawOval(RectF(r.left + inset, r.top + inset, r.right - inset, r.bottom - inset), d)
+        }
         return b
     }
 

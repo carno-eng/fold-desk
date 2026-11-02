@@ -88,5 +88,41 @@ class WidgetShots {
         shot("prep-340x180", Widgets.prep(c, s, 180f), 340, 180)
         shot("follow-340x200", Widgets.follow(c, s, 200f), 340, 200)
         shot("next-250x110", Widgets.next(c, s), 250, 110)
+
+        // moods: a class ending in 3 minutes, and a break between two classes
+        fun one(a: Int, b: Int, a2: Int, b2: Int): JSONObject {
+            val t = Calendar.getInstance()
+            fun at(m: Int) = (t.clone() as Calendar).apply { add(Calendar.MINUTE, m) }
+            val its = JSONArray().put(JSONObject().put("s", hm(at(a))).put("e", hm(at(b))).put("n", 2).put("t", "国語").put("sub", "").put("k", "class"))
+                .put(JSONObject().put("s", hm(at(a2))).put("e", hm(at(b2))).put("n", 3).put("t", "情報探究").put("sub", "4-1").put("k", "joho"))
+            val x = JSONObject(s.toString()); x.getJSONArray("days").getJSONObject(0).put("items", its); return x
+        }
+        shot("hero-mood-soon", Widgets.hero(c, one(-40, 3, 13, 58), 340f, 210f), 340, 210)
+        shot("hero-mood-break", Widgets.hero(c, one(-50, -3, 7, 52), 340f, 210f), 340, 210)
+        shot("next-mood-soon", Widgets.next(c, one(-40, 3, 13, 58)), 250, 110)
+
+        // always-on desk view
+        Store.saveSnapshot(c, one(-40, 3, 13, 58).toString())
+        renderView("aod-portrait", AodView(c), 400, 880)
+        renderView("aod-landscape", AodView(c), 880, 400)
+
+        // larger system font
+        org.robolectric.RuntimeEnvironment.setFontScale(1.3f)
+        shot("big-today-340x380", Widgets.today(c, s, 1, 380f), 340, 380)
+        shot("big-tasks-340x220", Widgets.tasks(c, s, 220f), 340, 220)
+        shot("big-follow-340x200", Widgets.follow(c, s, 200f), 340, 200)
+        shot("big-next-250x110", Widgets.next(c, s), 250, 110)
+        shot("big-hero-340x210", Widgets.hero(c, s, 340f, 210f), 340, 210)
+        org.robolectric.RuntimeEnvironment.setFontScale(1f)
+    }
+
+    private fun renderView(name: String, v: android.view.View, wDp: Int, hDp: Int) {
+        try {
+            val d = c.resources.displayMetrics.density; val w = (wDp * d).toInt(); val h = (hDp * d).toInt()
+            v.measure(View.MeasureSpec.makeMeasureSpec(w, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(h, View.MeasureSpec.EXACTLY))
+            v.layout(0, 0, w, h)
+            val b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888); v.draw(Canvas(b))
+            File(out, "$name.png").outputStream().use { b.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        } catch (e: Throwable) { println("SHOT $name: $e"); e.stackTrace.take(6).forEach { println("   at $it") } }
     }
 }

@@ -236,7 +236,12 @@ object Widgets {
             v.setTextViewText(R.id.ringlabel, "いま")
         }
         v.size(R.id.chrono, ringDp * 0.22f); v.size(R.id.clock, ringDp * 0.23f); v.size(R.id.ringlabel, (ringDp * 0.115f).coerceAtLeast(10f))
-        v.setImageViewBitmap(R.id.ring, Paint2.ring(c, frac, idle, ringDp))
+        // moods, like the app: yellow at 5 minutes, red at 1, mint in breaks, dusk/night colours after school
+        val mood = Mood.of(s)
+        v.setInt(R.id.root, "setBackgroundResource", mood.bg)
+        mood.label?.let { v.setTextViewText(R.id.ringlabel, it) }
+        v.setTextColor(R.id.ringlabel, if (mood.label != null && mood.key != "done") mood.ring else 0xD9FFFFFF.toInt())
+        v.setImageViewBitmap(R.id.ring, Paint2.ring(c, frac, idle && mood.key != "brk", ringDp, mood.ring, mood.dashed))
 
         // 通常 / 短縮 / 朝会 / 休み — tap to switch, like the app
         v.show(R.id.seg, plan.seg)
@@ -368,6 +373,9 @@ object Widgets {
     fun next(c: Context, s: JSONObject?): RemoteViews {
         val v = RemoteViews(c.packageName, R.layout.widget_next)
         v.setOnClickPendingIntent(R.id.root, open(c, "today"))
+        val mood = Mood.of(s)
+        v.setInt(R.id.root, "setBackgroundResource", mood.bg)
+        v.setTextColor(R.id.chrono, if (mood.key == "soon" || mood.key == "last") mood.ring else 0xFFFFE38A.toInt())
         val st = Sched.status(s)
         v.setTextViewText(R.id.status, st.line)
         if (st.target > 0) {

@@ -73,6 +73,8 @@ class Bridge(
         latch.await(2, java.util.concurrent.TimeUnit.SECONDS)
         return ok
     }
+    @JavascriptInterface fun openAod() { main.post { try { ctx.startActivity(Intent(ctx, AodActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) { } } }
+    @JavascriptInterface fun openDreamSettings() { main.post { try { ctx.startActivity(Intent(android.provider.Settings.ACTION_DREAM_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) { try { ctx.startActivity(Intent(android.provider.Settings.ACTION_DISPLAY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) { } } } }
     @JavascriptInterface fun nowOn(): Boolean = NowNotif.enabled(ctx)
     @JavascriptInterface fun setNow(on: Boolean) { main.post { NowNotif.setEnabled(ctx, on) } }
     @JavascriptInterface fun quietOn(): Boolean = Quiet.enabled(ctx)

@@ -61,6 +61,11 @@ object Scheduler {
                     val t = Sched.at(day.optString("date"), it.optString(key))
                     if (t > now + 1000 && t < next) next = t
                 }
+                // the widget ring turns yellow 5 minutes and red 1 minute before a class ends
+                if (it.optString("k") != "block" && Widgets.hasHero(c)) {
+                    val e = Sched.at(day.optString("date"), it.optString("e"))
+                    for (t in listOf(e - 300_000, e - 60_000)) if (t > now + 1000 && t < next) next = t
+                }
             }
         }
         // keep the ring and day bar fresh every 5 minutes between the first and last item of the day

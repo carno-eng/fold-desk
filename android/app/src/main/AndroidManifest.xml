@@ -49,6 +49,13 @@
             <intent-filter><action android:name="android.service.wallpaper.WallpaperService" /></intent-filter>
             <meta-data android:name="android.service.wallpaper" android:resource="@xml/wallpaper" />
         </service>
+        <activity android:name=".AodActivity" android:exported="false" android:theme="@style/AodTheme"
+            android:showWhenLocked="true" android:excludeFromRecents="true" android:taskAffinity="io.github.carnoeng.folddesk.aod"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize" />
+        <service android:name=".AodDream" android:exported="true" android:label="Fold Desk いま・次"
+            android:permission="android.permission.BIND_DREAM_SERVICE">
+            <intent-filter><action android:name="android.service.dreams.DreamService" /><category android:name="android.intent.category.DEFAULT" /></intent-filter>
+        </service>
         <service android:name=".OverlayService" android:exported="false" android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="On-screen assistant character the user turned on" />
         </service>

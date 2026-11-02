@@ -29,6 +29,8 @@ object Web {
             setSupportMultipleWindows(false)
             mediaPlaybackRequiresUserGesture = true
             userAgentString = "$userAgentString FoldDeskApp/${BuildConfig.VERSION_CODE}"
+            // follow the phone's font size, within a range the layout is checked for
+            textZoom = (ctx.resources.configuration.fontScale * 100).toInt().coerceIn(85, 120)
         }
         web.addJavascriptInterface(bridge, "FoldDeskNative")
         web.webViewClient = object : WebViewClient() {

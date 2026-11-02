@@ -612,6 +612,18 @@ body[data-tod="night"]::before{background:radial-gradient(40% 35% at 12% 8%,rgba
   .navbar b{transition:opacity .25s}
   .hero.last .ring,.hero.brk .ring::after{animation:none}
 }
+
+/* ================= v12: text fits its box at any font size ================= */
+.hero .date b,.ring .lab b,.cal-h b,.cell b,.page-h h1,.datebox b,.hero .now b{white-space:nowrap}
+.hero{container-type:inline-size}
+.hero .now{font-size:clamp(15px,4.4cqi,18px)}
+.hero .date b{font-size:clamp(30px,11.5cqi,46px)}
+.cal-h b{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.cell{min-width:0;overflow:hidden}
+.cell small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.setrow .main,.row .main{min-width:0}
+.setrow .main small,.row .main small{overflow-wrap:anywhere}
+.chip,.pill-btn{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -840,6 +852,7 @@ function render(){
   v.scrollTop = st;
   if(changed) setTimeout(tick, 350); else tick();
   if(ui.pane && ui.paneLive && !$("#pane").contains(document.activeElement)) ui.paneLive();
+  fitText(v);
   pushSnapshot();
 }
 $("#view").addEventListener("scroll", e => e.target.classList.toggle("scrolled", e.target.scrollTop > 56), {passive:true});
@@ -949,6 +962,18 @@ function currentState(){
   return {after:true};
 }
 /* live ring + now line, updated every second without re-rendering */
+/* shrink a one-line label until it fits (never below a readable size; if it still does not fit, let it wrap) */
+const FIT = [[".hero .date b", 24], [".ring .lab b", 13], [".cal-h b", 13], [".cell b", 10.5], [".page-h h1", 22], [".datebox b", 13]];
+function fitText(root = document){
+  FIT.forEach(([sel, min]) => root.querySelectorAll(sel).forEach(el => {
+    el.style.fontSize = ""; el.style.whiteSpace = "";
+    if(!el.clientWidth) return;
+    let fs = parseFloat(getComputedStyle(el).fontSize), n = 0;
+    while(el.scrollWidth > el.clientWidth + 1 && fs > min && n++ < 40){ fs -= .5; el.style.fontSize = fs + "px"; }
+    if(el.scrollWidth > el.clientWidth + 1) el.style.whiteSpace = "normal";
+  }));
+}
+addEventListener("resize", () => requestAnimationFrame(() => fitText()));
 function heroMood(){
   const st = currentState(), d = new Date(), m = d.getHours() * 60 + d.getMinutes(), sec = m * 60 + d.getSeconds();
   const t = todayS(), dis = isWeekday(t) && OFFICIAL[dayMode(t)] ? mins(OFFICIAL[dayMode(t)].dismiss) : 15 * 60;
@@ -1665,6 +1690,8 @@ function settingsPane(){
         </div>
         <div class="sec" style="margin:14px 0 6px">授業中</div>
         <div class="group">
+          <div class="setrow"><span class="main"><b>常時表示（机に置いたとき）</b><small>黒い画面に時刻・いまの授業と残り時間・次の予定を暗めに表示。タップで閉じます</small></span><button class="chip accent" data-native="aod">ひらく</button></div>
+          <div class="setrow"><span class="main"><b>充電中に自動で表示</b><small>Android の「スクリーンセーバー」で「Fold Desk いま・次」を選ぶと、充電中に自動で出ます</small></span><button class="chip" data-native="dream">設定</button></div>
           <div class="setrow"><span class="main"><b>ロック画面に「いま・次」</b><small>授業のある時間だけ、いまの授業と残り時間・1日の進み具合を通知に出します（音なし）</small></span><button class="switch" role="switch" aria-checked="${NATIVE.nowOn ? NATIVE.nowOn() : false}" data-native="now" aria-label="ロック画面に「いま・次」"></button></div>
           <div class="setrow"><span class="main"><b>授業中は自動でサイレント</b><small>時間割の授業・会議の間だけ「おやすみモード」にします（最初に許可が必要）</small></span><button class="switch" role="switch" aria-checked="${NATIVE.quietOn ? NATIVE.quietOn() : false}" data-native="quiet" aria-label="授業中は自動でサイレント"></button></div>
         </div>
@@ -1959,6 +1986,8 @@ document.addEventListener("click", async (ev) => {
     if(d.native === "wallpaper"){ NATIVE.openWallpaper(); return; }
     if(d.native === "wallbg"){ NATIVE.pickWallpaperImage(); return; }
     if(d.native === "overlay"){ const on = b.getAttribute("aria-checked") !== "true"; const ok = NATIVE.setOverlay(on); b.setAttribute("aria-checked", on && ok); if(on && !ok) toast("「他のアプリの上に表示」を許可してから、もう一度オンにしてください"); return; }
+    if(d.native === "aod"){ NATIVE.openAod && NATIVE.openAod(); return; }
+    if(d.native === "dream"){ NATIVE.openDreamSettings && NATIVE.openDreamSettings(); return; }
     if(d.native === "now"){ const on = b.getAttribute("aria-checked") !== "true"; if(NATIVE.setNow){ NATIVE.setNow(on); b.setAttribute("aria-checked", on); if(on && NATIVE.notifState() !== "granted") NATIVE.requestNotifications(); toast(on ? "授業のある時間にロック画面へ表示します" : "ロック画面の表示をやめました"); } return; }
     if(d.native === "quiet"){ const on = b.getAttribute("aria-checked") !== "true"; const ok = NATIVE.setQuiet(on); b.setAttribute("aria-checked", on && ok); if(on && !ok) toast("「おやすみモードへのアクセス」を Fold Desk に許可してから、もう一度オンにしてください"); return; }
   }
