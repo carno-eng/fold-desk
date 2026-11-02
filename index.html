@@ -125,6 +125,7 @@ body.pane-open #scrim{opacity:1;pointer-events:auto}
   padding:8px max(20px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));box-shadow:var(--shadow-lg)}
 #pane::before{content:"";display:block;width:40px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 12px}
 body.pane-open #pane{transform:none}
+body.pane-open:is([data-mode="cover-l"],[data-mode="main-p"]) #pane{transform:none}
 body:is([data-mode="cover-l"],[data-mode="main-p"]) #pane{left:auto;top:10px;bottom:10px;right:10px;width:min(440px,62%);max-height:none;border-radius:26px;transform:translateX(calc(100% + 20px));padding-top:18px}
 body:is([data-mode="cover-l"],[data-mode="main-p"],[data-mode="main-l"]) #pane::before{display:none}
 body[data-mode="main-l"] #pane{position:static;transform:none;display:none;max-height:none;border-radius:0;border-left:.5px solid var(--line);box-shadow:none;
@@ -799,6 +800,12 @@ body:not([data-mode="cover-p"]) .wx .wx-hours{grid-column:1/-1}
 .doc .sel[aria-pressed="true"]{box-shadow:inset 0 0 0 3px var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent)}
 .doc .sel::after{content:"";position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.95);box-shadow:inset 0 0 0 2px var(--line)}
 .doc .sel[aria-pressed="true"]::after{background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/16px no-repeat;box-shadow:none}
+.catpick{display:flex;flex-wrap:wrap;gap:6px}
+.catpick .chip i.cd{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.catpick .chip[aria-pressed="true"]{background:var(--accent);color:#fff}
+.catpick .chip svg{width:14px;height:14px}
+.dlchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.dlchips .chip{font-size:13px}
 .doc-grp{margin:18px 2px 10px;display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px}
 .doc-grp i{width:10px;height:10px;border-radius:50%}
 .doc-grp small{color:var(--muted);font-weight:700}
@@ -1045,8 +1052,12 @@ const VIEWS = [
 let view = "today";
 const ui = { day:null, week:0, edit:false, taskFilter:"open", peopleQ:"", peopleTie:"", calMonth:null, calSel:null, pane:null };
 
+let modeW = 0, modeH = 0;
 function setMode(){
-  const w = innerWidth, h = innerHeight;
+  const w = innerWidth, h = innerHeight, ae = document.activeElement;
+  const typing = ae && (/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) || ae.isContentEditable);
+  if(document.body.dataset.mode && typing && w === modeW && h < modeH) return; // keyboard opened: keep the layout
+  modeW = w; modeH = h;
   let m;
   if(w < 600 && h >= w) m = "cover-p";
   else if(w >= h && h < 560) m = "cover-l";
@@ -1361,6 +1372,19 @@ function heroBack(){
 }
 document.addEventListener("input", e => { if(!e.target.matches || !e.target.matches("[data-pick-q]")) return;
   const q = e.target.value.trim().toLowerCase(); document.querySelectorAll("#picklist .pickrow").forEach(r => { r.hidden = !!q && !r.dataset.pickText.includes(q); }); });
+function dlChips(inp){
+  const dl = document.getElementById(inp.getAttribute("list")); if(!dl) return;
+  let box = inp.nextElementSibling && inp.nextElementSibling.classList.contains("dlchips") ? inp.nextElementSibling : null;
+  const q = inp.value.trim().toLowerCase(), opts = [...dl.options].map(o => o.value).filter(v => v && v.toLowerCase() !== q && (!q || v.toLowerCase().includes(q))).slice(0, 12);
+  if(!opts.length){ if(box) box.remove(); return; }
+  if(!box){ box = document.createElement("div"); box.className = "dlchips"; inp.after(box); }
+  box.innerHTML = opts.map(v => `<button type="button" class="chip" data-dl="${esc(v)}">${esc(v)}</button>`).join("");
+}
+document.addEventListener("focusin", e => { if(e.target.matches && e.target.matches("input[list]")) dlChips(e.target); });
+document.addEventListener("input", e => { if(e.target.matches && e.target.matches("input[list]")) dlChips(e.target); });
+document.addEventListener("focusout", e => { if(e.target.matches && e.target.matches("input[list]")) setTimeout(() => { const b = e.target.nextElementSibling; if(b && b.classList.contains("dlchips") && !b.contains(document.activeElement)) b.remove(); }, 250); });
+document.addEventListener("pointerdown", e => { const c = e.target.closest && e.target.closest("[data-dl]"); if(!c) return; e.preventDefault();
+  const inp = c.parentNode.previousElementSibling; inp.value = c.dataset.dl; inp.dispatchEvent(new Event("input", {bubbles:true})); inp.dispatchEvent(new Event("change", {bubbles:true})); c.parentNode.remove(); buzz(6); });
 document.addEventListener("change", e => {
   if(e.target.matches && e.target.matches("[data-doc-sort]")){ ls.set("fd-docsort", e.target.value); schedule(); }
   if(e.target.matches && e.target.matches("[data-cat-name]")){ renameCat(e.target.dataset.catName, e.target.value).then(() => catPane()); }
@@ -2513,7 +2537,9 @@ function docEditPane(id, fresh){
   openPane(`${paneHead(fresh ? "資料を追加しました" : "資料")}
     <form data-form="doc" data-id="${esc(d.id)}">
       <div class="field"><label for="dc-t">名前</label><input id="dc-t" name="title" value="${esc(d.title)}" required></div>
-      <div class="frow"><div class="field"><label for="dc-c">分類</label><input id="dc-c" name="cat" list="dc-cats" value="${esc(d.cat === "未分類" ? "" : d.cat)}" placeholder="例：説明会、研修、会議"><datalist id="dc-cats">${docCats().filter(c => c !== "未分類").map(c => `<option value="${esc(c)}">`).join("")}</datalist></div>
+      <div class="field"><label>分類</label><div class="catpick" role="group" aria-label="分類をえらぶ">${["未分類", ...docCats().filter(c => c !== "未分類")].map(c => `<button type="button" class="chip" data-catpick="${esc(c)}" aria-pressed="${(d.cat || "未分類") === c}"><i class="cd" style="background:${catColor(c)}"></i>${esc(c)}</button>`).join("")}<button type="button" class="chip" data-catnew>${ico("plus")} 新しい分類</button></div>
+        <input id="dc-c" name="cat" type="${(d.cat || "未分類") === "未分類" || docCats().includes(d.cat) ? "hidden" : "text"}" value="${esc(d.cat === "未分類" ? "" : d.cat)}" placeholder="新しい分類の名前（例：漢検、研修）" class="input" style="margin-top:8px"></div>
+      <div class="frow">
         <div class="field"><label for="dc-d">使う日</label><input id="dc-d" type="date" name="date" value="${esc(d.date || "")}"></div></div>
       <div class="field"><label for="dc-n">メモ</label><textarea id="dc-n" name="note" placeholder="例：配布は30部、受付で渡す">${esc(d.note || "")}</textarea></div>
       <div class="field"><label>ひもづけた予定</label><div class="evdocs">${(d.ev || []).map(x => { const e = liveEvent(x) || x; return `<div class="pickrow" style="padding:6px 0"><span style="min-width:0"><b>${esc(e.title)}</b><small>${esc([md(e.date), e.time || ""].filter(Boolean).join(" "))}</small></span><button type="button" class="chip" data-unlink-ev="${esc(d.id)}|${esc(x.id)}">はずす</button></div>`; }).join("")}
@@ -3468,6 +3494,8 @@ document.addEventListener("click", async (ev) => {
   if(d.catCol){ const [c, col] = d.catCol.split("|"); const g = catCfg(); g.cols[c] = col; saveCat(g); b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); b.closest(".catrow").firstElementChild.style.background = col; schedule(); return; }
   if(d.catDel){ if(!b.dataset.sure){ b.dataset.sure = "1"; b.textContent = "もう一度"; return; } const c = d.catDel; const g = catCfg(); delete g.cols[c]; g.extra = (g.extra || []).filter(x => x !== c); saveCat(g);
     await setDocsCat((docsList || []).filter(x => x.cat === c).map(x => x.id), "未分類"); if(ui.docCat === c) ui.docCat = "all"; catPane(); return; }
+  if(d.catpick !== undefined){ const f = $("#dc-c"); f.type = "hidden"; f.value = d.catpick === "未分類" ? "" : d.catpick; b.parentNode.querySelectorAll("[data-catpick]").forEach(x => x.setAttribute("aria-pressed", x === b)); buzz(6); return; }
+  if(d.catnew !== undefined){ const f = $("#dc-c"); f.type = "text"; f.value = ""; b.parentNode.querySelectorAll("[data-catpick]").forEach(x => x.setAttribute("aria-pressed", "false")); f.focus(); return; }
   if(d.pickEv){ evPickPane(d.pickEv); return; }
   if(d.unlinkEv){ const [di, ei] = d.unlinkEv.split("|"); const dd = (docsList || []).find(x => x.id === di); if(dd){ const x = (dd.ev || []).find(y => y.id === ei); if(x){ await linkDoc(di, x, false); } } docEditPane(di); return; }
   if(d.linkEv){ const [di, ei] = d.linkEv.split("|"); const e = S.events.find(x => x.id === ei); const on = b.getAttribute("aria-pressed") !== "true"; await linkDoc(di, e, on); b.setAttribute("aria-pressed", on); b.textContent = on ? "ひもづけ済み" : "ひもづける"; buzz(8); return; }
