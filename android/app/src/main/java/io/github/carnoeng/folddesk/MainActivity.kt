@@ -87,9 +87,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         web = WebView(this)
         val dark = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-        web.setBackgroundColor(if (dark) 0xFF0B0D14.toInt() else 0xFFF3F5FA.toInt())
+        web.setBackgroundColor(if (dark) 0xFF101512.toInt() else 0xFFEDEFEA.toInt())
         // WebView ignores its own padding when drawing, so the system-bar insets go on a wrapper instead
-        val root = android.widget.FrameLayout(this).apply { setBackgroundColor(if (dark) 0xFF0B0D14.toInt() else 0xFFF3F5FA.toInt()) }
+        val root = android.widget.FrameLayout(this).apply { setBackgroundColor(if (dark) 0xFF101512.toInt() else 0xFFEDEFEA.toInt()) }
         root.addView(web, android.widget.FrameLayout.LayoutParams(-1, -1))
         setContentView(root)
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->

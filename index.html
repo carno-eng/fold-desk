@@ -5,7 +5,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src https://script.google.com https://script.googleusercontent.com https://api.github.com https://api.open-meteo.com https://geocoding-api.open-meteo.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
 <meta name="referrer" content="no-referrer">
-<meta name="theme-color" content="#F3F5FA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#EDEFEA" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0B0D14" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
@@ -984,6 +984,103 @@ body.wxfx-on .card{background:color-mix(in srgb,var(--surface) 90%,transparent);
 body.wxfx-on .hero.front{background:linear-gradient(150deg,rgba(43,63,224,.62),rgba(59,91,255,.52) 45%,rgba(123,97,255,.5));backdrop-filter:blur(2px) saturate(120%);-webkit-backdrop-filter:blur(2px) saturate(120%)}
 body.wxfx-on.sky-dark .hero.front{background:linear-gradient(150deg,rgba(20,26,70,.55),rgba(40,52,140,.45) 45%,rgba(80,60,170,.45))}
 body.wxfx-on .hero.front .blob{opacity:.35}
+
+/* ================= v27: teacher's-desk palette, flat surfaces, calm motion ================= */
+:root{
+  --bg:#EDEFEA; --surface:#FFFFFF; --surface-2:#E4E8E2; --line:rgba(30,40,34,.13); --fg:#1C2420; --muted:#5D6862;
+  --accent:#2C6A55; --accent-2:#2C6A55; --accent-soft:#DDEBE4; --accent-ink:#FFFFFF;
+  --warn:#C9372C; --warn-soft:#F8E1DE; --ok:#2C6A55; --chg:#C27A12;
+  --board:#24443A; --board-2:#1E3A31; --chalk:#F5F3EC; --chalk-y:#F2C94C; --wood:#9A7652;
+  --glass:var(--surface); --glass-line:var(--line);
+  --shadow:none; --shadow-lg:0 18px 48px rgba(20,30,25,.22);
+  --grad:var(--accent);
+  --r:18px; --r-sm:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101512; --surface:#18201C; --surface-2:#222B26; --line:rgba(215,232,222,.11); --fg:#E8EEEA; --muted:#97A49C;
+  --accent:#7CC3A6; --accent-2:#7CC3A6; --accent-soft:#1F3A30; --accent-ink:#0E1A15;
+  --warn:#FF7466; --warn-soft:#3A1A17; --ok:#7CC3A6; --chg:#F0A64A;
+  --board:#1F3A31; --board-2:#19302A; --glass:var(--surface); --glass-line:var(--line); --shadow:none; --shadow-lg:0 18px 48px rgba(0,0,0,.6); --grad:var(--accent)}}
+:root[data-theme="dark"]{
+  --bg:#101512; --surface:#18201C; --surface-2:#222B26; --line:rgba(215,232,222,.11); --fg:#E8EEEA; --muted:#97A49C;
+  --accent:#7CC3A6; --accent-2:#7CC3A6; --accent-soft:#1F3A30; --accent-ink:#0E1A15;
+  --warn:#FF7466; --warn-soft:#3A1A17; --ok:#7CC3A6; --chg:#F0A64A;
+  --board:#1F3A31; --board-2:#19302A; --glass:var(--surface); --glass-line:var(--line); --shadow:none; --shadow-lg:0 18px 48px rgba(0,0,0,.6); --grad:var(--accent)}
+
+/* 1. no decorative glow: aurora, blobs, coloured shadows */
+body::before{display:none!important}
+.hero .blob{display:none!important}
+
+/* the one memorable thing: the 今日 card is a blackboard */
+.hero,.hero.front,body.wxfx-on .hero.front,body.wxfx-on.sky-dark .hero.front{background:var(--board)!important;color:var(--chalk);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),0 1px 0 rgba(0,0,0,.04)!important;border-radius:20px;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.hero.front::before{display:none!important}
+.hero.front::after{content:"";position:absolute;left:16px;right:16px;bottom:0;top:auto;height:7px;border-radius:3px 3px 0 0;z-index:0;
+  background:var(--wood);box-shadow:inset 0 2px 0 rgba(255,255,255,.18),inset 0 -2px 0 rgba(0,0,0,.18)}
+.hero.front{padding-bottom:24px}
+.hero.night.front,.hero.evening.front{background:var(--board-2)!important}
+.hero .ring .arc{filter:none!important}
+.hero.soon .ring .arc{stroke:var(--chalk-y)}
+.hero.last .ring .arc{stroke:#FF8A80}
+.hero.brk .ring .arc{stroke:#BFE6D3}
+.hero.last .ring{animation:none}
+.hero .seg.mini button[aria-pressed="true"]{box-shadow:none}
+.hero .day .now-line,.hero .day .nowl{background:var(--chalk-y)}
+
+/* solid colours with roles instead of gradients */
+.btn.primary,.pill-btn.accent,.rail .tab[aria-current="page"],.rail .add,.check[aria-pressed="true"],.fab{background:var(--accent)!important;color:var(--accent-ink)!important;box-shadow:none!important}
+.check[aria-pressed="true"]{border-color:transparent}
+.logo{background:var(--board)!important;box-shadow:none!important}
+.logo::after{background:var(--chalk-y)!important}
+.tabbar .ind{background:var(--accent-soft)!important}
+.chip.accent{background:var(--accent-soft);color:var(--accent)}
+.wx.night{--wxbg:none}
+#cd-pill{background:var(--accent)!important;box-shadow:none!important}
+#pomo-pill{background:var(--warn)!important;box-shadow:none!important}
+#pomo-pill.brk{background:var(--accent)!important}
+#sw-pill{background:var(--chg)!important;box-shadow:none!important}
+#pills > button.idle{background:var(--muted)!important}
+#bigclock{background:var(--board)!important}
+#bigclock.focus{background:#5E1F1A!important}
+#bigclock.brk{background:#1F3A31!important}
+.selbar button.pri{background:var(--accent)}
+
+/* 2. flat paper surfaces: hairlines instead of shadows, no glass, radius by size */
+.card{box-shadow:none!important;border:1px solid var(--line)!important;border-radius:var(--r)}
+body.wxfx-on .card{background:var(--surface)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.card .card{border:0!important;background:var(--surface-2)!important}
+.doc,.ph-grid button{box-shadow:none!important;border:1px solid var(--line);border-radius:12px}
+.chip{border-radius:8px}
+.btn,.pill-btn{border-radius:12px}
+.icon-btn{border-radius:12px}
+.rail,body:not([data-mode="cover-p"]) .rail{background:var(--surface)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.tabbar{background:var(--surface)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:0 0 0 1px var(--line),0 10px 30px rgba(20,30,25,.12)!important}
+#pane{box-shadow:0 0 0 1px var(--line),var(--shadow-lg)}
+body[data-mode="main-l"] #pane{box-shadow:none}
+.banner,.toast,#toast{box-shadow:0 0 0 1px var(--line),0 10px 30px rgba(20,30,25,.14)}
+
+/* 3. motion only in answer to an action: no entrance cascade, no bounce, no touch bloom */
+main.enter .page-h,main.enter .grid > *,main.enter .stack > *,main.enter .tt-wrap,main.enter .toolbar,main.enter .pgrid > *,main.enter .legend,#pane > *{animation:none!important}
+.tapfx{display:none!important}
+:is(.row,.pcard,.cell,.chip,.pill-btn,.btn,.icon-btn,.tab,.cal button,.fab,.rail .add,.prow.xrow,.seg button,.check,.card button){transition:transform .18s ease,background-color .2s,color .2s,opacity .2s!important}
+:is(.row,.pcard,.cell,.chip,.pill-btn,.btn,.icon-btn,.tab,.cal button,.fab,.rail .add,.prow.xrow,.seg button,.check):active{transform:scale(.97)!important;transition-duration:.08s!important}
+:is(.pcard,.row):active{transform:none!important;background-color:color-mix(in srgb,var(--fg) 5%,transparent)}
+#pills > button.on{animation:none}
+.pomo.run .pomo-ring{animation:none}
+
+/* ================= v28: quieter details ================= */
+/* the current period: a plain tint, no coloured side bar */
+.prow.now{background:var(--accent-soft)!important}
+.prow.now::before{display:none!important}
+/* labels never break inside a word on the tab bar */
+.tabbar .tab span{white-space:nowrap;font-size:10px;letter-spacing:-.02em}
+/* P5: figures in a firm 700, not a squeezed 800 */
+.hero .date b,.ring .lab b,.wxb-t,.pomo-ring .in b,.sw-time,#bigclock b,.pno{font-weight:700!important;letter-spacing:-.015em!important}
+.page-h h1{font-weight:700;letter-spacing:-.01em}
+.card h3{font-weight:700}
+.rail .brand{font-weight:700}
+/* chalk feel on the board: figures slightly off-white */
+.hero .date b,.ring .lab b{color:var(--chalk)}
 </style>
 </head>
 <body>
@@ -1190,6 +1287,7 @@ addEventListener("pointerdown", e => {
   if(REDUCE || e.button > 0) return;
   const el = e.target.closest && e.target.closest(TAPSEL); if(!el || el.id === "cc") return;
   const r = el.getBoundingClientRect(); if(r.width < 8 || r.width > innerWidth * 1.05) return;
+  if(true) return;
   const cs = getComputedStyle(el), fx = document.createElement("div"); fx.className = "tapfx";
   fx.style.cssText = `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;border-radius:${cs.borderRadius}`;
   const dot = document.createElement("i"); dot.style.left = (e.clientX - r.left) + "px"; dot.style.top = (e.clientY - r.top) + "px";
@@ -1284,7 +1382,7 @@ $("#view").addEventListener("scroll", e => e.target.classList.toggle("scrolled",
 function taskRow(t){
   const r = remain(t.due, t.status === "done");
   const who = (t.personIds||[]).map(pid => S.people.find(p => p.id === pid)?.name).filter(Boolean).join("・");
-  const sub = [t.area, who].filter(Boolean).join(" · ");
+  const sub = [t.area, who].filter(Boolean).join("　");
   return `<div class="row ${t.status==='done'?'done':''}">
     <button class="check" data-toggle="${t.id}" aria-pressed="${t.status==='done'}" aria-label="完了にする">${ico("check")}</button>
     <button class="main" data-open-task="${t.id}" style="text-align:left"><b>${esc(t.title)}</b>${sub?`<small>${esc(sub)}</small>`:""}</button>
@@ -1295,7 +1393,7 @@ function eventRow(e){
   const d = parse(e.date);
   return `<button class="row" data-open-event="${e.id}" style="grid-template-columns:auto 1fr">
     <span class="datebox ${e.date===todayS()?'today':''}"><b>${d.getDate()}</b><small>${d.getMonth()+1}月 ${WD[d.getDay()]}</small></span>
-    <span class="main"><b>${esc(e.title)}</b><small>${[...new Set([e, ...(evDups[e.id] || [])].map(x => x.account).filter(Boolean))].map(a => `<span class="chip mini ${a === '学校' ? 'accent' : ''}">${esc(a)}</span>`).join("")}${(evDups[e.id] || []).length ? `<span class="chip mini">${(evDups[e.id] || []).length + 1}件</span>` : ''}${docsForEvent(e).length ? `<span class="chip mini accent">資料${docsForEvent(e).length}</span>` : ''}${e.remindMin ? `<span class="bell" style="vertical-align:-2px;margin-right:4px">${ico("bell")}</span>` : ''}${esc([e.time ? e.time + (e.endTime ? "–" + e.endTime : "") : "", e.place, e.kind].filter(Boolean).join(" · "))}</small></span>
+    <span class="main"><b>${esc(e.title)}</b><small>${[...new Set([e, ...(evDups[e.id] || [])].map(x => x.account).filter(Boolean))].map(a => `<span class="chip mini ${a === '学校' ? 'accent' : ''}">${esc(a)}</span>`).join("")}${(evDups[e.id] || []).length ? `<span class="chip mini">${(evDups[e.id] || []).length + 1}件</span>` : ''}${docsForEvent(e).length ? `<span class="chip mini accent">資料${docsForEvent(e).length}</span>` : ''}${e.remindMin ? `<span class="bell" style="vertical-align:-2px;margin-right:4px">${ico("bell")}</span>` : ''}${esc([e.time ? e.time + (e.endTime ? "–" + e.endTime : "") : "", e.place, e.kind].filter(Boolean).join("　"))}</small></span>
   </button>`;
 }
 const openTasks = () => S.tasks.filter(t => t.status !== "done").sort((a,b) => (a.due||"9999").localeCompare(b.due||"9999") || ((a.priority==="high"?0:1)-(b.priority==="high"?0:1)));
@@ -1461,7 +1559,7 @@ function wxCard(){
   const tone = !w.day ? "night" : kind === "rain" || kind === "thunder" ? "rain" : kind === "sun" ? "sun" : "";
   return `<div class="card span-all wx ${tone}" data-wx>
     <div class="wx-top"><div class="wx-ic">${wxIcon(kind, w.day)}</div>
-      <div class="wx-now"><div class="t">${w.t}<small>℃ ・ 体感 ${w.feels}℃</small></div><div class="l">${esc(lab)} ・ ${w.hi}℃ / ${w.lo}℃</div></div>
+      <div class="wx-now"><div class="t">${w.t}<small>℃　体感 ${w.feels}℃</small></div><div class="l">${esc(lab)}　${w.hi}℃ / ${w.lo}℃</div></div>
       <button class="wx-place chip" data-wx-place aria-label="天気の場所を変える">${esc(w.place)}</button></div>
     <div class="wx-stats">
       <div><small>湿度</small><b>${w.hum}%</b></div>
@@ -1485,7 +1583,7 @@ function heroBack(){
   return `<div class="hero face back ${tone} has-sky"><canvas class="wxsky" aria-hidden="true"></canvas><i class="wxscrim" aria-hidden="true"></i><i class="blob b1"></i><i class="blob b2"></i>
     <div class="wxb-top"><div class="wxb-ic">${wxIcon(kind, w.day)}</div>
       <div style="min-width:0;flex:1"><div class="eyebrow">${esc(w.place)} の天気</div><div class="wxb-t">${w.t}<small>℃</small></div>
-      <div class="wxb-l">${esc(lab)} ・ 体感 ${w.feels}℃ ・ ${w.hi}° / ${w.lo}°</div></div></div>
+      <div class="wxb-l">${esc(lab)}　体感 ${w.feels}℃　${w.hi}° / ${w.lo}°</div></div></div>
     <div class="wxb-stats">
       <div><small>湿度</small><b>${w.hum}%</b></div>
       <div><small>紫外線</small><b>${w.uvMax != null ? Math.round(w.uvMax) : "—"}<i style="color:${uvCol}">${uv[0]}</i></b></div>
@@ -1891,7 +1989,7 @@ function cdBody(){
     : s0 === "pause" ? `<button class="btn primary" data-cd="start">${ico("play")} 再開</button><button class="btn" data-cd="reset">リセット</button>`
     : `<button class="btn primary" data-cd="start">${ico("play")} スタート</button>${s0 === "done" ? `<button class="btn" data-cd="reset">もとに戻す</button>` : ""}`;
   return `<div class="pomo cd ${s0 === "done" ? "done" : ""}" id="cd">
-    <div class="pomo-ring cd-ring">${ringSVG("cd-arc", "#7B61FF", "#2B3FE0", "cd-g")}<div class="in"><b id="cd-time"></b><small id="cd-lab"></small></div></div>
+    <div class="pomo-ring cd-ring">${ringSVG("cd-arc", "#2C6A55", "#2C6A55", "cd-g")}<div class="in"><b id="cd-time"></b><small id="cd-lab"></small></div></div>
     <div class="cd-adj">${["-60", "-10", "+10", "+60"].map(v => `<button class="chip" data-cd="add:${v}">${v.replace("60", "1分").replace("10", "10秒")}</button>`).join("")}</div>
     <div class="pomo-btns" id="cd-btns">${btns}</div>
     ${s0 === "run" ? "" : `<div class="cd-adj">${pre.map(([m, l]) => `<button class="chip" data-cd="set:${m * 60}" aria-pressed="${c.st.full === m * 60000}">${l}</button>`).join("")}</div>
@@ -2087,8 +2185,8 @@ const pomo = (() => {
     return `
       <div class="pomo ${isBrk() ? "brk" : ""} ${st.end ? "run" : ""}" id="pomo">
         <div class="pomo-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><defs>
-          <linearGradient id="pomo-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A59"/><stop offset="1" stop-color="#E5484D"/></linearGradient>
-          <linearGradient id="pomo-g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3DD6B0"/><stop offset="1" stop-color="#12A594"/></linearGradient></defs>
+          <linearGradient id="pomo-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C9372C"/><stop offset="1" stop-color="#C9372C"/></linearGradient>
+          <linearGradient id="pomo-g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2C6A55"/><stop offset="1" stop-color="#2C6A55"/></linearGradient></defs>
           <circle class="bg" cx="100" cy="100" r="88"/><circle class="arc" id="pomo-arc" cx="100" cy="100" r="88" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="0"/></svg>
           <div class="in"><b id="pomo-time" aria-live="off"></b><small id="pomo-mode"></small></div></div>
         <div class="pomo-dots" id="pomo-dots" aria-label="${st.cfg.n}回ごとに長い休憩">${dots()}</div>
@@ -2163,7 +2261,7 @@ function tick(){
 setInterval(() => { if(!document.hidden) tick(); }, 1000);
 
 const cellText = c => c && c.subject ? c.subject + (c.cls ? ` ${c.cls}` : "") : "空き";
-const itemText = x => x.type === "period" ? `${x.n}時間目 · ${cellText(x.cell)}` : x.label;
+const itemText = x => x.type === "period" ? `${x.n}時間目　${cellText(x.cell)}` : x.label;
 
 
 /* ================= progress / followups / brief ================= */
@@ -2204,7 +2302,7 @@ function prepFor(dateS){
 }
 const dayLabel = d => d === todayS() ? "今日" : d === addDays(todayS(), 1) ? "明日" : md(d);
 function prepRows(list){
-  return list.map(p => `<div class="sec" style="margin:10px 0 2px">${p.n}時間目 ${esc(unitName(p.u))}${p.lp.unit ? ` · ${esc(p.lp.unit)}` : ""}</div>${(p.lp.files||[]).length ? `<div class="suggest" style="margin-bottom:4px">${fileChips(p.lp.files, false)}</div>` : ""}` + (p.lp.prep||[]).map((t, i) => { const on = (p.lp.prepDone||[]).includes(i);
+  return list.map(p => `<div class="sec" style="margin:10px 0 2px">${p.n}時間目 ${esc(unitName(p.u))}${p.lp.unit ? `　${esc(p.lp.unit)}` : ""}</div>${(p.lp.files||[]).length ? `<div class="suggest" style="margin-bottom:4px">${fileChips(p.lp.files, false)}</div>` : ""}` + (p.lp.prep||[]).map((t, i) => { const on = (p.lp.prepDone||[]).includes(i);
     return `<div class="row ${on ? 'done' : ''}" style="grid-template-columns:auto 1fr"><button class="check" data-prep-check="${p.lp.id}:${i}" aria-pressed="${on}" aria-label="準備済みにする">${ico("check")}</button><span class="main"><b>${esc(t)}</b></span></div>`; }).join("")).join("");
 }
 function prepPane(dateS){
@@ -2221,7 +2319,7 @@ function prepPane(dateS){
 const openFollow = () => S.followups.filter(f => f.status !== "done").sort((a,b) => (a.since||"").localeCompare(b.since||""));
 function followRow(f){
   const ds = daysSince(f.since);
-  return `<div class="row" style="grid-template-columns:1fr auto"><span class="main"><b>${esc(f.subject)}</b><small>${esc(f.who||"")}${ds!==null?` · ${ds}日経過`:''}</small></span>
+  return `<div class="row" style="grid-template-columns:1fr auto"><span class="main"><b>${esc(f.subject)}</b><small>${esc(f.who||"")}${ds!==null?`　${ds}日経過`:''}</small></span>
     <span style="display:flex;gap:6px">${f.url && MAILURL.test(f.url) ? `<a class="chip" href="${esc(f.url)}" target="_blank" rel="noopener">開く</a>` : ''}<button class="chip" data-follow-done="${f.id}">済み</button></span></div>`;
 }
 function followCard(){
@@ -2258,7 +2356,7 @@ function dayCard(dateS){
     if(x.type === "extra" || x.type === "event"){
       const attr = x.type === "extra" ? `data-extra="${dateS}:${x.idx}"` : `data-open-event="${x.id}"`;
       rows += `<button class="prow xrow ${isNow?'now':''}" ${attr}><span class="pno">${ico(x.type === "extra" ? "plus" : "events")}</span>
-        <div class="t">${esc(x.label)}<small>${esc([x.kind, x.note].filter(Boolean).join(" · "))}</small></div><span class="tm">${x.start}<br>${x.end}</span></button>`;
+        <div class="t">${esc(x.label)}<small>${esc([x.kind, x.note].filter(Boolean).join("　"))}</small></div><span class="tm">${x.start}<br>${x.end}</span></button>`;
       if(x.type === "event" && !ui.edit){ const ev = S.events.find(y => y.id === x.id), dl = ev ? docsForEvent(ev) : []; if(dl.length) rows += `<div class="prow-docs">${dl.map(d => `<button class="chip accent" data-doc-open="${esc(d.id)}">${ico("docs")} ${esc(d.title)}</button>`).join("")}</div>`; }
       return;
     }
@@ -2349,7 +2447,7 @@ function vToday(){
         : x.type === "block" ? `<span class="blk block${pa}" style="${dl}left:${l}%;width:${w}%" title="${esc(x.label)}"></span>`
         : `<span class="blk xev${pa}" style="${dl}left:${l}%;width:${w}%" title="${esc(x.label)}"></span>`; }).join("");
     const n = nowMin(); const nl = n >= s0 && n <= s1 ? `<i class="nowline" id="nowline" data-s0="${s0}" data-span="${span}" style="left:${(n-s0)/span*100}%"></i>` : "";
-    dayBar = `<div class="day" aria-hidden="true">${blks}${nl}</div><div class="day-labels"><span>${items[0].start}</span><span>${isWeekday(t) ? `下校 ${OFFICIAL[mode].dismiss}` : ""}${Math.max(...items.map(x => mins(x.end))) > mins(OFFICIAL[mode].dismiss) && isWeekday(t) ? ` · 放課後 〜${items.reduce((a,x) => mins(x.end) > mins(a) ? x.end : a, "00:00")}` : ""}</span></div>`;
+    dayBar = `<div class="day" aria-hidden="true">${blks}${nl}</div><div class="day-labels"><span>${items[0].start}</span><span>${isWeekday(t) ? `下校 ${OFFICIAL[mode].dismiss}` : ""}${Math.max(...items.map(x => mins(x.end))) > mins(OFFICIAL[mode].dismiss) && isWeekday(t) ? `　放課後 〜${items.reduce((a,x) => mins(x.end) > mins(a) ? x.end : a, "00:00")}` : ""}</span></div>`;
   }
   const am = isWeekday(t) && !(S.days && S.days[t]) ? autoModeOf(t) : null;
   const moodBadge = `<span class="mood" aria-live="polite"></span>`;
@@ -2417,7 +2515,7 @@ function vTT(){
     ${(() => { const us = teachUnits(), groups = [["1年（担任）", us.filter(u => !u.cls)], ["情報探究", us.filter(u => u.cls && JOHO.test(u.subject))], ["そのほか", us.filter(u => u.cls && !JOHO.test(u.subject))]].filter(g => g[1].length);
       return groups.map(([g, xs]) => `<div class="sec">${g}</div><div class="pgrid">${xs.map(u => { const lp = lastProg(u.subject, u.cls), b = behind(u.subject, u.cls);
         return `<button class="pcard" data-progress="${esc(pkey(u.subject, u.cls))}"><span class="avatar ${u.cls ? 'num' : ''}" style="font-size:${u.cls ? 14 : 16}px">${esc(u.cls || u.subject.slice(0,1))}</span><span class="main"><b>${esc(u.cls ? u.subject : u.subject)}</b>
-          <span class="org">${lp ? esc(progLabel(lp)) + ' · ' + esc(md(lp.date)) : 'タップして記録'}</span>${lp && lp.next ? `<p>次回：${esc(lp.next)}</p>` : ''}${b>0 ? `<span class="chip warn">${b}時間 遅れ</span>` : ''}</span></button>`; }).join("")}</div>`).join(""); })()}`;
+          <span class="org">${lp ? esc(progLabel(lp)) + '　' + esc(md(lp.date)) : 'タップして記録'}</span>${lp && lp.next ? `<p>次回：${esc(lp.next)}</p>` : ''}${b>0 ? `<span class="chip warn">${b}時間 遅れ</span>` : ''}</span></button>`; }).join("")}</div>`).join(""); })()}`;
 }
 
 
@@ -2473,7 +2571,7 @@ function vPeople(){
   list.sort((a,b) => (b.lastContact||"").localeCompare(a.lastContact||"") || (a.name||"").localeCompare(b.name||"", "ja"));
   const cards = list.map(p => { const ds = daysSince(p.lastContact);
     return `<button class="pcard" data-open-person="${p.id}"><span class="avatar">${esc(ini(p.name))}</span><span class="main">
-      <b>${esc(p.name)}</b><span class="org">${esc([orgName(p.orgId), p.role].filter(Boolean).join(" · "))}</span>
+      <b>${esc(p.name)}</b><span class="org">${esc([orgName(p.orgId), p.role].filter(Boolean).join("　"))}</span>
       ${p.about?`<p>${esc(p.about)}</p>`:''}<span style="display:flex;gap:6px;flex-wrap:wrap">${(p.ties||[]).map(x=>`<span class="chip muted">${esc(x)}</span>`).join("")}
       ${ds!==null?`<span class="chip ${ds>60?'warn':''}">${ds===0?'今日':ds+'日前'}</span>`:''}</span></span></button>`; }).join("");
   return `<div class="page-h"><h1>人</h1><button class="pill-btn" data-act="card" ${sample&&sampleImages?'':'hidden'}>${ico("card")}名刺から</button><button class="pill-btn accent" data-new="person">${ico("plus")}新規</button></div>
@@ -2589,7 +2687,7 @@ function photoSavedPane(ids){
   openPane(`${paneHead(`${ps.length}枚を保存しました`)}
     <div class="phstrip">${ps.map(p => `<img src="${p.thumb}" alt="">`).join("")}</div>
     <form data-form="photos" data-id="${esc(ids.join(","))}">
-      <div class="field"><label>授業</label><p class="hint" style="margin:0 0 6px">${esc(md(p0.date))} ・ ${same ? (p0.n ? "撮った時刻から自動で選びました" : "授業の時間外でした") : "撮った時刻ごとに振り分けました"}</p>
+      <div class="field"><label>授業</label><p class="hint" style="margin:0 0 6px">${esc(md(p0.date))}　${same ? (p0.n ? "撮った時刻から自動で選びました" : "授業の時間外でした") : "撮った時刻ごとに振り分けました"}</p>
         ${same ? `<div class="slotpick">${per.map(x => `<button type="button" class="chip" data-slot="${x.n}" aria-pressed="${String(p0.n) === String(x.n)}">${x.n} ${esc(x.cell.subject || "空き")}${x.cell.cls ? " " + esc(x.cell.cls) : ""}</button>`).join("")}<button type="button" class="chip" data-slot="0" aria-pressed="${!p0.n}">授業外</button></div><input type="hidden" name="n" value="${esc(String(p0.n || 0))}">` : `<p style="margin:0;font-weight:700">${[...new Set(ps.map(slotLabel))].map(esc).join("、")}</p>`}</div>
       <div class="field"><label>種類</label><div class="kindpick">${PHKINDS.map(k => `<button type="button" class="chip" data-kind="${k}" aria-pressed="${k === p0.kind}">${k}</button>`).join("")}</div><input type="hidden" name="kind" value="${esc(p0.kind)}"></div>
       <div class="field"><label for="ph-note">メモ</label><input id="ph-note" class="input" name="note" placeholder="例：まとめの板書、次回は続きから"></div>
@@ -2605,7 +2703,7 @@ function photoEditPane(id){
       <div class="field"><label>授業</label><div class="slotpick" id="pe-slots">${per.map(x => `<button type="button" class="chip" data-slot="${x.n}" aria-pressed="${String(p.n) === String(x.n)}">${x.n} ${esc(x.cell.subject || "空き")}${x.cell.cls ? " " + esc(x.cell.cls) : ""}</button>`).join("")}<button type="button" class="chip" data-slot="0" aria-pressed="${!p.n}">授業外</button></div><input type="hidden" name="n" value="${esc(String(p.n || 0))}"></div>
       <div class="field"><label>種類</label><div class="kindpick">${PHKINDS.map(k => `<button type="button" class="chip" data-kind="${k}" aria-pressed="${k === p.kind}">${k}</button>`).join("")}</div><input type="hidden" name="kind" value="${esc(p.kind)}"></div>
       <div class="field"><label for="pe-n">メモ</label><input id="pe-n" class="input" name="note" value="${esc(p.note || "")}"></div>
-      <p class="hint">${esc(new Date(p.at).toLocaleString("ja-JP", {month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit"}))} に撮影 ・ ${fmtSize(p.size || 0)}</p>
+      <p class="hint">${esc(new Date(p.at).toLocaleString("ja-JP", {month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit"}))} に撮影　${fmtSize(p.size || 0)}</p>
       <div class="btns"><button class="btn primary" type="submit">保存</button>${NATIVE ? `<button class="btn" type="button" data-photo-dl="${esc(p.id)}">${ico("dl")} ダウンロードへ</button>` : ""}<button class="btn danger" type="button" data-photo-del="${esc(p.id)}">削除</button></div></form>`);
 }
 function vPhotos(){
@@ -2631,7 +2729,7 @@ async function openPhoto(id, ids){
   const apply = () => { img.style.transform = `translate(calc(-50% + ${st.x}px), calc(-50% + ${st.y}px)) scale(${st.k})`; };
   async function show(){
     const p = (photoList || []).find(x => x.id === st.list[st.i]); if(!p){ closePhoto(); return; }
-    el.querySelector(".bar b").innerHTML = `${esc(slotLabel(p))}<small>${esc(md(p.date))} ・ ${esc(p.kind)}${p.unit ? " ・ " + esc(p.unit) : ""}</small>`;
+    el.querySelector(".bar b").innerHTML = `${esc(slotLabel(p))}<small>${esc(md(p.date))}　${esc(p.kind)}${p.unit ? "　" + esc(p.unit) : ""}</small>`;
     el.querySelector(".note").textContent = p.note || ""; el.querySelector(".cnt").textContent = st.list.length > 1 ? `${st.i + 1} / ${st.list.length}` : "";
     img.src = p.thumb; st.k = 1; st.x = 0; st.y = 0; apply();
     const blob = await PHOTOS.file(p.id); if(phv !== st) return; if(st.url) URL.revokeObjectURL(st.url); if(blob){ st.url = URL.createObjectURL(blob); img.src = st.url; }
@@ -2724,7 +2822,7 @@ function evPickPane(docId){
   const on = e => (d.ev || []).some(x => x.id === e.id || evKey2(x) === evKey2(e));
   openPane(`${paneHead("予定とひもづける")}<p class="hint" style="margin-top:0">「${esc(d.title)}」を使う予定をえらびます。予定の画面と「今日」からも開けるようになります。</p>
     <input class="input" type="search" placeholder="予定をさがす" data-pick-q style="margin-bottom:8px">
-    <div class="group" id="picklist">${list.length ? list.map(e => `<div class="pickrow" data-pick-text="${esc((e.title + " " + md(e.date) + " " + (e.place || "")).toLowerCase())}"><span style="min-width:0"><b>${esc(e.title)}</b><small>${esc([md(e.date) + (e.date === t ? "（今日）" : ""), e.time ? e.time : "終日", e.place].filter(Boolean).join(" ・ "))}</small></span>
+    <div class="group" id="picklist">${list.length ? list.map(e => `<div class="pickrow" data-pick-text="${esc((e.title + " " + md(e.date) + " " + (e.place || "")).toLowerCase())}"><span style="min-width:0"><b>${esc(e.title)}</b><small>${esc([md(e.date) + (e.date === t ? "（今日）" : ""), e.time ? e.time : "終日", e.place].filter(Boolean).join("　"))}</small></span>
       <button class="chip tg" data-link-ev="${esc(d.id)}|${esc(e.id)}" aria-pressed="${on(e)}">${on(e) ? "ひもづけ済み" : "ひもづける"}</button></div>`).join("") : `<p class="empty">近い予定がありません。</p>`}</div>
     <div class="btns"><button class="btn primary" data-doc-edit="${esc(d.id)}">もどる</button></div>`);
 }
@@ -2733,7 +2831,7 @@ function docPickPane(evId){
   const list = sortDocs(docsList || [], "opened").sort((a, b) => linked.has(b.id) - linked.has(a.id) || ((b.date === e.date) - (a.date === e.date)));
   openPane(`${paneHead("資料をひもづける")}<p class="hint" style="margin-top:0">「${esc(e.title)}」（${esc(md(e.date))}）で使う資料をえらびます。</p>
     ${list.length ? `<input class="input" type="search" placeholder="資料をさがす" data-pick-q style="margin-bottom:8px">
-    <div class="group" id="picklist">${list.map(d => `<div class="pickrow" data-pick-text="${esc((d.title + " " + (d.cat || "")).toLowerCase())}"><span style="min-width:0;display:flex;gap:10px;align-items:center">${d.thumb ? `<img src="${d.thumb}" alt="" style="width:30px;height:40px;object-fit:cover;object-position:top;border-radius:5px;flex:none">` : ""}<span style="min-width:0"><b>${esc(d.title)}</b><small>${esc([d.cat && d.cat !== "未分類" ? d.cat : "", d.date ? md(d.date) : ""].filter(Boolean).join(" ・ "))}</small></span></span>
+    <div class="group" id="picklist">${list.map(d => `<div class="pickrow" data-pick-text="${esc((d.title + " " + (d.cat || "")).toLowerCase())}"><span style="min-width:0;display:flex;gap:10px;align-items:center">${d.thumb ? `<img src="${d.thumb}" alt="" style="width:30px;height:40px;object-fit:cover;object-position:top;border-radius:5px;flex:none">` : ""}<span style="min-width:0"><b>${esc(d.title)}</b><small>${esc([d.cat && d.cat !== "未分類" ? d.cat : "", d.date ? md(d.date) : ""].filter(Boolean).join("　"))}</small></span></span>
       <button class="chip tg" data-link-doc="${esc(d.id)}|${esc(e.id)}" aria-pressed="${linked.has(d.id)}">${linked.has(d.id) ? "ひもづけ済み" : "ひもづける"}</button></div>`).join("")}</div>`
     : `<p class="empty">資料がまだありません。「資料」タブから PDF を追加してください。</p>`}
     <div class="btns"><button class="btn" data-go="docs">資料タブへ</button><button class="btn primary" data-open-event="${esc(e.id)}">もどる</button></div>`);
@@ -2759,7 +2857,7 @@ function vDocsInner(tabs){
   const card = d => `<div class="doc">
       <button data-doc-open="${esc(d.id)}" style="text-align:left;display:flex;flex-direction:column">
         ${d.thumb ? `<span class="th"><img src="${d.thumb}" alt=""></span>` : thumbIco}
-        <span class="tx"><b>${esc(d.title)}</b><small>${esc([d.pages ? d.pages + "ページ" : "", fmtSize(d.size || 0), d.inked ? "書き込みあり" : ""].filter(Boolean).join(" ・ "))}</small>
+        <span class="tx"><b>${esc(d.title)}</b><small>${esc([d.pages ? d.pages + "ページ" : "", fmtSize(d.size || 0), d.inked ? "書き込みあり" : ""].filter(Boolean).join("　"))}</small>
           ${d.cat && d.cat !== "未分類" ? `<span class="cat" style="background:${catColor(d.cat)}">${esc(d.cat)}</span>` : ""}
           ${(d.ev || []).length ? `<span class="evl">${ico("events")}${esc(d.ev[0].title)}${d.ev.length > 1 ? ` ほか${d.ev.length - 1}` : ""}</span>` : ""}</span></button>
       <button class="sel" data-doc-sel="${esc(d.id)}" aria-pressed="${!!(ui.docSel && ui.docSel.includes(d.id))}" aria-label="えらぶ"></button>
@@ -2827,7 +2925,7 @@ function docEditPane(id, fresh){
       <div class="field"><label for="dc-n">メモ</label><textarea id="dc-n" name="note" placeholder="例：配布は30部、受付で渡す">${esc(d.note || "")}</textarea></div>
       <div class="field"><label>ひもづけた予定</label><div class="evdocs">${(d.ev || []).map(x => { const e = liveEvent(x) || x; return `<div class="pickrow" style="padding:6px 0"><span style="min-width:0"><b>${esc(e.title)}</b><small>${esc([md(e.date), e.time || ""].filter(Boolean).join(" "))}</small></span><button type="button" class="chip" data-unlink-ev="${esc(d.id)}|${esc(x.id)}">はずす</button></div>`; }).join("")}
         <button type="button" class="chip" data-pick-ev="${esc(d.id)}">${ico("plus")} 予定とひもづける</button></div></div>
-      <p class="hint">${d.pages ? d.pages + "ページ ・ " : ""}${fmtSize(d.size || 0)} ・ このスマホの中だけに保存されています。「使う日」を入れると、その日の「今日」に出ます。</p>
+      <p class="hint">${d.pages ? d.pages + "ページ　" : ""}${fmtSize(d.size || 0)}　このスマホの中だけに保存されています。「使う日」を入れると、その日の「今日」に出ます。</p>
       <div class="btns"><button class="btn primary" type="submit">保存</button><button class="btn" type="button" data-doc-open="${esc(d.id)}">開く</button>${NATIVE ? `<button class="btn" type="button" data-doc-save="${esc(d.id)}">${ico("dl")} ダウンロードへ</button>` : ""}<button class="btn danger" type="button" data-doc-del="${esc(d.id)}">削除</button></div>
     </form>`);
 }
@@ -3177,12 +3275,12 @@ const dupRemovable = e => (evDups[e.id] || []).filter(x => !x.school && !x.calId
 function dupNote(e){
   const d = e.id && evDups[e.id]; if(!d || !d.length) return "";
   const rm = dupRemovable(e);
-  return `<div class="group" style="margin:0 0 14px"><div class="setrow"><span class="main"><b>同じ予定を${d.length + 1}件まとめて表示しています</b><small>${esc([evSrc(e), ...d.map(evSrc)].join(" ・ "))}</small></span>${rm.length ? `<button type="button" class="chip accent" data-dup-clean="${esc(e.id)}">1つにする</button>` : ""}</div>
+  return `<div class="group" style="margin:0 0 14px"><div class="setrow"><span class="main"><b>同じ予定を${d.length + 1}件まとめて表示しています</b><small>${esc([evSrc(e), ...d.map(evSrc)].join("　"))}</small></span>${rm.length ? `<button type="button" class="chip accent" data-dup-clean="${esc(e.id)}">1つにする</button>` : ""}</div>
     ${rm.length ? `<p class="hint" style="padding:0 14px 12px;margin:0">「1つにする」で、${esc(rm.map(evSrc).join("・"))}の分を削除します（場所・メモは残す方に移します）。Google・学校のカレンダーは変わりません。</p>` : ""}</div>`;
 }
 function schoolEventPane(e){
   openPane(`${paneHead(e.account === "学校" ? "学校の予定" : "予定")}
-    <div class="group"><div class="setrow"><span class="main"><b>${esc(e.title)}</b><small>${esc([md(e.date), e.time ? e.time + (e.endTime ? "–" + e.endTime : "") : "終日", e.place].filter(Boolean).join(" · "))}</small></span><span class="chip mini accent">学校</span></div></div>
+    <div class="group"><div class="setrow"><span class="main"><b>${esc(e.title)}</b><small>${esc([md(e.date), e.time ? e.time + (e.endTime ? "–" + e.endTime : "") : "終日", e.place].filter(Boolean).join("　"))}</small></span><span class="chip mini accent">学校</span></div></div>
     ${dupNote(e)}${e.device ? `<p class="hint" style="margin-top:10px">スマホのカレンダー${e.calendar ? `「${esc(e.calendar)}」` : ""}（${esc(e.account)}）の予定です。表示しているだけで、Fold Desk のデータには保存していません。変更はカレンダーのアプリで行ってください。</p>`
       : `<p class="hint" style="margin-top:10px">学校の Google アカウントのカレンダー${e.calendar ? `「${esc(e.calendar)}」` : ""}の予定です。このスマホに表示しているだけで、個人のアカウントには保存していません。変更は学校の Google カレンダーで行ってください。</p>`}
     <div style="margin-top:12px">${evDocsSection(e)}</div>
@@ -3355,7 +3453,7 @@ function morningLine(){
   const due = openTasks().filter(x => x.due && x.due <= t).length;
   const ev = S.events.filter(e => e.date === t).length;
   const parts = [isWeekday(t) ? `${OFFICIAL[dayMode(t)].label}時程・授業${cls}コマ` : "", ch ? `変更${ch}件` : "", ev ? `予定${ev}件` : "", due ? `今日までのタスク${due}件` : ""].filter(Boolean);
-  return parts.join(" ・ ");
+  return parts.join("　");
 }
 setInterval(() => { if(!document.hidden) remindCheck(); }, 15000);
 document.addEventListener("visibilitychange", () => { if(!document.hidden){ remindCheck(); schedule(); } });
@@ -3502,7 +3600,7 @@ function settingsPane(){
           <div class="setrow"><span class="main"><b>ロック画面に「いま・次」</b><small>授業のある時間だけ、いまの授業と残り時間・1日の進み具合を通知に出します（音なし）</small></span><button class="switch" role="switch" aria-checked="${NATIVE.nowOn ? NATIVE.nowOn() : false}" data-native="now" aria-label="ロック画面に「いま・次」"></button></div>
           <div class="setrow"><span class="main"><b>授業中は自動でサイレント</b><small>時間割の授業・会議の間だけ「おやすみモード」にします（最初に許可が必要）</small></span><button class="switch" role="switch" aria-checked="${NATIVE.quietOn ? NATIVE.quietOn() : false}" data-native="quiet" aria-label="授業中は自動でサイレント"></button></div>
         </div>
-        <div class="setrow"><span class="main"><b>アプリのバージョン</b><small id="appver">1.0.${NATIVE_VER ? NATIVE_VER.code : "?"} ・ 確認中…</small></span><button class="chip" data-act="appupdate" id="appupd" hidden>更新する</button></div>`
+        <div class="setrow"><span class="main"><b>アプリのバージョン</b><small id="appver">1.0.${NATIVE_VER ? NATIVE_VER.code : "?"}　確認中…</small></span><button class="chip" data-act="appupdate" id="appupd" hidden>更新する</button></div>`
       : `<button class="row" data-act="homeguide" style="grid-template-columns:auto 1fr auto"><span class="avatar" style="width:36px;height:36px">${ico("home")}</span><span class="main"><b>${standalone() ? "アプリとしてインストール済み" : "アプリとしてインストール"}</b><small>Fold8 の表紙画面・メイン画面に</small></span><span class="when">${ico("right")}</span></button>
         ${isAndroid ? `<div class="group" style="margin-top:8px">
           <div class="setrow"><span class="main"><b>Android アプリ（ウィジェット付き）</b><small>ホーム画面に時間割・タスクのウィジェットを置けます</small></span><a class="chip accent" href="${RELEASES}" target="_blank" rel="noopener">ダウンロード</a></div>
@@ -3512,11 +3610,11 @@ function settingsPane(){
       <div class="seg" role="group" aria-label="外観">${[["auto","自動"],["light","ライト"],["dark","ダーク"]].map(([k,l]) => `<button type="button" data-theme-set="${k}" aria-pressed="${th===k}">${l}</button>`).join("")}</div>`;
   };
   openPane("", draw); draw();
-  if(NATIVE) checkAppUpdate().then(u => { const a = $("#appver"), b2 = $("#appupd"); if(a) a.textContent = `1.0.${NATIVE_VER.code} ・ ${u ? `新しい版 1.0.${u.n} があります` : "最新です"}`; if(b2 && u){ b2.hidden = false; b2.dataset.url = u.url; } });
+  if(NATIVE) checkAppUpdate().then(u => { const a = $("#appver"), b2 = $("#appupd"); if(a) a.textContent = `1.0.${NATIVE_VER.code}　${u ? `新しい版 1.0.${u.n} があります` : "最新です"}`; if(b2 && u){ b2.hidden = false; b2.dataset.url = u.url; } });
   if(paired()) gcall("g.status").then(st => {
     const t = x => x ? new Date(x).toLocaleString("ja-JP", {month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit"}) : "まだ";
     const a = $("#g-last"), ai = $("#g-ai");
-    if(a) a.textContent = `ToDo ${t(st.last.tasks)} ・ Gmail ${t(st.last.gmail)} ・ カレンダー ${t(st.last.cal)}`;
+    if(a) a.textContent = `ToDo ${t(st.last.tasks)}　Gmail ${t(st.last.gmail)}　カレンダー ${t(st.last.cal)}`;
     if(ai && !st.ai) ai.textContent = "Gemini のキーが未設定です（Apps Script の GEMINI_API_KEY）";
   }).catch(() => {});
 }
@@ -3545,11 +3643,11 @@ function askPane(prefill){
 function askSummary(x){
   const tm = x.time ? ` ${x.time}${x.endTime ? "–" + x.endTime : ""}` : "";
   switch(x.type){
-    case "task": return ["タスク", x.title, [x.due ? `期限 ${md(x.due)}` : "期限なし", x.area].filter(Boolean).join(" · ")];
-    case "event": return ["予定", x.title, `${x.date ? md(x.date) : ""}${tm}${x.place ? " · " + x.place : ""}`];
+    case "task": return ["タスク", x.title, [x.due ? `期限 ${md(x.due)}` : "期限なし", x.area].filter(Boolean).join("　")];
+    case "event": return ["予定", x.title, `${x.date ? md(x.date) : ""}${tm}${x.place ? "　" + x.place : ""}`];
     case "change": return ["時間割の変更", `${x.date ? md(x.date) : ""} ${x.period}時間目`, x.cancel ? "なしにする" : `${x.subject || ""}${x.cls ? " " + x.cls : ""}`];
     case "extra": return ["差し込み", x.title, `${x.date ? md(x.date) : ""} ${x.period ? x.period + "時間目" : (x.start || "") + (x.end ? "–" + x.end : "")}`];
-    case "progress": return ["進度", `${x.subject}${x.cls ? " " + x.cls : ""}`, [progLabel(x), x.next ? "次：" + x.next : "", (x.prep||[]).length ? "準備：" + x.prep.join("、") : ""].filter(Boolean).join(" · ")];
+    case "progress": return ["進度", `${x.subject}${x.cls ? " " + x.cls : ""}`, [progLabel(x), x.next ? "次：" + x.next : "", (x.prep||[]).length ? "準備：" + x.prep.join("、") : ""].filter(Boolean).join("　")];
     default: return ["メモ", x.text || "", ""];
   }
 }
@@ -3747,15 +3845,15 @@ document.addEventListener("click", async (ev) => {
     if(d.csvFile){ const kind = d.csvFile, inp = document.createElement("input"); inp.type = "file"; inp.accept = ".csv,.tsv,.txt,text/csv,text/plain";
       inp.onchange = async () => { const f = inp.files[0]; if(!f) return; if(f.size > 1e6){ toast("ファイルが大きすぎます"); return; } csvLoaded(kind, parseCSV(await decodeFile(f))); }; inp.click(); return; }
     if(d.csvSheet){ const kind = d.csvSheet;
-      picker("スプレッドシートから", "ファイル名で検索", q => gcall("g.drive", {q, mime:"sheet"}), x => `<span class="main"><b>${esc(x.title)}</b><small>スプレッドシート · ${esc(x.modified)}</small></span>`,
+      picker("スプレッドシートから", "ファイル名で検索", q => gcall("g.drive", {q, mime:"sheet"}), x => `<span class="main"><b>${esc(x.title)}</b><small>スプレッドシート　${esc(x.modified)}</small></span>`,
         async x => { toast("読み込んでいます…"); try { const rows = await gcall("g.sheet", {id:x.id}); csvLoaded(kind, (rows || []).map(r => r.map(c => String(c).trim())).filter(r => r.some(Boolean))); } catch(err){ toast("読み込めませんでした"); } }); return; }
   }
   if(b.matches("[data-drive-attach]")){ const f = b.closest("form");
-    picker("ドライブから添付", "ファイル名で検索", q => gcall("g.drive", {q}), x => `<span class="main"><b>${esc(x.title)}</b><small>${mimeLabel(x.mime)} · ${esc(x.modified)}</small></span>`,
+    picker("ドライブから添付", "ファイル名で検索", q => gcall("g.drive", {q}), x => `<span class="main"><b>${esc(x.title)}</b><small>${mimeLabel(x.mime)}　${esc(x.modified)}</small></span>`,
       x => { const arr = safeFiles(f.files.value); if(!arr.some(y => y.url === x.url)) arr.push({title:x.title, url:x.url}); f.files.value = JSON.stringify(arr); f.querySelector(".fileschips").innerHTML = fileChips(arr); }); return; }
   if(d.fileRm !== undefined && b.matches("[data-file-rm]")){ const f = b.closest("form"); const arr = safeFiles(f.files.value); arr.splice(+d.fileRm, 1); f.files.value = JSON.stringify(arr); f.querySelector(".fileschips").innerHTML = fileChips(arr); return; }
   if(b.matches("[data-contact-search]")){ const f = b.closest("form");
-    picker("Google 連絡先から", "名前・メール・会社名", q => gcall("g.contacts", {q}), x => `<span class="main"><b>${esc(x.name)}</b><small>${esc([x.org, x.email].filter(Boolean).join(" · "))}</small></span>`,
+    picker("Google 連絡先から", "名前・メール・会社名", q => gcall("g.contacts", {q}), x => `<span class="main"><b>${esc(x.name)}</b><small>${esc([x.org, x.email].filter(Boolean).join("　"))}</small></span>`,
       x => { const set = (n, val) => { if(val && f[n]) f[n].value = val; }; set("name", x.name); set("email", x.email); set("phone", x.phone); set("org", x.org); set("role", x.role); toast("連絡先から入れました"); }); return; }
   if(d.contactSave){ const p = S.people.find(x => x.id === d.contactSave); if(!p) return; b.disabled = true;
     try { await gcall("g.saveContact", {person:{id:p.id, name:p.name, email:p.email, phone:p.phone, org:orgName(p.orgId), role:p.role, about:p.about}}); await store.pull(true); toast("Google 連絡先に保存しました"); }
@@ -4578,7 +4676,7 @@ function buildSnapshot(){
   const prepAll = pl.reduce((a, p) => a + (p.lp.prep || []).length, 0);
   const prep = {label:dayLabel(pt), date:pt, items:prepL.map(x => x.t), keys:prepL.map(x => x.k), total:prepAll};
   const now = Date.now();
-  const reminders = reminderList(now, now + 2 * 864e5).slice(0, 40).map(r => ({key:r.key, at:r.at, title:r.title, body:[r.lead, r.body].filter(Boolean).join(" ・ ")}));
+  const reminders = reminderList(now, now + 2 * 864e5).slice(0, 40).map(r => ({key:r.key, at:r.at, title:r.title, body:[r.lead, r.body].filter(Boolean).join("　")}));
   const wk = weekDates(0), np = NP();
   const week = {times:Array.from({length:np}, (_, i) => ((OFFICIAL.normal.low[i] || OFFICIAL.normal.upper[i] || {}).start) || ""),
     days:wk.map((d, di) => { const items = (dayItems(d) || []).filter(x => x.type === "period"), mode = dayMode(d);
@@ -4710,9 +4808,9 @@ function schoolStatusText(){
   if(schoolState === "auth") return "合言葉が無効です。学校の Apps Script で pair() をやり直してください";
   if(schoolState === "blocked") return "学校の設定で接続が止められています（「追加の手順」を参照）";
   if(!c.at) return "まだ取り込んでいません";
-  const d = new Date(c.at); return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())} に取り込み ・ ${schoolEvents().filter(e => e.date >= todayS()).length}件`;
+  const d = new Date(c.at); return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())} に取り込み　${schoolEvents().filter(e => e.date >= todayS()).length}件`;
 }
-function devStatus(){ const on = devCals.filter(devIsOn).length; return `${on}個のカレンダー ・ これからの予定 ${devEv.filter(e => e.date >= todayS()).length}件`; }
+function devStatus(){ const on = devCals.filter(devIsOn).length; return `${on}個のカレンダー　これからの予定 ${devEv.filter(e => e.date >= todayS()).length}件`; }
 function devCalPane(){
   refreshDevice();
   const accts = [...new Set(devCals.map(c => c.account))];
@@ -4982,7 +5080,7 @@ function sysNotify(r){
   if(NATIVE) return;
   try {
     if(document.hidden && swReg && "Notification" in window && Notification.permission === "granted")
-      swReg.showNotification(r.title, {body:[r.lead, r.body].filter(Boolean).join(" ・ "), icon:"icons/icon-192.png", badge:"icons/badge-96.png", tag:r.key || r.title, data:{go:r.go || "today"}});
+      swReg.showNotification(r.title, {body:[r.lead, r.body].filter(Boolean).join("　"), icon:"icons/icon-192.png", badge:"icons/badge-96.png", tag:r.key || r.title, data:{go:r.go || "today"}});
   } catch(e){}
 }
 

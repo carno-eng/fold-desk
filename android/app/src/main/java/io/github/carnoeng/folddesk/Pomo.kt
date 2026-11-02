@@ -157,7 +157,7 @@ object Timer {
         s.put("end", 0).put("left", 0).put("done", true); put(c, s); apply(c)
         if (!fromApp && !MainActivity.foreground) {
             val t = (s.optString("label").ifEmpty { "タイマー" }) + " 終了"
-            val b = NotificationCompat.Builder(c, "pomo_alert").setSmallIcon(R.drawable.ic_notify).setColor(0xFF3B5BFF.toInt())
+            val b = NotificationCompat.Builder(c, "pomo_alert").setSmallIcon(R.drawable.ic_notify).setColor(0xFF2C6A55.toInt())
                 .setContentTitle(t).setContentText("時間になりました").setAutoCancel(true).setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setPriority(NotificationCompat.PRIORITY_HIGH).setVisibility(NotificationCompat.VISIBILITY_PUBLIC).setContentIntent(open(c))
             try { NotificationManagerCompat.from(c).notify(ID_ALERT, b.build()) } catch (_: SecurityException) { }
@@ -189,7 +189,7 @@ object Timer {
             else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, end, endPi)
         }
         val full = s.optLong("full").coerceAtLeast(1); val rem = if (end > 0) maxOf(0, end - System.currentTimeMillis()) else left
-        val b = NotificationCompat.Builder(c, "pomo").setSmallIcon(R.drawable.ic_notify).setColor(0xFF3B5BFF.toInt())
+        val b = NotificationCompat.Builder(c, "pomo").setSmallIcon(R.drawable.ic_notify).setColor(0xFF2C6A55.toInt())
             .setContentTitle(if (end > 0) (s.optString("label").ifEmpty { "タイマー" }) else "タイマー 一時停止中  %d:%02d".format(rem / 60_000, (rem / 1000) % 60))
             .setContentText(if (end > 0) "のこり時間" else "再開で続きから").setOngoing(true).setOnlyAlertOnce(true).setSilent(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC).setCategory(NotificationCompat.CATEGORY_STOPWATCH).setPriority(NotificationCompat.PRIORITY_LOW).setContentIntent(open(c))

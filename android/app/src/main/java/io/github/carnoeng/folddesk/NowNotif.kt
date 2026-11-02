@@ -52,7 +52,7 @@ object NowNotif {
         val open = PendingIntent.getActivity(c, 5, Intent(c, MainActivity::class.java).putExtra("route", "today")
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val b = NotificationCompat.Builder(c, CH)
-            .setSmallIcon(R.drawable.ic_notify).setColor(0xFF3B5BFF.toInt())
+            .setSmallIcon(R.drawable.ic_notify).setColor(0xFF2C6A55.toInt())
             .setContentTitle(st.line).setContentText(text)
             .setSubText(if (mode.isNotEmpty() && mode != "通常") "$mode 時程" else null)
             .setOngoing(true).setOnlyAlertOnce(true).setSilent(true).setShowWhen(st.target > 0)

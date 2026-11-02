@@ -2,7 +2,7 @@
 <resources>
     <style name="AppTheme" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/bg</item>
-        <item name="android:colorAccent">#7088FF</item>
+        <item name="android:colorAccent">#7CC3A6</item>
     </style>
     <color name="bg">#000000</color>
 </resources>
