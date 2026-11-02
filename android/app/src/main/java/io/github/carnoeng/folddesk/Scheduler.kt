@@ -70,9 +70,11 @@ object Scheduler {
                 val first = Sched.at(day.optString("date"), items.getJSONObject(0).optString("s")) - 3_600_000
                 var lastEnd = 0L
                 for (k in 0 until items.length()) lastEnd = maxOf(lastEnd, Sched.at(day.optString("date"), items.getJSONObject(k).optString("e")))
-                if (now in first..lastEnd && Widgets.hasHero(c)) next = minOf(next, now + 5 * 60_000)
+                if (now in first..lastEnd && (Widgets.hasHero(c) || NowNotif.enabled(c))) next = minOf(next, now + 5 * 60_000)
             }
         }
+        // the lock-screen notification appears 30 minutes before the first item
+        if (NowNotif.enabled(c)) NowNotif.window(s)?.let { (a, b) -> if (a > now + 1000) next = minOf(next, a); if (b > now + 1000) next = minOf(next, b + 1000) }
         val midnight = Calendar.getInstance().apply {
             add(Calendar.DAY_OF_YEAR, 1); set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 5)
         }.timeInMillis

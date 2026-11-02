@@ -14,7 +14,7 @@ const val ACTION_SNOOZE = "io.github.carnoeng.folddesk.SNOOZE"
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(c: Context, i: Intent) {
         when (i.action) {
-            Scheduler.ACTION_TICK -> { Widgets.updateAll(c); Scheduler.schedule(c); Quiet.apply(c) }
+            Scheduler.ACTION_TICK -> { Widgets.updateAll(c); Scheduler.schedule(c); Quiet.apply(c); NowNotif.update(c) }
             Scheduler.ACTION_NOTIFY -> {
                 Widgets.updateAll(c)
                 val t = i.getStringExtra("title") ?: ""; val b = i.getStringExtra("body") ?: ""
@@ -39,6 +39,7 @@ class BootReceiver : BroadcastReceiver() {
         Scheduler.ensureWorker(c)
         Widgets.updateAll(c)
         Quiet.apply(c)
+        NowNotif.update(c)
         if (OverlayService.enabled(c) && android.provider.Settings.canDrawOverlays(c))
             try { androidx.core.content.ContextCompat.startForegroundService(c, Intent(c, OverlayService::class.java)) } catch (_: Exception) { }
     }

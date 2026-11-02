@@ -565,6 +565,53 @@ body:is([data-mode="cover-l"],[data-mode="main-p"]) #pane{transition:transform .
   .tapfx{display:none}
   body[data-mode="cover-p"].pane-open main{transform:none}
 }
+
+/* ================= v11: hero moods, time-of-day sky, collapsing title ================= */
+/* hero: the ring warns as a class ends, relaxes in breaks; the sheet turns to dusk and night after school */
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;opacity:0;transition:opacity 1.6s ease;pointer-events:none}
+.hero.evening::before{opacity:1;background:linear-gradient(150deg,#4A2BD6,#B24BD1 48%,#FF8A65)}
+.hero.night::before{opacity:1;background:linear-gradient(150deg,#0C1250,#262C8C 50%,#4A39A8)}
+.hero.morning::before{opacity:1;background:linear-gradient(150deg,#2F55F0,#4B7BFF 45%,#7FC8FF)}
+.hero.night .b3{background:#B9C4FF;opacity:.25} .hero.evening .b1{background:#FFB38A} .hero.evening .b2{background:#5A1FA8}
+.ring .arc{transition:stroke-dashoffset 1s linear,stroke .8s ease,filter .8s ease}
+.hero.soon .ring .arc{stroke:#FFD66B;filter:drop-shadow(0 0 8px rgba(255,214,107,.85))}
+.hero.last .ring .arc{stroke:#FF8F8F;filter:drop-shadow(0 0 10px rgba(255,143,143,.95))}
+.hero.last .ring{animation:beat 1s cubic-bezier(.3,0,.3,1) infinite}
+@keyframes beat{0%,100%{transform:scale(1)}12%{transform:scale(1.07)}24%{transform:scale(.99)}36%{transform:scale(1.04)}}
+.hero.brk .ring .arc{stroke:#A6F2DA;filter:drop-shadow(0 0 6px rgba(166,242,218,.7))}
+.ring::after{content:"";position:absolute;inset:3px;border-radius:50%;border:2px dashed rgba(255,255,255,.4);opacity:0;transform:scale(.85);transition:opacity .8s,transform .8s var(--spring)}
+.hero.brk .ring::after{opacity:1;transform:none;animation:spin 14s linear infinite}
+.hero.done .ring .arc{stroke:rgba(255,255,255,.75)}
+.hero .ring .lab b{transition:color .6s}
+.hero.last .ring .lab b{color:#FFE1E1}
+.hero .mood{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.16);opacity:0;transform:translateY(4px);transition:opacity .5s,transform .6s var(--spring)}
+.hero .mood.on{opacity:1;transform:none}
+
+/* sky behind everything follows the time of day */
+body::before{transition:opacity 2s}
+body[data-tod="morning"]::before{background:radial-gradient(40% 35% at 12% 8%,rgba(255,190,140,.20),transparent 70%),radial-gradient(38% 32% at 92% 4%,rgba(120,190,255,.18),transparent 70%),
+  radial-gradient(45% 40% at 85% 95%,rgba(255,220,150,.12),transparent 70%),radial-gradient(40% 35% at 5% 90%,rgba(140,220,200,.12),transparent 70%)}
+body[data-tod="evening"]::before{background:radial-gradient(40% 35% at 12% 8%,rgba(255,140,100,.20),transparent 70%),radial-gradient(38% 32% at 92% 4%,rgba(180,90,220,.18),transparent 70%),
+  radial-gradient(45% 40% at 85% 95%,rgba(255,110,150,.16),transparent 70%),radial-gradient(40% 35% at 5% 90%,rgba(255,190,120,.12),transparent 70%)}
+body[data-tod="night"]::before{background:radial-gradient(40% 35% at 12% 8%,rgba(80,90,220,.20),transparent 70%),radial-gradient(38% 32% at 92% 4%,rgba(60,170,220,.12),transparent 70%),
+  radial-gradient(45% 40% at 85% 95%,rgba(150,90,230,.16),transparent 70%),radial-gradient(40% 35% at 5% 90%,rgba(40,120,160,.12),transparent 70%)}
+
+/* large title shrinks and slides under the bar as you scroll */
+@supports (animation-timeline: scroll()){
+  main .page-h h1{transform-origin:0 100%;animation:titleShrink linear both;animation-timeline:scroll(nearest block);animation-range:0 96px}
+  main .page-h .eyebrow{animation:fadeUp linear both;animation-timeline:scroll(nearest block);animation-range:0 50px}
+  @keyframes titleShrink{to{transform:translateY(10px) scale(.72);opacity:0;filter:blur(2px)}}
+  @keyframes fadeUp{to{opacity:0;transform:translateY(-6px)}}
+  .navbar b{animation:navIn linear both;animation-timeline:scroll(nearest block);animation-range:56px 100px;transition:none}
+  @keyframes navIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+  .hero .hero-top{animation:heroDrift linear both;animation-timeline:scroll(nearest block);animation-range:0 260px}
+  @keyframes heroDrift{to{transform:translateY(-14px);opacity:.75}}
+}
+@media (prefers-reduced-motion: reduce){
+  main .page-h h1,main .page-h .eyebrow,.navbar b,.hero .hero-top{animation:none!important}
+  .navbar b{transition:opacity .25s}
+  .hero.last .ring,.hero.brk .ring::after{animation:none}
+}
 </style>
 </head>
 <body>
@@ -902,7 +949,26 @@ function currentState(){
   return {after:true};
 }
 /* live ring + now line, updated every second without re-rendering */
+function heroMood(){
+  const st = currentState(), d = new Date(), m = d.getHours() * 60 + d.getMinutes(), sec = m * 60 + d.getSeconds();
+  const t = todayS(), dis = isWeekday(t) && OFFICIAL[dayMode(t)] ? mins(OFFICIAL[dayMode(t)].dismiss) : 15 * 60;
+  const sky = m >= 18 * 60 + 30 || m < 5 * 60 ? "night" : (m >= dis && m >= 15 * 60) || m >= 17 * 60 ? "evening" : m < 8 * 60 + 15 ? "morning" : "";
+  if(st.cur && st.cur.type !== "block"){ const l = mins(st.cur.end) * 60 - sec; return {cls:[l <= 60 ? "last" : l <= 300 ? "soon" : "", sky].filter(Boolean).join(" "), note:l <= 60 ? "もうすぐ終わり" : l <= 300 ? "あと5分" : ""}; }
+  if(st.cur || (st.before && st.started)) return {cls:["brk", sky].filter(Boolean).join(" "), note:"休み時間"};
+  if(st.after) return {cls:["done", sky].filter(Boolean).join(" "), note:"今日もおつかれさま"};
+  return {cls:sky, note:""};
+}
+function applyMood(){
+  const h = document.querySelector(".hero"); if(!h) return;
+  const md = heroMood(), want = ("hero span-all " + md.cls).trim();
+  if(h.className !== want) h.className = want;
+  const mo = h.querySelector(".mood"); if(mo){ if(mo.textContent !== md.note) mo.textContent = md.note; mo.classList.toggle("on", !!md.note); }
+}
+function skyNow(){ const d = new Date(), m = d.getHours() * 60 + d.getMinutes(); return m >= 18 * 60 + 30 || m < 5 * 60 ? "night" : m >= 16 * 60 + 30 ? "evening" : m < 9 * 60 + 30 ? "morning" : "day"; }
+function applySky(){ const k = skyNow(); if(document.body.dataset.tod !== k) document.body.dataset.tod = k; }
+applySky(); setInterval(applySky, 60e3);
 function tick(){
+  applyMood();
   const arc = document.getElementById("ring-arc"); if(!arc) return;
   const st = currentState(), d = new Date(), sec = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
   let frac = 0, num = null, sub = null;
@@ -1101,6 +1167,7 @@ function vToday(){
     dayBar = `<div class="day" aria-hidden="true">${blks}${nl}</div><div class="day-labels"><span>${items[0].start}</span><span>${isWeekday(t) ? `下校 ${OFFICIAL[mode].dismiss}` : ""}${Math.max(...items.map(x => mins(x.end))) > mins(OFFICIAL[mode].dismiss) && isWeekday(t) ? ` · 放課後 〜${items.reduce((a,x) => mins(x.end) > mins(a) ? x.end : a, "00:00")}` : ""}</span></div>`;
   }
   const am = isWeekday(t) && !(S.days && S.days[t]) ? autoModeOf(t) : null;
+  const moodBadge = `<span class="mood" aria-live="polite"></span>`;
   const modeSeg = isWeekday(t) ? `<div class="seg mini" role="group" aria-label="今日の時程">${DAY_MODES.map(k => `<button type="button" data-daymode="${k}" data-date="${t}" aria-pressed="${mode===k}">${OFFICIAL[k].label}</button>`).join("")}</div>${am ? `<div class="automode">「${esc(am.ev.title)}」の予定から自動で${esc(OFFICIAL[am.mode].label)}にしています</div>` : ""}` : "";
 
   const ot = openTasks();
@@ -1123,10 +1190,10 @@ function vToday(){
   const ring = `<div class="ring ${st.cur || st.before ? '' : 'idle'}" id="ring" aria-hidden="true"><svg viewBox="0 0 100 100"><circle class="trk" cx="50" cy="50" r="44" fill="none" stroke-width="9"/>
       <circle class="arc" id="ring-arc" cx="50" cy="50" r="44" fill="none" stroke-width="9" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="276.5"/></svg>
       <div class="lab"><b class="num" id="ring-num">${st.cur ? st.left : st.before ? st.wait : d.getHours()+":"+pad(d.getMinutes())}</b><small id="ring-sub">${st.cur ? '分 のこり' : st.before ? '分 まで' : 'いま'}</small></div></div>`;
-  const hero = `<section class="hero span-all"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i>
+  const hero = `<section class="hero span-all ${heroMood().cls}"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i>
       <div class="hero-top"><div style="min-width:0"><div class="eyebrow">${d.getFullYear()}年 ${WD[d.getDay()]}曜日</div>
       <div class="date"><b class="num">${d.getMonth()+1}月${d.getDate()}日</b></div>
-      <div class="now">${esc(nowLine)}<small>${esc(nowSub)}</small></div></div>${ring}</div>${modeSeg}${dayBar}</section>`;
+      <div class="now">${esc(nowLine)}<small>${esc(nowSub)}</small></div>${moodBadge}</div>${ring}</div>${modeSeg}${dayBar}</section>`;
   const head = `<div class="page-h"><h1>今日</h1><button class="icon-btn" data-act="settings" aria-label="通知と設定">${ico("bell")}</button></div>`;
   const tip = !NATIVE && !ls.get("fd-home-tip-off", false) && document.body.dataset.mode === "cover-p"
     ? `<div class="card span-all tip"><span class="ic">${ico("home")}</span><span class="main"><b>ホーム画面に置く</b><small>アプリのようにワンタップで開けます</small></span><button class="pill-btn accent" data-act="homeguide">方法</button><button class="icon-btn sm" data-act="tipoff" aria-label="閉じる">${ico("close")}</button></div>` : "";
@@ -1598,6 +1665,7 @@ function settingsPane(){
         </div>
         <div class="sec" style="margin:14px 0 6px">授業中</div>
         <div class="group">
+          <div class="setrow"><span class="main"><b>ロック画面に「いま・次」</b><small>授業のある時間だけ、いまの授業と残り時間・1日の進み具合を通知に出します（音なし）</small></span><button class="switch" role="switch" aria-checked="${NATIVE.nowOn ? NATIVE.nowOn() : false}" data-native="now" aria-label="ロック画面に「いま・次」"></button></div>
           <div class="setrow"><span class="main"><b>授業中は自動でサイレント</b><small>時間割の授業・会議の間だけ「おやすみモード」にします（最初に許可が必要）</small></span><button class="switch" role="switch" aria-checked="${NATIVE.quietOn ? NATIVE.quietOn() : false}" data-native="quiet" aria-label="授業中は自動でサイレント"></button></div>
         </div>
         <div class="setrow"><span class="main"><b>アプリのバージョン</b><small id="appver">1.0.${NATIVE_VER ? NATIVE_VER.code : "?"} ・ 確認中…</small></span><button class="chip" data-act="appupdate" id="appupd" hidden>更新する</button></div>`
@@ -1891,6 +1959,7 @@ document.addEventListener("click", async (ev) => {
     if(d.native === "wallpaper"){ NATIVE.openWallpaper(); return; }
     if(d.native === "wallbg"){ NATIVE.pickWallpaperImage(); return; }
     if(d.native === "overlay"){ const on = b.getAttribute("aria-checked") !== "true"; const ok = NATIVE.setOverlay(on); b.setAttribute("aria-checked", on && ok); if(on && !ok) toast("「他のアプリの上に表示」を許可してから、もう一度オンにしてください"); return; }
+    if(d.native === "now"){ const on = b.getAttribute("aria-checked") !== "true"; if(NATIVE.setNow){ NATIVE.setNow(on); b.setAttribute("aria-checked", on); if(on && NATIVE.notifState() !== "granted") NATIVE.requestNotifications(); toast(on ? "授業のある時間にロック画面へ表示します" : "ロック画面の表示をやめました"); } return; }
     if(d.native === "quiet"){ const on = b.getAttribute("aria-checked") !== "true"; const ok = NATIVE.setQuiet(on); b.setAttribute("aria-checked", on && ok); if(on && !ok) toast("「おやすみモードへのアクセス」を Fold Desk に許可してから、もう一度オンにしてください"); return; }
   }
   if(d.act === "appupdate"){ NATIVE && NATIVE.openExternal(b.dataset.url || RELEASES); return; }

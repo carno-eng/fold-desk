@@ -35,6 +35,7 @@ class Bridge(
             Widgets.updateAll(ctx)
             Scheduler.schedule(ctx)
             Quiet.apply(ctx)
+            NowNotif.update(ctx)
         }
     }
 
@@ -72,6 +73,8 @@ class Bridge(
         latch.await(2, java.util.concurrent.TimeUnit.SECONDS)
         return ok
     }
+    @JavascriptInterface fun nowOn(): Boolean = NowNotif.enabled(ctx)
+    @JavascriptInterface fun setNow(on: Boolean) { main.post { NowNotif.setEnabled(ctx, on) } }
     @JavascriptInterface fun quietOn(): Boolean = Quiet.enabled(ctx)
     @JavascriptInterface fun setQuiet(on: Boolean): Boolean {
         var ok = false
