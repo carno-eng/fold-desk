@@ -105,6 +105,17 @@ class WidgetShots {
         shot("weather-250x120", Widgets.weather(c, wx, 250f, 120f), 250, 120)
         shot("weather-340x200", Widgets.weather(c, wx, 340f, 200f), 340, 200)
         shot("hero-weather-340x210", Widgets.hero(c, wx, 340f, 210f), 340, 210)
+        // window scenes: a few frames for several kinds of weather
+        for ((nm, code) in listOf("rain" to 63, "heavy" to 65, "clear" to 0, "snow" to 73, "fog" to 45, "thunder" to 95)) {
+            val ww = JSONObject(wx.getJSONObject("weather").toString()).put("code", code)
+            val st = WxScene.state(ww); val n = WxScene.frameCount(st)
+            for (f in listOf(0, n / 2)) {
+                val b = WxScene.frame(st, 510, 320, f, n); val g = WxScene.glass(510, 320, 1.6f)
+                Canvas(b).drawBitmap(g, 0f, 0f, null)
+                File(out, "window-$nm-$f.png").outputStream().use { b.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            }
+        }
+        shot("window-widget-340x200", Widgets.window(c, wx, 340f, 200f), 340, 200)
         // always-on desk view
         Store.saveSnapshot(c, one(-40, 3, 13, 58).toString())
         renderView("aod-portrait", AodView(c), 400, 880)

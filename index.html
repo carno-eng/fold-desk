@@ -730,6 +730,18 @@ body:not([data-mode="cover-p"]) .wx .wx-hours{grid-column:1/-1}
 #pdfv .pages{display:flex;flex-direction:column;align-items:center;gap:12px;min-width:min-content;padding:0 12px}
 #pdfv canvas{background:#fff;box-shadow:0 6px 24px rgba(0,0,0,.35);border-radius:4px;display:block}
 #pdfv .msg{color:#fff;text-align:center;padding:40px 20px}
+
+/* ================= v16: living weather sky behind 今日 ================= */
+#wxfx{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:0;transition:opacity 1.2s ease}
+body.wxfx-on #wxfx{opacity:1}
+body.wxfx-on::before{opacity:0!important}
+body.wxfx-on.sky-dark .page-h h1,body.wxfx-on.sky-dark .page-h .eyebrow{color:#fff;text-shadow:0 1px 12px rgba(0,0,0,.35)}
+body.wxfx-on.sky-dark .page-h .icon-btn{background:rgba(255,255,255,.18);color:#fff}
+body.wxfx-on .card{background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%)}
+/* the sky shows through the hero, like looking out of a window */
+body.wxfx-on .hero.front{background:linear-gradient(150deg,rgba(43,63,224,.62),rgba(59,91,255,.52) 45%,rgba(123,97,255,.5));backdrop-filter:blur(2px) saturate(120%);-webkit-backdrop-filter:blur(2px) saturate(120%)}
+body.wxfx-on.sky-dark .hero.front{background:linear-gradient(150deg,rgba(20,26,70,.55),rgba(40,52,140,.45) 45%,rgba(80,60,170,.45))}
+body.wxfx-on .hero.front .blob{opacity:.35}
 </style>
 </head>
 <body>
@@ -952,6 +964,7 @@ function render(){
   renderNav();
   const v = $("#view");
   const changed = lastView !== view; lastView = view;
+  try { wxfx.sync(); } catch(e){}
   const st = changed ? 0 : v.scrollTop;
   const ok = paired() && syncState !== "auth";
   document.body.classList.toggle("unpaired", !ok);
@@ -1110,7 +1123,7 @@ async function fetchWeather(force){
   wxBusy = true;
   try {
     const pl = wxPlace();
-    const u = `https://api.open-meteo.com/v1/forecast?latitude=${pl.lat}&longitude=${pl.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,uv_index,is_day,precipitation&hourly=temperature_2m,precipitation_probability,weather_code,uv_index,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max&timezone=Asia%2FTokyo&forecast_days=2`;
+    const u = `https://api.open-meteo.com/v1/forecast?latitude=${pl.lat}&longitude=${pl.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,uv_index,is_day,precipitation,cloud_cover,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code,uv_index,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max,sunrise,sunset&timezone=Asia%2FTokyo&forecast_days=2`;
     const r = await fetch(u, {cache:"no-store", credentials:"omit", referrerPolicy:"no-referrer"});
     const j = await r.json(); if(!j.current) throw 0;
     WX = {at:Date.now(), place:pl.name, j}; ls.set("fd-wx", WX); schedule();
@@ -1124,7 +1137,10 @@ function wxNow(){
   const hours = h.time.slice(i0, i0 + 12).map((t, k) => ({h:+t.slice(11, 13), t:Math.round(h.temperature_2m[i0 + k]), p:h.precipitation_probability[i0 + k], code:h.weather_code[i0 + k], day:!!h.is_day[i0 + k]}));
   const restRain = Math.max(0, ...h.precipitation_probability.slice(i0, i0 + 12).filter(x => x != null));
   const rainAt = hours.find(x => x.p >= 50);
-  return {t:Math.round(c.temperature_2m), feels:Math.round(c.apparent_temperature), hum:c.relative_humidity_2m, uv:c.uv_index, uvMax:d.uv_index_max[0], code:c.weather_code, day:!!c.is_day,
+  const hm2 = x => x ? +x.slice(11, 13) * 60 + +x.slice(14, 16) : null;
+  const fx = {code:c.weather_code, precip:c.precipitation || 0, cloud:c.cloud_cover ?? null, wind:c.wind_speed_10m ?? 0,
+    sr:d.sunrise ? hm2(d.sunrise[0]) : null, ss:d.sunset ? hm2(d.sunset[0]) : null};
+  return {fx, t:Math.round(c.temperature_2m), feels:Math.round(c.apparent_temperature), hum:c.relative_humidity_2m, uv:c.uv_index, uvMax:d.uv_index_max[0], code:c.weather_code, day:!!c.is_day,
     hi:Math.round(d.temperature_2m_max[0]), lo:Math.round(d.temperature_2m_min[0]), pop:d.precipitation_probability_max[0], restRain, rainAt, hours,
     tm:{code:d.weather_code[1], hi:Math.round(d.temperature_2m_max[1]), lo:Math.round(d.temperature_2m_min[1]), pop:d.precipitation_probability_max[1]}, place:WX.place, at:WX.at};
 }
@@ -1191,6 +1207,15 @@ document.addEventListener("click", e => {
   ui.heroFlip = !onBack; card.classList.toggle("flipped", ui.heroFlip); buzz(8);
   if(ui.heroFlip) fetchWeather();
 });
+function wxTryPane(){
+  let t = {}; try { t = JSON.parse(localStorage.getItem("fd-wxfx-test") || "null") || {}; } catch(e){}
+  const W = [["快晴", 0], ["晴れ曇", 2], ["くもり", 3], ["霧", 45], ["霧雨", 51], ["雨", 63], ["大雨", 65], ["雪", 73], ["雷雨", 95]];
+  const T = [["夜明け", 330], ["朝", 450], ["昼", 720], ["午後", 900], ["夕焼け", 1000], ["薄暮", 1055], ["夜", 1260], ["深夜", 60]];
+  openPane(`${paneHead("背景のお試し")}<p class="empty" style="margin-top:0">選ぶと「今日」で見られます。試し終わったら「いまの天気に戻す」を押してください。</p>
+    <div class="sec">天気</div><div class="seg" style="flex-wrap:wrap;display:flex;gap:6px">${W.map(([l, c]) => `<button class="chip" data-wx-try="code:${c}" aria-pressed="${t.code === c}">${l}</button>`).join("")}</div>
+    <div class="sec" style="margin-top:12px">時間帯</div><div class="seg" style="flex-wrap:wrap;display:flex;gap:6px">${T.map(([l, m]) => `<button class="chip" data-wx-try="m:${m}" aria-pressed="${t.m === m}">${l}</button>`).join("")}</div>
+    <div class="btns" style="margin-top:16px"><button class="btn primary" data-wx-try="off:0">いまの天気に戻す</button></div>`);
+}
 function wxPlacePane(){
   openPane(`${paneHead("天気の場所")}
     <form data-form="wxplace"><div class="field"><label for="wx-q">市区町村の名前</label><input id="wx-q" name="q" placeholder="例：横浜市青葉区" value=""></div>
@@ -1199,6 +1224,146 @@ function wxPlacePane(){
 }
 fetchWeather(); setInterval(() => { if(!document.hidden) fetchWeather(); }, 10 * 60e3);
 document.addEventListener("visibilitychange", () => { if(!document.hidden) fetchWeather(); });
+/* ================= sky scene: time of day × weather, drawn on a canvas behind 今日 =================
+   phases: 深夜 late, 夜明け dawn, 朝 morning, 昼 day, 午後 afternoon, 夕焼け sunset, 薄暮 dusk, 夜 night */
+const SKY = {
+  late:["#04060F", "#0A0F26", "#121A3A"], dawn:["#2B2F5E", "#B86A8C", "#F4B387"], morning:["#5DA9F0", "#9CCBF4", "#EAF4FC"],
+  day:["#2F7FE6", "#6EB3F2", "#D2E9FB"], afternoon:["#3B7DD8", "#8FBDE8", "#F3D9A8"], sunset:["#3A2E6E", "#C2577A", "#F7A65A"],
+  dusk:["#141B47", "#3C3A7A", "#8A5A8E"], night:["#070B1E", "#0E1638", "#1E2855"]
+};
+const PHASE_JA = {late:"深夜", dawn:"夜明け", morning:"朝", day:"昼", afternoon:"午後", sunset:"夕焼け", dusk:"薄暮", night:"夜"};
+function skyPhase(m, sr = 6 * 60, ss = 17 * 60){
+  if(m >= 23 * 60 || m < 4 * 60) return "late";
+  if(m < sr - 60) return "night"; if(m < sr + 25) return "dawn"; if(m < 10 * 60) return "morning";
+  if(m < ss - 120) return "day"; if(m < ss - 25) return "afternoon"; if(m < ss + 20) return "sunset"; if(m < ss + 75) return "dusk"; return "night";
+}
+function wxKindLevel(code, precip){
+  let kind = "clear", lvl = 0;
+  if(code === 1) kind = "few"; else if(code === 2) kind = "partly"; else if(code === 3) kind = "overcast"; else if(code === 45 || code === 48) kind = "fog";
+  else if(code >= 51 && code <= 57){ kind = "rain"; lvl = code >= 55 ? 2 : 1; }
+  else if(code === 61 || code === 80){ kind = "rain"; lvl = 2; } else if(code === 63 || code === 81 || code === 66){ kind = "rain"; lvl = 3; }
+  else if(code === 65 || code === 82 || code === 67){ kind = "rain"; lvl = 4; }
+  else if(code >= 71 && code <= 77 || code === 85 || code === 86){ kind = "snow"; lvl = code === 75 || code === 86 ? 3 : code === 73 || code === 85 ? 2 : 1; }
+  else if(code >= 95){ kind = "thunder"; lvl = 4; }
+  if(kind === "rain" && precip >= 4) lvl = Math.max(lvl, 4); else if(kind === "rain" && precip >= 1.5) lvl = Math.max(lvl, 3);
+  return {kind, lvl};
+}
+const hex2 = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const mix = (a, b, t) => { const x = hex2(a), y = hex2(b); return "#" + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, "0")).join(""); };
+const lum = h => { const [r, g, b] = hex2(h); return (0.299 * r + 0.587 * g + 0.114 * b) / 255; };
+function sceneState(){
+  let test = null; try { test = JSON.parse(localStorage.getItem("fd-wxfx-test") || "null"); } catch(e){}
+  const w = wxNow(), now = new Date(), m = test && test.m != null ? test.m : now.getHours() * 60 + now.getMinutes();
+  const fx = w && w.fx ? w.fx : {code:w ? w.code : 1, precip:0, cloud:null, wind:0, sr:null, ss:null};
+  const sr = fx.sr || 6 * 60 + 5, ss = fx.ss || 16 * 60 + 45;
+  const phase = skyPhase(m, sr, ss);
+  const kl = test && test.code != null ? wxKindLevel(test.code, 0) : wxKindLevel(fx.code, fx.precip);
+  const cover = kl.kind === "clear" ? 0 : kl.kind === "few" ? .25 : kl.kind === "partly" ? .5 : kl.kind === "fog" ? .7 : kl.kind === "overcast" ? .9 : .85;
+  const night = phase === "night" || phase === "late" || phase === "dusk";
+  let cols = SKY[phase].slice();
+  const grey = night ? "#262B3A" : "#8792A4", rainy = night ? "#151A26" : "#4A5468", snowy = night ? "#2C3448" : "#B9C3D3", foggy = night ? "#3A3F4C" : "#C8CED8";
+  const tgt = kl.kind === "rain" || kl.kind === "thunder" ? rainy : kl.kind === "snow" ? snowy : kl.kind === "fog" ? foggy : grey;
+  const k = kl.kind === "rain" || kl.kind === "thunder" ? .55 + kl.lvl * .08 : kl.kind === "snow" ? .55 : kl.kind === "fog" ? .6 : cover * .62;
+  cols = cols.map(c => mix(c, tgt, Math.min(.9, k)));
+  return {phase, kind:kl.kind, lvl:kl.lvl, cover, wind:fx.wind || 0, cols, night, m, sr, ss, dark:lum(cols[1]) < .5};
+}
+const wxfx = (() => {
+  let cv = null, ctx = null, sky = null, st = null, key = "", raf = 0, last = 0, W = 0, H = 0, dpr = 1;
+  let streaks = [], drops = [], flakes = [], clouds = [], stars = [], fog = [], flash = 0;
+  const R = (a, b) => a + Math.random() * (b - a);
+  function ensure(){
+    if(cv) return; cv = document.createElement("canvas"); cv.id = "wxfx"; cv.setAttribute("aria-hidden", "true"); document.body.prepend(cv); ctx = cv.getContext("2d");
+    addEventListener("resize", () => { key = ""; });
+  }
+  function build(){
+    dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    sky = document.createElement("canvas"); sky.width = cv.width; sky.height = cv.height; const g = sky.getContext("2d");
+    const gr = g.createLinearGradient(0, 0, 0, sky.height); gr.addColorStop(0, st.cols[0]); gr.addColorStop(.55, st.cols[1]); gr.addColorStop(1, st.cols[2]);
+    g.fillStyle = gr; g.fillRect(0, 0, sky.width, sky.height);
+    // sun or moon glow
+    const dayFrac = (st.m - st.sr) / Math.max(1, st.ss - st.sr);
+    if(!st.night && st.kind !== "rain" && st.kind !== "thunder"){
+      const x = sky.width * (.15 + .7 * Math.min(1, Math.max(0, dayFrac))), y = sky.height * (.55 - .45 * Math.sin(Math.PI * Math.min(1, Math.max(0, dayFrac))));
+      const warm = st.phase === "sunset" || st.phase === "dawn" || st.phase === "afternoon";
+      const rg = g.createRadialGradient(x, y, 0, x, y, sky.width * .55);
+      rg.addColorStop(0, warm ? "rgba(255,200,140,.75)" : "rgba(255,250,225,.65)"); rg.addColorStop(.12, warm ? "rgba(255,170,110,.35)" : "rgba(255,245,210,.28)"); rg.addColorStop(1, "rgba(255,255,255,0)");
+      g.globalAlpha = 1 - st.cover * .75; g.fillStyle = rg; g.fillRect(0, 0, sky.width, sky.height); g.globalAlpha = 1;
+    } else if(st.night && st.cover < .6){
+      const x = sky.width * .78, y = sky.height * .16, r = 22 * dpr;
+      const rg = g.createRadialGradient(x, y, r * .8, x, y, r * 6); rg.addColorStop(0, "rgba(220,225,255,.35)"); rg.addColorStop(1, "rgba(220,225,255,0)");
+      g.fillStyle = rg; g.fillRect(0, 0, sky.width, sky.height); g.fillStyle = "#E9ECFF"; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+      g.globalCompositeOperation = "destination-out"; g.beginPath(); g.arc(x + r * .45, y - r * .25, r * .9, 0, Math.PI * 2); g.fill(); g.globalCompositeOperation = "source-over";
+    }
+    // particles
+    const area = W * H / (400 * 800);
+    const n = st.kind === "rain" ? [0, 70, 150, 280, 460][st.lvl] : st.kind === "thunder" ? 420 : 0;
+    streaks = Array.from({length:Math.round(n * area)}, () => ({x:R(0, W), y:R(-H, H), l:R(10, 24) * (1 + st.lvl * .15), v:R(700, 1100) * (1 + st.lvl * .12), a:R(.18, .45)}));
+    const nd = st.kind === "rain" || st.kind === "thunder" ? [0, 14, 26, 40, 60][st.lvl] : st.kind === "fog" ? 10 : 0;
+    drops = Array.from({length:Math.round(nd * area)}, () => newDrop(true));
+    flakes = st.kind === "snow" ? Array.from({length:Math.round([0, 60, 120, 200][st.lvl] * area)}, () => ({x:R(0, W), y:R(0, H), r:R(1.2, 3.4), v:R(25, 70), ph:R(0, 6)})) : [];
+    const nc = Math.round(st.cover * 7) + (st.kind === "rain" || st.kind === "snow" ? 3 : 0);
+    clouds = Array.from({length:nc}, () => ({x:R(-.2, 1.1) * W, y:R(.02, .45) * H, s:R(.6, 1.4), v:R(4, 12) * (1 + st.wind / 20)}));
+    stars = st.night && st.cover < .7 ? Array.from({length:Math.round(90 * area)}, () => ({x:R(0, W), y:R(0, H * .6), r:R(.4, 1.3), p:R(0, 6)})) : [];
+    fog = st.kind === "fog" ? Array.from({length:4}, (_, i) => ({y:H * (.25 + i * .18), x:R(0, W), v:R(6, 14)})) : [];
+    document.body.classList.toggle("sky-dark", st.dark);
+  }
+  function newDrop(any){ return {x:R(0, W), y:any ? R(0, H) : R(-20, H * .3), r:R(2, 6.5), vy:0, slide:false, t:R(0, 8)}; }
+  function cloud(c){
+    const s = c.s * Math.min(W, 700) / 3.2, col = st.night ? "rgba(70,78,100," : st.kind === "rain" || st.kind === "thunder" ? "rgba(90,100,120," : "rgba(255,255,255,";
+    const al = st.night ? .35 : st.kind === "rain" ? .55 : .5;
+    [[0, 0, 1], [-.55, .12, .7], [.55, .1, .75], [.2, -.25, .7], [-.25, -.18, .6]].forEach(([dx, dy, k]) => {
+      const x = c.x + dx * s, y = c.y + dy * s, r = s * .55 * k, g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, col + al + ")"); g.addColorStop(1, col + "0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); });
+  }
+  function frame(t){
+    raf = requestAnimationFrame(frame);
+    if(document.hidden || !document.body.classList.contains("wxfx-on")) return;
+    if(t - last < 33) return; const dt = Math.min(.06, (t - last) / 1000); last = t;
+    const s2 = sceneState(), k2 = JSON.stringify([s2.phase, s2.kind, s2.lvl, s2.cover > .4, innerWidth, innerHeight, s2.cols]);
+    if(k2 !== key){ st = s2; key = k2; build(); }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.drawImage(sky, 0, 0, W, H);
+    // stars
+    stars.forEach(a => { const tw = .55 + .45 * Math.sin(t / 900 + a.p); ctx.fillStyle = `rgba(255,255,255,${.75 * tw})`; ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, 6.3); ctx.fill(); });
+    // clouds drift
+    clouds.forEach(c => { c.x += c.v * dt; if(c.x - c.s * 300 > W) c.x = -c.s * 300; cloud(c); });
+    // fog bands
+    fog.forEach(f => { f.x = (f.x + f.v * dt) % (W * 2); const g = ctx.createLinearGradient(0, f.y - 70, 0, f.y + 70); g.addColorStop(0, "rgba(230,234,240,0)"); g.addColorStop(.5, `rgba(230,234,240,${st.night ? .12 : .28})`); g.addColorStop(1, "rgba(230,234,240,0)"); ctx.fillStyle = g; ctx.fillRect(0, f.y - 70, W, 140); });
+    // rain streaks (slanted by wind)
+    if(streaks.length){
+      const sl = Math.min(.35, .08 + st.wind / 120);
+      ctx.lineCap = "round"; ctx.strokeStyle = st.night ? "rgba(190,205,235,1)" : "rgba(235,242,255,1)";
+      streaks.forEach(r => { r.y += r.v * dt; r.x += r.v * sl * dt; if(r.y > H){ r.y = R(-60, -10); r.x = R(-W * .2, W); }
+        ctx.globalAlpha = r.a; ctx.lineWidth = .9 + st.lvl * .15; ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x - r.l * sl, r.y - r.l); ctx.stroke(); });
+      ctx.globalAlpha = 1;
+    }
+    // snow
+    flakes.forEach(f => { f.y += f.v * dt; f.x += Math.sin(t / 1000 + f.ph) * 12 * dt; if(f.y > H + 5){ f.y = -5; f.x = R(0, W); } ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.3); ctx.fill(); });
+    // drops on the glass: sit, then sometimes slide down leaving a little trail
+    drops.forEach((d, i) => {
+      d.t -= dt;
+      if(!d.slide && d.t < 0 && d.r > 4 && Math.random() < .02){ d.slide = true; }
+      if(d.slide){ d.vy = Math.min(220, d.vy + 260 * dt); d.y += d.vy * dt; if(Math.random() < .08){ ctx.fillStyle = "rgba(255,255,255,.18)"; ctx.beginPath(); ctx.arc(d.x + R(-1, 1), d.y - d.r * 2, 1.2, 0, 6.3); ctx.fill(); } }
+      if(d.y - d.r > H) drops[i] = newDrop(false);
+      const g = ctx.createRadialGradient(d.x - d.r * .35, d.y - d.r * .4, d.r * .1, d.x, d.y, d.r);
+      g.addColorStop(0, "rgba(255,255,255,.55)"); g.addColorStop(.35, "rgba(255,255,255,.12)"); g.addColorStop(.85, "rgba(20,30,50,.18)"); g.addColorStop(1, "rgba(255,255,255,.25)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(d.x, d.y, d.r * .9, d.r * (d.slide ? 1.25 : 1), 0, 0, 6.3); ctx.fill();
+    });
+    if(st.kind === "rain" && st.lvl >= 2 && Math.random() < .004 * st.lvl) drops.push(newDrop(false));
+    if(drops.length > 160) drops.splice(0, drops.length - 160);
+    // lightning
+    if(st.kind === "thunder" && flash <= 0 && Math.random() < .004) flash = 1;
+    if(flash > 0){ ctx.fillStyle = `rgba(235,240,255,${flash * .55})`; ctx.fillRect(0, 0, W, H); flash -= dt * 3.2; }
+  }
+  function sync(){
+    const on = view === "today" && paired() && ls.get("fd-wxfx", true) !== false && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(on){ ensure(); if(!raf){ last = 0; raf = requestAnimationFrame(frame); } }
+    else if(raf){ cancelAnimationFrame(raf); raf = 0; }
+    document.body.classList.toggle("wxfx-on", on);
+    if(!on) document.body.classList.remove("sky-dark");
+  }
+  return {sync, state:() => st};
+})();
 function heroMood(){
   const st = currentState(), d = new Date(), m = d.getHours() * 60 + d.getMinutes(), sec = m * 60 + d.getSeconds();
   const t = todayS(), dis = isWeekday(t) && OFFICIAL[dayMode(t)] ? mins(OFFICIAL[dayMode(t)].dismiss) : 15 * 60;
@@ -2068,6 +2233,8 @@ function settingsPane(){
         <div class="setrow"><span class="main"><b>スター付きメールをタスクに</b><small>タスクを完了すると Gmail のスターも外します</small></span><button class="switch" role="switch" aria-checked="${G().starred}" data-g-toggle="starred" aria-label="スター付きメールをタスクに"></button></div>
         <div class="setrow"><span class="main"><b>Gmail を AI で読む</b><small id="g-ai">やること・予定・返信待ちを1時間ごとに取り出します</small></span><button class="switch" role="switch" aria-checked="${G().gmailAi}" data-g-toggle="gmailAi" aria-label="Gmail を AI で読む"></button></div>
         <div class="setrow"><span class="main"><b>予定から時程を自動で切り替える</b><small>「短縮」「朝会」などの名前の終日予定がある日は、その時程にします（手で選んだ日はそのまま）</small></span><button class="switch" role="switch" aria-checked="${pref("autoMode") !== false}" data-pref-switch="autoMode" aria-label="予定から時程を自動で切り替える"></button></div>
+        <div class="setrow"><span class="main"><b>「今日」の背景を天気と時間で変える</b><small>雨・雪・雲・朝焼け・夕焼け・星空などを動きで表示（オフで電池を節約）</small></span><button class="switch" role="switch" aria-checked="${ls.get("fd-wxfx", true) !== false}" data-wxfx-toggle aria-label="天気の背景"></button></div>
+        <div class="setrow"><span class="main"><b>背景のお試し</b><small>天気と時間帯を選んで見た目を確認</small></span><button class="chip" data-wxfx-try>試す</button></div>
         <div class="setrow"><span class="main"><b>同じ名前の予定をまとめる</b><small>同じ日・同じ名前の予定（個人・学校・メールから・手入力）を1つにして表示</small></span><button class="switch" role="switch" aria-checked="${pref("mergeEvents") !== false}" data-pref-switch="mergeEvents" aria-label="同じ名前の予定をまとめる"></button></div>
         <div class="setrow"><span class="main"><b>今すぐ同期</b><small id="g-last">連絡先・ドライブは各画面から使えます</small></span><button class="chip accent" data-g-sync>同期</button></div>
       </div>
@@ -2357,6 +2524,11 @@ document.addEventListener("click", async (ev) => {
     catch(e){ b.disabled = false; toast("保存できませんでした"); } return; }
   if(b.matches("[data-gcal-pick]")){ calendarsPane(); return; }
   if(b.matches("[data-school-guide]")){ schoolGuide(); return; }
+  if(b.matches("[data-wxfx-toggle]")){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); ls.set("fd-wxfx", on); wxfx.sync(); return; }
+  if(b.matches("[data-wxfx-try]")){ wxTryPane(); return; }
+  if(d.wxTry){ const [k, v] = d.wxTry.split(":"); let t = null; try { t = JSON.parse(localStorage.getItem("fd-wxfx-test") || "null") || {}; } catch(e){ t = {}; }
+    if(k === "off"){ localStorage.removeItem("fd-wxfx-test"); closePane(); go("today"); toast("いまの天気に戻しました"); return; }
+    t[k] = +v; localStorage.setItem("fd-wxfx-test", JSON.stringify(t)); b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); closePane(); go("today"); return; }
   if(d.share){ shareAct(d.share); return; }
   if(b.matches("[data-doc-add]")){ const inp = document.createElement("input"); inp.type = "file"; inp.accept = "application/pdf,.pdf"; inp.multiple = true; inp.onchange = () => inp.files.length && importDocs(inp.files); inp.click(); return; }
   if(d.docOpen){ openDoc(d.docOpen); return; }
@@ -3148,7 +3320,7 @@ function buildSnapshot(){
     return out.slice(0, 8); })();
   const wxs = (() => { const w = wxNow(); if(!w) return null; const [lab, kind] = WMO(w.code), uv = UVL(w.uvMax);
     return {t:w.t, feels:w.feels, hum:w.hum, uv:w.uvMax != null ? Math.round(w.uvMax) : -1, uvLabel:uv[0], label:lab, kind, day:w.day, hi:w.hi, lo:w.lo, pop:w.pop ?? -1, place:w.place, at:w.at,
-      tip:wxTip(w)[0] || "", hours:w.hours.slice(0, 6).map(x => ({h:x.h, t:x.t, p:x.p ?? 0, kind:WMO(x.code)[1], day:x.day}))}; })();
+      tip:wxTip(w)[0] || "", code:w.code, precip:(w.fx || {}).precip || 0, cloud:(w.fx || {}).cloud ?? -1, wind:(w.fx || {}).wind || 0, sr:(w.fx || {}).sr || -1, ss:(w.fx || {}).ss || -1, hours:w.hours.slice(0, 6).map(x => ({h:x.h, t:x.t, p:x.p ?? 0, kind:WMO(x.code)[1], day:x.day}))}; })();
   { const w = wxNow(); if(w && w.rainAt) topics.unshift({key:`wx:${t}`, text:`${w.rainAt.h}時ごろから雨みたい。傘わすれずに！`}); else if(w && w.uvMax >= 6) topics.unshift({key:`wx:${t}`, text:"今日は紫外線が強いよ。日焼け止め塗った？"}); }
   const talkLevel = concierge && concierge.cfg && concierge.cfg.on === false ? "off" : ((concierge && concierge.cfg && concierge.cfg.talk) || "normal");
   return {v:5, at:now, days, tasks, prep, reminders, week, events, follow, brief, hero, talk, modes, topics, talkLevel, weather:wxs};
@@ -3185,7 +3357,7 @@ function widgetGuide(){
       <li><span>一覧から <b>Fold Desk</b> を選び、置きたいものを長押しして配置します。</span></li>
     </ol>
     <div class="group" style="margin-top:14px">
-      ${[["今日（情報シート）","アプリの「今日」の青いシート。大きさに合わせて中身が変わり、縦に広げると時程の切り替えボタンと残りのコマも出ます"],["いま・次","小さなサイズ。いまの授業の残り時間か、次の予定まで"],["今日の日程","コマの一覧。‹ › で明日以降の日程も見られます"],["週の時間割","月〜金の時間割。今日の列と、その日だけの変更が分かる"],["タスク","期限の近いタスク。左の丸を押すと完了"],["授業準備","次の授業日の準備物。丸を押すとチェック"],["これからの予定","2週間先までの予定"],["お知らせ予定","これから出る通知の一覧"],["返信待ち","返信が必要なメール。「済み」で消えます"],["今朝のまとめ","毎朝の自動まとめ"],["天気","いまの天気・気温・湿度・紫外線と、この先の雨"],["ひとことで追加","押すとすぐ入力できる小さなボタン"]]
+      ${[["今日（情報シート）","アプリの「今日」の青いシート。大きさに合わせて中身が変わり、縦に広げると時程の切り替えボタンと残りのコマも出ます"],["いま・次","小さなサイズ。いまの授業の残り時間か、次の予定まで"],["今日の日程","コマの一覧。‹ › で明日以降の日程も見られます"],["週の時間割","月〜金の時間割。今日の列と、その日だけの変更が分かる"],["タスク","期限の近いタスク。左の丸を押すと完了"],["授業準備","次の授業日の準備物。丸を押すとチェック"],["これからの予定","2週間先までの予定"],["お知らせ予定","これから出る通知の一覧"],["返信待ち","返信が必要なメール。「済み」で消えます"],["今朝のまとめ","毎朝の自動まとめ"],["天気","いまの天気・気温・湿度・紫外線と、この先の雨"],["窓（空のようす）","窓から外をのぞくように、いまの空が動きます。雨の強さ・雪・霧・雷と、朝・昼・夕焼け・夜の光"],["ひとことで追加","押すとすぐ入力できる小さなボタン"]]
         .map(([a, b2]) => `<div class="setrow"><span class="main"><b>${a}</b><small>${b2}</small></span></div>`).join("")}
     </div>
     <p class="hint" style="margin-top:10px">ウィジェットは授業の区切りで自動で切り替わり、アプリを開かなくても2時間ごとに最新のデータへ更新されます。</p>

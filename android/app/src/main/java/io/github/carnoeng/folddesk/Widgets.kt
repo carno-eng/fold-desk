@@ -37,6 +37,7 @@ class FollowWidget : FdWidget()
 class BriefWidget : FdWidget()
 class AddWidget : FdWidget()
 class WeatherWidget : FdWidget()
+class WindowWidget : FdWidget()
 
 /** Schedule helpers shared by widgets and alarms. Times are "HH:MM" on a "yyyy-MM-dd" date, local time. */
 object Sched {
@@ -123,6 +124,9 @@ object Widgets {
         each(ids<RemindWidget>(c, m)) { reminders(c, s, minH(m, it)) }
         each(ids<FollowWidget>(c, m)) { follow(c, s, minH(m, it)) }
         each(ids<BriefWidget>(c, m)) { brief(c, s, minH(m, it)) }
+        ids<WindowWidget>(c, m).forEach { id -> val z = sizes(m, id)
+            try { m.updateAppWidget(id, window(c, s, z.maxOf { x -> x.width }, z.maxOf { x -> x.height })) }
+            catch (_: Exception) { try { m.updateAppWidget(id, window(c, s, 160f, 100f)) } catch (_: Exception) { } } }
         each(ids<WeatherWidget>(c, m)) { val z = sizes(m, it); weather(c, s, z.minOf { x -> x.width }, z.minOf { x -> x.height }) }
         each(ids<AddWidget>(c, m)) { RemoteViews(c.packageName, R.layout.widget_add).apply { setOnClickPendingIntent(R.id.root, open(c, "ask")) } }
     }
@@ -374,6 +378,28 @@ object Widgets {
     }
 
     private fun wxShort(x: JSONObject) = mapOf("sun" to "晴れ", "part" to "晴れ曇", "cloud" to "くもり", "fog" to "霧", "rain" to "雨", "snow" to "雪", "thunder" to "雷雨")[x.optString("kind")] ?: x.optString("label")
+    /** A window onto the sky: an animated loop (ViewFlipper of frames) of the current weather and time of day. */
+    fun window(c: Context, s: JSONObject?, w: Float, h: Float): RemoteViews {
+        val v = RemoteViews(c.packageName, R.layout.widget_window)
+        v.setOnClickPendingIntent(R.id.root, open(c, "today"))
+        val x = s?.optJSONObject("weather")
+        val st = WxScene.state(x)
+        // frames at a modest resolution keep the widget light; rain and snow still read well
+        // keep the whole update small (binder limit): ~220px frames in RGB_565
+        val k = 220f / maxOf(w, h, 1f)
+        val pw = (w * k).toInt().coerceAtLeast(120); val ph = (h * k).toInt().coerceAtLeast(80)
+        val n = WxScene.frameCount(st)
+        v.removeAllViews(R.id.flip)
+        for (f in 0 until n) { val fr = RemoteViews(c.packageName, R.layout.widget_frame); fr.setImageViewBitmap(R.id.img, WxScene.frame(st, pw, ph, f, n).let { it.copy(android.graphics.Bitmap.Config.RGB_565, false).also { _ -> it.recycle() } }); v.addView(R.id.flip, fr) }
+        v.setInt(R.id.flip, "setFlipInterval", WxScene.interval(st))
+        v.setImageViewBitmap(R.id.glass, WxScene.glass(pw, ph, k))
+        if (x != null) {
+            v.setTextViewText(R.id.temp, "${x.optInt("t")}°")
+            v.setTextViewText(R.id.label, "${wxShort(x)}  ・  ${WxScene.PHASE_JA[st.phase]}" + (if (w >= 220) "  ・  ${x.optString("place")}" else ""))
+        } else { v.setTextViewText(R.id.temp, ""); v.setTextViewText(R.id.label, "${WxScene.PHASE_JA[st.phase]}  ・  アプリを開くと天気が入ります") }
+        return v
+    }
+
     /** Weather: now, humidity, UV, rain chance, and the next hours when there is room. */
     fun weather(c: Context, s: JSONObject?, w: Float, h: Float): RemoteViews {
         val v = RemoteViews(c.packageName, R.layout.widget_weather)
