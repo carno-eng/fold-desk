@@ -786,7 +786,8 @@ addEventListener("hashchange", () => {
     try {
       // the old page is captured first; only then switch the view and draw the new one
       const t = document.startViewTransition(() => { view = next; cancelAnimationFrame(rafId); rafId = 0; render(); v.scrollTop = 0; });
-      t.finished.finally(() => v.classList.remove("vt"));
+      t.ready.catch(() => {}); t.updateCallbackDone.catch(() => { view = next; schedule(); });
+      t.finished.catch(() => {}).finally(() => v.classList.remove("vt"));
     } catch(e){ view = next; schedule(); $("#view").scrollTop = 0; }
     buzz(6);
     return;

@@ -325,7 +325,7 @@ object Widgets {
         v.setTextViewText(R.id.date, when (off) { 0 -> "今日の日程"; 1 -> "明日の日程"; else -> "${day?.optString("label") ?: ""}の日程" })
         val mk = day?.optString("mk") ?: ""
         v.setTextViewText(R.id.mode, listOf(
-            if (off <= 1) day?.optString("label") ?: "" else "",
+            if (off == 1) day?.optString("label") ?: "" else "",
             when { mk == "off" -> "休み"; mk.isEmpty() -> "授業なし"; else -> (day?.optString("mode") ?: "") + "時程" },
             day?.optString("dismiss")?.takeIf { it.isNotEmpty() }?.let { "下校 $it" } ?: "").filter { it.isNotEmpty() }.joinToString("  ・  "))
         // arrows
@@ -378,6 +378,9 @@ object Widgets {
         v.setTextColor(R.id.chrono, if (mood.key == "soon" || mood.key == "last") mood.ring else 0xFFFFE38A.toInt())
         val st = Sched.status(s)
         v.setTextViewText(R.id.status, st.line)
+        // keep the small widget readable but inside its box with a large system font
+        val fs = c.resources.configuration.fontScale.coerceIn(1f, 1.15f)
+        v.size(R.id.status, 16f * fs); v.size(R.id.chrono, 22f * fs); v.size(R.id.sub, 12f * fs)
         if (st.target > 0) {
             v.setChronometer(R.id.chrono, SystemClock.elapsedRealtime() + (st.target - System.currentTimeMillis()), st.prefix, true)
             v.setChronometerCountDown(R.id.chrono, true); v.show(R.id.chrono, true)
