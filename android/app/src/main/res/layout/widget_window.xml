@@ -3,6 +3,9 @@
     android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/bg_window" android:clipToOutline="true">
     <ViewFlipper android:id="@+id/flip" android:layout_width="match_parent" android:layout_height="match_parent"
         android:autoStart="true" android:flipInterval="120" android:measureAllChildren="false" />
+    <ViewFlipper android:id="@+id/lane" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:autoStart="true" android:flipInterval="17000" android:animateFirstView="true"
+        android:inAnimation="@anim/visitor_in" android:outAnimation="@anim/visitor_out" />
     <ImageView android:id="@+id/glass" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="fitXY" android:contentDescription="" />
     <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="bottom|start"
         android:orientation="vertical" android:padding="14dp">

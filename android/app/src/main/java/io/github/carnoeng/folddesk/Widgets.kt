@@ -393,6 +393,18 @@ object Widgets {
         for (f in 0 until n) { val fr = RemoteViews(c.packageName, R.layout.widget_frame); fr.setImageViewBitmap(R.id.img, WxScene.frame(st, pw, ph, f, n).let { it.copy(android.graphics.Bitmap.Config.RGB_565, false).also { _ -> it.recycle() } }); v.addView(R.id.flip, fr) }
         v.setInt(R.id.flip, "setFlipInterval", WxScene.interval(st))
         v.setImageViewBitmap(R.id.glass, WxScene.glass(pw, ph, k))
+        // visitors: a few sky guests drift across the window in turn (birds, planes, balloons, dragonflies ...)
+        v.removeAllViews(R.id.lane)
+        val cal = java.util.Calendar.getInstance(); val rnd = kotlin.random.Random(cal.get(java.util.Calendar.DAY_OF_YEAR) * 100 + cal.get(java.util.Calendar.HOUR_OF_DAY) * 4 + cal.get(java.util.Calendar.MINUTE) / 15)
+        val dp = c.resources.displayMetrics.density
+        for (kind in WxScene.pickVisitors(st, cal.get(java.util.Calendar.MONTH) + 1, 3, rnd)) {
+            val vz = WxScene.visitor(st, kind, 1.5f, rnd)
+            val ch = RemoteViews(c.packageName, R.layout.widget_visitor)
+            ch.setViewPadding(R.id.vroot, 0, (h * vz.top * dp).toInt(), 0, 0)
+            vz.frames.forEach { b -> val fr = RemoteViews(c.packageName, R.layout.widget_vframe); fr.setImageViewBitmap(R.id.vimg, b); ch.addView(R.id.vf, fr) }
+            ch.setInt(R.id.vf, "setFlipInterval", vz.interval)
+            v.addView(R.id.lane, ch)
+        }
         if (x != null) {
             v.setTextViewText(R.id.temp, "${x.optInt("t")}°")
             v.setTextViewText(R.id.label, "${wxShort(x)}  ・  ${WxScene.PHASE_JA[st.phase]}" + (if (w >= 220) "  ・  ${x.optString("place")}" else ""))

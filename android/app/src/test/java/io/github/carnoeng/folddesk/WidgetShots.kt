@@ -116,6 +116,19 @@ class WidgetShots {
             }
         }
         shot("window-widget-340x200", Widgets.window(c, wx, 340f, 200f), 340, 200)
+        // visitor sprites, all kinds, day and night
+        run {
+            val kinds = listOf("birds", "plane", "balloon", "dragonfly", "paper", "umbrella", "ufo", "sleigh")
+            val sheet = Bitmap.createBitmap(8 * 160, 2 * 80, Bitmap.Config.ARGB_8888); val cv = Canvas(sheet)
+            for ((row, m) in listOf(720, 1290).withIndex()) {
+                val ww = JSONObject(wx.getJSONObject("weather").toString()).put("code", 1)
+                val st = WxScene.state(ww).let { WxScene.State(WxScene.phase(m, it.sr, it.ss), it.kind, it.lvl, it.cover, it.wind, it.cols, m >= 1100, m, it.sr, it.ss) }
+                cv.drawRect(0f, row * 80f, 8 * 160f, row * 80f + 80f, android.graphics.Paint().apply { color = if (row == 0) 0xFF6EB3F2.toInt() else 0xFF0E1638.toInt() })
+                kinds.forEachIndexed { i, k -> val v = WxScene.visitor(st, k, 1.5f, kotlin.random.Random(3)); val b = v.frames[0]
+                    cv.save(); cv.clipRect(i * 160f, row * 80f, i * 160f + 158f, row * 80f + 80f); cv.drawBitmap(b, i * 160f + 4, row * 80f + 8, null); cv.restore() }
+            }
+            File(out, "window-visitors.png").outputStream().use { sheet.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        }
         // always-on desk view
         Store.saveSnapshot(c, one(-40, 3, 13, 58).toString())
         renderView("aod-portrait", AodView(c), 400, 880)
