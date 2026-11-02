@@ -115,6 +115,13 @@ class WidgetShots {
                 File(out, "window-$nm-$f.png").outputStream().use { b.compress(Bitmap.CompressFormat.PNG, 100, it) }
             }
         }
+        for ((nm, code) in listOf("birds" to 0, "plane" to 2, "nightplane" to 0, "ufo" to 0, "balloon" to 0, "paper" to 1, "leaves" to 0, "petals" to 2, "umbrella" to 65, "rainbow" to 61, "fireflies" to 0)) {
+            val ww = JSONObject(wx.getJSONObject("weather").toString()).put("code", code)
+            if (nm in listOf("nightplane", "ufo", "fireflies")) ww.put("sr", 23 * 60 + 50).put("ss", 23 * 60 + 55)
+            val st = WxScene.state(ww); st.visitor = nm; val n = WxScene.frameCount(st)
+            val b = WxScene.frame(st, 400, 250, 1, n); Canvas(b).drawBitmap(WxScene.glass(400, 250, 1.25f), 0f, 0f, null)
+            File(out, "visitor-$nm.png").outputStream().use { b.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        }
         shot("window-widget-340x200", Widgets.window(c, wx, 340f, 200f), 340, 200)
         // visitor sprites, all kinds, day and night
         run {

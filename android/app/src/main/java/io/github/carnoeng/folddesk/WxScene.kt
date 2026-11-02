@@ -29,7 +29,29 @@ object WxScene {
         "dusk" to intArrayOf(0xFF141B47.toInt(), 0xFF3C3A7A.toInt(), 0xFF8A5A8E.toInt()), "night" to intArrayOf(0xFF070B1E.toInt(), 0xFF0E1638.toInt(), 0xFF1E2855.toInt()))
     val PHASE_JA = mapOf("late" to "深夜", "dawn" to "夜明け", "morning" to "朝", "day" to "昼", "afternoon" to "午後", "sunset" to "夕焼け", "dusk" to "薄暮", "night" to "夜")
 
-    class State(val phase: String, val kind: String, val lvl: Int, val cover: Float, val wind: Float, val cols: IntArray, val night: Boolean, val m: Int, val sr: Int, val ss: Int)
+    class State(val phase: String, val kind: String, val lvl: Int, val cover: Float, val wind: Float, val cols: IntArray, val night: Boolean, val m: Int, val sr: Int, val ss: Int) {
+        /** A little visitor in the sky (birds, plane, balloon …), picked per quarter hour so it changes through the day. */
+        var visitor: String? = null
+    }
+
+    fun pickVisitor(st: State, month: Int, salt: Long): String? {
+        val wet = st.kind == "rain" || st.kind == "thunder"; val day = !st.night
+        val calm = !wet && st.kind != "snow" && st.kind != "fog"; val open = st.cover < .6f
+        val l = mutableListOf<Pair<String, Float>>("" to 2.5f)
+        if (day && calm) l += listOf("birds" to 4f, "paper" to .8f)
+        if (day && !wet && st.kind != "fog") l += "plane" to 2.5f
+        if (st.night && st.kind != "fog" && !(wet && st.lvl >= 3)) l += "nightplane" to 2.5f
+        if (st.night && open && !wet) l += "ufo" to .4f
+        if (day && open && calm) l += "balloon" to 1.5f
+        if (!wet && st.kind != "snow" && month in 9..11) l += "leaves" to 2.5f
+        if (!wet && st.kind != "snow" && month in 3..4) l += "petals" to 2.5f
+        if (wet && st.lvl >= 3) l += "umbrella" to 2.5f
+        if (day && ((st.kind == "rain" && st.lvl <= 2) || st.kind == "few" || st.kind == "partly")) l += "rainbow" to (if (st.kind == "rain") 3f else .6f)
+        if (st.night && !wet && month in 6..7) l += "fireflies" to 3f
+        var r = Random(salt).nextFloat() * l.sumOf { it.second.toDouble() }.toFloat()
+        for ((k, w) in l) { r -= w; if (r <= 0) return k.ifEmpty { null } }
+        return null
+    }
 
     fun phase(m: Int, sr: Int, ss: Int) = when {
         m >= 23 * 60 || m < 4 * 60 -> "late"; m < sr - 60 -> "night"; m < sr + 25 -> "dawn"; m < 10 * 60 -> "morning"
@@ -65,11 +87,12 @@ object WxScene {
             "fog" -> if (night) 0xFF3A3F4C.toInt() else 0xFFC8CED8.toInt(); else -> if (night) 0xFF262B3A.toInt() else 0xFF8792A4.toInt() }
         val k = when (kind) { "rain", "thunder" -> .55f + lvl * .08f; "snow" -> .55f; "fog" -> .6f; else -> cover * .62f }
         val cols = SKY[ph]!!.map { mix(it, tgt, min(.9f, k)) }.toIntArray()
-        return State(ph, kind, lvl, cover, (w?.optDouble("wind", 0.0) ?: 0.0).toFloat(), cols, night, m, sr, ss)
+        return State(ph, kind, lvl, cover, (w?.optDouble("wind", 0.0) ?: 0.0).toFloat(), cols, night, m, sr, ss).also {
+            it.visitor = pickVisitor(it, cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_YEAR) * 100L + m / 15) }
     }
 
-    fun frameCount(st: State) = when (st.kind) { "rain", "thunder" -> 10; "snow" -> 12; "fog" -> 8; else -> if (st.night) 8 else 6 }
-    fun interval(st: State) = when (st.kind) { "rain", "thunder" -> 90; "snow" -> 180; else -> 260 }
+    fun frameCount(st: State) = when (st.kind) { "rain", "thunder" -> 10; "snow" -> 12; "fog" -> 8; else -> if (st.visitor != null) 8 else if (st.night) 8 else 6 }
+    fun interval(st: State) = when (st.kind) { "rain", "thunder" -> 90; "snow" -> 180; else -> if (st.visitor != null) 170 else 260 }
 
     /** One frame (index f of n) of a w×h scene. */
     fun frame(st: State, w: Int, h: Int, f: Int, n: Int, seed: Int = 7): Bitmap {
@@ -121,6 +144,7 @@ object WxScene {
             val y = h * (.3f + i * .22f); val off = (t * w + i * w / 3f) % w
             p.shader = LinearGradient(0f, y - 30 * s, 0f, y + 30 * s, intArrayOf(0x00E6EAF0, if (st.night) 0x1FE6EAF0 else 0x47E6EAF0, 0x00E6EAF0), null, Shader.TileMode.CLAMP)
             c.drawRect(-off, y - 30 * s, w * 2f - off, y + 30 * s, p); p.shader = null }
+        st.visitor?.let { visitor(c, p, st, it, w, h, t, s) }
         // rain: a tiled field that falls exactly one tile per loop (seamless)
         if (st.kind == "rain" || st.kind == "thunder") {
             val tile = h / 2f; val count = intArrayOf(0, 40, 80, 140, 220)[st.lvl] * w / 400
@@ -153,6 +177,69 @@ object WxScene {
                 drop(c, p, x, y, 4.2f * s, true) }
         }
         return b
+    }
+
+    /** Visitors move in seamless loops (flap, bob, blink, spin) so the short frame cycle never jumps. */
+    private fun visitor(c: Canvas, p: Paint, st: State, k: String, w: Int, h: Int, t: Float, s: Float) {
+        val r = Random(k.hashCode() + st.m / 15); val T = (2 * PI).toFloat()
+        val dk = if (st.night) Color.argb(215, 15, 18, 30) else if (st.phase == "sunset" || st.phase == "dusk") Color.argb(205, 40, 25, 45) else Color.argb(185, 35, 42, 60)
+        p.style = Paint.Style.FILL; p.shader = null
+        when (k) {
+            "birds" -> { val cx = w * (.2f + r.nextFloat() * .5f) + sin(T * t) * 5 * s; val cy = h * (.15f + r.nextFloat() * .2f)
+                val n = 3 + r.nextInt(4); p.style = Paint.Style.STROKE; p.color = dk; p.strokeCap = Paint.Cap.ROUND; p.strokeWidth = 1.6f * s
+                for (i in 0 until n) { val off = r.nextFloat() * T; val sz = (6 + r.nextFloat() * 3) * s
+                    val x = cx - kotlin.math.abs(i - n / 2) * 15 * s; val y = cy + (i - n / 2) * 8 * s; val wg = sin(T * t * 2 + off)
+                    val path = android.graphics.Path(); path.moveTo(x - sz, y - sz * .45f * wg); path.quadTo(x - sz * .45f, y - sz * .2f * wg - sz * .15f, x, y + wg * s)
+                    path.quadTo(x + sz * .45f, y - sz * .2f * wg - sz * .15f, x + sz, y - sz * .45f * wg); c.drawPath(path, p) }
+                p.style = Paint.Style.FILL }
+            "plane" -> { val x = w * (.35f + r.nextFloat() * .4f); val y = h * (.1f + r.nextFloat() * .15f); val L = w * .45f
+                p.shader = LinearGradient(x, 0f, x - L, 0f, 0xB3FFFFFF.toInt(), 0x00FFFFFF, Shader.TileMode.CLAMP); p.strokeWidth = 2f * s; p.strokeCap = Paint.Cap.ROUND
+                c.drawLine(x - 6 * s, y - 1.6f * s, x - L, y - 1.6f * s, p); c.drawLine(x - 6 * s, y + 1.6f * s, x - L, y + 1.6f * s, p); p.shader = null
+                p.color = 0xF2F5F8FF.toInt(); c.drawOval(RectF(x - 9 * s, y - 1.8f * s, x + 9 * s, y + 1.8f * s), p)
+                val wing = android.graphics.Path(); wing.moveTo(x + s, y); wing.lineTo(x - 3 * s, y - 6 * s); wing.lineTo(x - 5 * s, y - 6 * s); wing.lineTo(x - 2 * s, y)
+                wing.lineTo(x - 5 * s, y + 6 * s); wing.lineTo(x - 3 * s, y + 6 * s); wing.close(); c.drawPath(wing, p) }
+            "nightplane" -> { val x = w * (.25f + r.nextFloat() * .45f); val y = h * (.12f + r.nextFloat() * .15f)
+                p.color = 0x59C8D2EB; c.drawRect(x - 7 * s, y - .6f * s, x + 7 * s, y + .6f * s, p)
+                if (t < .6f) { p.color = 0xF2FF5050.toInt(); c.drawCircle(x - 3 * s, y - 4 * s, 1.5f * s, p); p.color = 0xF25AFF8C.toInt(); c.drawCircle(x - 3 * s, y + 4 * s, 1.5f * s, p) }
+                if (t < .15f || (t > .5f && t < .62f)) { p.shader = RadialGradient(x, y, 10 * s, 0xF2FFFFFF.toInt(), 0x00FFFFFF, Shader.TileMode.CLAMP); c.drawCircle(x, y, 10 * s, p); p.shader = null } }
+            "ufo" -> { val x = w * (.3f + r.nextFloat() * .4f) + sin(T * t) * 8 * s; val y = h * (.18f + r.nextFloat() * .1f) + sin(T * t * 2) * 2 * s
+                p.shader = LinearGradient(0f, y, 0f, y + h * .45f, Color.argb((70 + 30 * sin(T * t * 2)).toInt(), 180, 255, 200), 0x00B4FFC8, Shader.TileMode.CLAMP)
+                val beam = android.graphics.Path(); beam.moveTo(x - 7 * s, y + 3 * s); beam.lineTo(x + 7 * s, y + 3 * s); beam.lineTo(x + 30 * s, y + h * .45f); beam.lineTo(x - 30 * s, y + h * .45f); beam.close(); c.drawPath(beam, p); p.shader = null
+                p.color = 0xBFBEE6FF.toInt(); c.drawArc(RectF(x - 7 * s, y - 10 * s, x + 7 * s, y + 2 * s), 180f, 180f, true, p)
+                p.color = 0xFF9AA3B8.toInt(); c.drawOval(RectF(x - 18 * s, y - 5 * s, x + 18 * s, y + 5 * s), p)
+                for (i in -2..2) { p.color = if (((t * 8).toInt() + i) % 2 == 0) 0xFFFFE36E.toInt() else 0xFFFF7AA8.toInt(); c.drawCircle(x + i * 7 * s, y + s, 1.5f * s, p) } }
+            "balloon" -> { val x = w * (.55f + r.nextFloat() * .3f); val y = h * (.22f + r.nextFloat() * .15f) + sin(T * t) * 3 * s; val z = 15 * s
+                val cols = listOf(intArrayOf(0xFFFF6B6B.toInt(), 0xFFFFD166.toInt()), intArrayOf(0xFF4ECDC4.toInt(), -1), intArrayOf(0xFF7B61FF.toInt(), 0xFFFFB3C7.toInt()), intArrayOf(0xFF3B82F6.toInt(), 0xFFFDE68A.toInt()))[r.nextInt(4)]
+                p.color = 0xCC503C28.toInt(); p.strokeWidth = s; c.drawLine(x - z * .45f, y + z * .95f, x - z * .22f, y + z * 1.55f, p); c.drawLine(x + z * .45f, y + z * .95f, x + z * .22f, y + z * 1.55f, p)
+                p.color = 0xFF8B5E3C.toInt(); c.drawRect(x - z * .25f, y + z * 1.5f, x + z * .25f, y + z * 1.88f, p)
+                val env = android.graphics.Path(); env.moveTo(x, y - z * 1.2f); env.cubicTo(x + z * 1.25f, y - z * 1.2f, x + z * 1.15f, y + z * .3f, x + z * .4f, y + z)
+                env.lineTo(x - z * .4f, y + z); env.cubicTo(x - z * 1.15f, y + z * .3f, x - z * 1.25f, y - z * 1.2f, x, y - z * 1.2f); env.close()
+                p.color = cols[0]; c.drawPath(env, p); c.save(); c.clipPath(env); p.color = cols[1]
+                c.drawRect(x - z * .55f, y - z * 1.3f, x - z * .13f, y + z * 1.1f, p); c.drawRect(x + z * .1f, y - z * 1.3f, x + z * .52f, y + z * 1.1f, p); c.restore() }
+            "paper" -> { val x = w * (.3f + r.nextFloat() * .4f) + sin(T * t) * 10 * s; val y = h * (.3f + r.nextFloat() * .15f) + kotlin.math.cos(T * t) * 6 * s
+                c.save(); c.translate(x, y); c.rotate(sin(T * t) * 12f)
+                val a = android.graphics.Path(); a.moveTo(12 * s, 0f); a.lineTo(-10 * s, -6 * s); a.lineTo(-6 * s, 0f); a.close(); p.color = 0xF2FFFFFF.toInt(); c.drawPath(a, p)
+                val b = android.graphics.Path(); b.moveTo(12 * s, 0f); b.lineTo(-6 * s, 0f); b.lineTo(-10 * s, 4 * s); b.close(); p.color = 0xF2D2DCF0.toInt(); c.drawPath(b, p); c.restore() }
+            "leaves", "petals" -> { val pet = k == "petals"; val tile = h / 2f
+                val pal = if (pet) intArrayOf(0xFFF9C9D6.toInt(), 0xFFFBD9E2.toInt(), 0xFFF4B4C6.toInt()) else intArrayOf(0xFFE07A2F.toInt(), 0xFFC9452B.toInt(), 0xFFE9B53B.toInt(), 0xFFB85C2C.toInt())
+                repeat(7 * w / 300 + 3) { val x0 = r.nextFloat() * w; val y0 = r.nextFloat() * tile; val ph = r.nextFloat() * T; val z = (if (pet) 3.5f else 5.5f) * s; val col = pal[r.nextInt(pal.size)]
+                    var y = (y0 + t * tile) % tile - tile
+                    while (y < h + z) { c.save(); c.translate(x0 + sin(T * t + ph + y / 30) * 6 * s, y); c.rotate((t * 360 + ph * 57).toFloat()); c.scale(1f, .55f + .45f * sin(T * t * 2 + ph)); p.color = col
+                        if (pet) c.drawOval(RectF(-z, -z * .62f, z, z * .62f), p) else { val lf = android.graphics.Path(); lf.moveTo(-z, 0f); lf.quadTo(0f, -z * .75f, z, 0f); lf.quadTo(0f, z * .75f, -z, 0f); c.drawPath(lf, p) }
+                        c.restore(); y += tile } } }
+            "umbrella" -> { val x = w * (.3f + r.nextFloat() * .4f) + sin(T * t) * 10 * s; val y = h * (.3f + r.nextFloat() * .2f) + sin(T * t * 2) * 5 * s; val z = 15 * s
+                c.save(); c.translate(x, y); c.rotate(t * 360f)
+                val u = android.graphics.Path(); u.moveTo(-z, 0f); u.quadTo(0f, -z * 1.3f, z, 0f); for (i in 0 until 4) { val a = z - i * z / 2; u.quadTo(a - z / 4, -z * .22f, a - z / 2, 0f) }; u.close()
+                p.color = intArrayOf(0xFFEF4444.toInt(), 0xFFF59E0B.toInt(), 0xFF3B82F6.toInt(), 0xFF10B981.toInt())[r.nextInt(4)]; c.drawPath(u, p)
+                p.style = Paint.Style.STROKE; p.color = 0xE63C3228.toInt(); p.strokeWidth = 1.5f * s; c.drawLine(0f, -z * .62f, 0f, z * .95f, p)
+                c.drawArc(RectF(-z * .44f, z * .73f, 0f, z * 1.17f), 0f, 180f, false, p); p.style = Paint.Style.FILL; c.restore() }
+            "rainbow" -> { val cx = w * .7f; val cy = h * 1.05f; val r0 = max(w, h) * .7f; p.style = Paint.Style.STROKE; p.strokeWidth = 5f * s
+                intArrayOf(0xFFFF5A5A.toInt(), 0xFFFF9A3C.toInt(), 0xFFFFE15A.toInt(), 0xFF5AD27A.toInt(), 0xFF4AA8FF.toInt(), 0xFF6A6CFF.toInt(), 0xFFB26BFF.toInt()).forEachIndexed { i, col ->
+                    p.color = col; p.alpha = if (st.kind == "rain") 95 else 70; val rr = r0 - i * 4.6f * s; c.drawArc(RectF(cx - rr, cy - rr, cx + rr, cy + rr), 189f, 126f, false, p) }
+                p.alpha = 255; p.style = Paint.Style.FILL }
+            "fireflies" -> repeat(8) { val x = r.nextFloat() * w + sin(T * t + it) * 4 * s; val y = h * (.45f + r.nextFloat() * .5f); val gl = .5f + .5f * sin(T * t + r.nextFloat() * T)
+                p.shader = RadialGradient(x, y, 7 * s, Color.argb((230 * gl).toInt(), 230, 255, 140), 0x00E6FF8C, Shader.TileMode.CLAMP); c.drawCircle(x, y, 7 * s, p); p.shader = null }
+        }
     }
 
     private fun drop(c: Canvas, p: Paint, x: Float, y: Float, r: Float, slide: Boolean) {

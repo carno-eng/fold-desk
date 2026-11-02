@@ -1214,8 +1214,8 @@ function wxTryPane(){
   openPane(`${paneHead("背景のお試し")}<p class="empty" style="margin-top:0">選ぶと「今日」で見られます。試し終わったら「いまの天気に戻す」を押してください。</p>
     <div class="sec">天気</div><div class="seg" style="flex-wrap:wrap;display:flex;gap:6px">${W.map(([l, c]) => `<button class="chip" data-wx-try="code:${c}" aria-pressed="${t.code === c}">${l}</button>`).join("")}</div>
     <div class="sec" style="margin-top:12px">時間帯</div><div class="seg" style="flex-wrap:wrap;display:flex;gap:6px">${T.map(([l, m]) => `<button class="chip" data-wx-try="m:${m}" aria-pressed="${t.m === m}">${l}</button>`).join("")}</div>
-    <div class="sec" style="margin-top:12px">空のおきゃくさん</div><div class="seg" style="flex-wrap:wrap;display:flex;gap:6px">${[["鳥", "birds"], ["飛行機", "plane"], ["気球", "balloon"], ["流れ星", "meteor"], ["赤とんぼ", "dragonfly"], ["落ち葉", "leaves"], ["花びら", "petals"], ["紙飛行機", "paper"], ["かさ", "umbrella"], ["虹", "rainbow"], ["UFO", "ufo"], ["そり", "sleigh"]].map(([l, k]) => `<button class="chip" data-wx-visit="${k}">${l}</button>`).join("")}</div>
-    <p class="hint" style="margin-top:8px">ふだんは天気・時間・季節に合わせてときどき通ります。「今日」の空いているところをタップすると呼べます。</p>
+    <div class="sec" style="margin-top:12px">空のおきゃくさん</div><div class="seg" style="flex-wrap:wrap;display:flex;gap:6px">${[["鳥", "birds"], ["飛行機", "plane"], ["夜の飛行機", "nightplane"], ["流れ星", "meteor"], ["気球", "balloon"], ["紙ひこうき", "paper"], ["落ち葉", "leaves"], ["花びら", "petals"], ["飛ばされた傘", "umbrella"], ["虹", "rainbow"], ["ほたる", "fireflies"], ["？？？", "ufo"]].map(([l, k]) => `<button class="chip" data-wx-visit="${k}">${l}</button>`).join("")}</div>
+    <p class="hint" style="margin-top:8px">ふだんは天気・時間帯・季節に合わせてときどき現れます。「今日」の空の何もないところをタップしても呼べます。</p>
     <div class="btns" style="margin-top:16px"><button class="btn primary" data-wx-try="off:0">いまの天気に戻す</button></div>`);
 }
 function wxPlacePane(){
@@ -1271,17 +1271,11 @@ function sceneState(){
 }
 const wxfx = (() => {
   let cv = null, ctx = null, sky = null, st = null, key = "", raf = 0, last = 0, W = 0, H = 0, dpr = 1;
-  let streaks = [], drops = [], flakes = [], clouds = [], stars = [], fog = [], flash = 0, vis = [], nextVis = 0;
+  let streaks = [], drops = [], flakes = [], clouds = [], stars = [], fog = [], flash = 0, vis = [], nextVis = 0, lastTalk = 0;
   const R = (a, b) => a + Math.random() * (b - a);
   function ensure(){
     if(cv) return; cv = document.createElement("canvas"); cv.id = "wxfx"; cv.setAttribute("aria-hidden", "true"); document.body.prepend(cv); ctx = cv.getContext("2d");
     addEventListener("resize", () => { key = ""; });
-    // tap an empty part of the sky to call a visitor
-    document.addEventListener("click", e => {
-      if(!document.body.classList.contains("wxfx-on")) return;
-      if(e.target.closest("button,a,input,textarea,select,label,summary,.card,.hero,.flipcard,.row,nav,#pane,#cc,#ccb,[data-act]")) return;
-      visit();
-    });
   }
   function build(){
     dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
@@ -1300,7 +1294,7 @@ const wxfx = (() => {
       const x = sky.width * .78, y = sky.height * .16, r = 22 * dpr;
       const rg = g.createRadialGradient(x, y, r * .8, x, y, r * 6); rg.addColorStop(0, "rgba(220,225,255,.35)"); rg.addColorStop(1, "rgba(220,225,255,0)");
       g.fillStyle = rg; g.fillRect(0, 0, sky.width, sky.height); g.fillStyle = "#E9ECFF"; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
-      g.globalCompositeOperation = "destination-out"; g.beginPath(); g.arc(x + r * .45, y - r * .25, r * .9, 0, Math.PI * 2); g.fill(); g.globalCompositeOperation = "source-over";
+      g.save(); g.beginPath(); g.arc(x, y, r + .5, 0, Math.PI * 2); g.clip(); g.fillStyle = gr; g.beginPath(); g.arc(x + r * .45, y - r * .25, r * .9, 0, Math.PI * 2); g.fill(); g.restore();
     }
     // particles
     const area = W * H / (400 * 800);
@@ -1314,161 +1308,128 @@ const wxfx = (() => {
     stars = st.night && st.cover < .7 ? Array.from({length:Math.round(90 * area)}, () => ({x:R(0, W), y:R(0, H * .6), r:R(.4, 1.3), p:R(0, 6)})) : [];
     fog = st.kind === "fog" ? Array.from({length:4}, (_, i) => ({y:H * (.25 + i * .18), x:R(0, W), v:R(6, 14)})) : [];
     document.body.classList.toggle("sky-dark", st.dark);
-  }
-  /* ---- visitors ---- */
-  function visPool(){
-    const day = !st.night && st.phase !== "late", wet = st.kind === "rain" || st.kind === "thunder", mo = new Date().getMonth() + 1;
-    const heavy = (wet && st.lvl >= 3) || st.kind === "thunder" || (st.kind === "snow" && st.lvl >= 3), p = [];
-    if(day && !heavy && st.kind !== "fog") p.push(["birds", 5]);
-    if(st.kind !== "thunder" && st.kind !== "fog") p.push(["plane", 4]);
-    if(day && st.cover <= .5 && !wet && st.kind !== "snow") p.push(["balloon", 2]);
-    if(st.night && st.cover < .6) p.push(["meteor", 5]);
-    if(day && !wet && st.kind !== "snow" && mo >= 8 && mo <= 11) p.push(["dragonfly", 3]);
-    if(!wet && st.kind !== "snow" && (mo === 10 || mo === 11)) p.push(["leaves", 3]);
-    if(!wet && st.kind !== "snow" && (mo === 3 || mo === 4)) p.push(["petals", 4]);
-    if(day && !wet) p.push(["paper", 1]);
-    if(st.kind === "rain" && st.lvl <= 3) p.push(["umbrella", 2]);
-    if(day && st.kind === "rain" && st.lvl <= 2) p.push(["rainbow", 2]);
-    if(st.night) p.push(["ufo", .5]);
-    if(st.night && mo === 12) p.push(["sleigh", 2]);
-    return p;
-  }
-  function pickVis(p){ const tot = p.reduce((a, x) => a + x[1], 0); let r = Math.random() * tot; for(const [k, w] of p){ if((r -= w) < 0) return k; } return "plane"; }
-  const inside = (x, m = 260) => x > -m && x < W + m;
-  function birdPath(x, y, s, w){ const up = s * (.15 + .55 * w); ctx.beginPath(); ctx.moveTo(x - s, y - up); ctx.quadraticCurveTo(x - s * .45, y - up * .2 - s * .15, x, y); ctx.quadraticCurveTo(x + s * .45, y - up * .2 - s * .15, x + s, y - up); ctx.stroke(); }
-  function spawn(k){
-    const dir = Math.random() < .5 ? 1 : -1, x0 = dir > 0 ? -60 : W + 60, warm = st.phase === "sunset" || st.phase === "dawn";
-    let age = 0;
-    if(k === "birds"){
-      const n = Math.round(R(3, 7)), y = R(.05, .2) * H, v = R(55, 85), sz = R(6, 9); let x = x0;
-      const fl = Array.from({length:n}, (_, i) => ({dx:-Math.ceil(i / 2) * sz * 2.6, dy:i ? (i % 2 ? 1 : -1) * Math.ceil(i / 2) * sz * 1.1 + Math.ceil(i / 2) * sz * .6 : 0, ph:R(0, 6)}));
-      return {k, step(dt, t){ x += dir * v * dt;
-        ctx.strokeStyle = warm ? "rgba(45,25,40,.8)" : "rgba(35,42,60,.62)"; ctx.lineWidth = 1.6; ctx.lineCap = "round";
-        fl.forEach(b => birdPath(x + dir * b.dx, y + b.dy + Math.sin(t / 700 + b.ph) * 3, sz, Math.sin(t / 110 + b.ph)));
-        return inside(x, 320); }};
-    }
-    if(k === "plane"){
-      const y = R(.06, .22) * H, v = R(38, 60), trail = !st.night && st.cover < .5; let x = x0, run = 0;
-      return {k, step(dt, t){ x += dir * v * dt; run += v * dt;
-        if(trail){ const L = Math.min(run, 240), g = ctx.createLinearGradient(x, y, x - dir * L, y); g.addColorStop(0, "rgba(255,255,255,.6)"); g.addColorStop(1, "rgba(255,255,255,0)");
-          ctx.strokeStyle = g; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(x - dir * 8, y); ctx.lineTo(x - dir * L, y); ctx.stroke(); }
-        if(st.night){
-          ctx.fillStyle = "rgba(30,34,48,.9)"; ctx.beginPath(); ctx.ellipse(x, y, 8, 1.4, 0, 0, 6.3); ctx.fill();
-          if(Math.sin(t / 260) > 0){ ctx.fillStyle = "#FF4D4D"; ctx.beginPath(); ctx.arc(x - dir * 2, y + 3, 1.6, 0, 6.3); ctx.fill(); }
-          if(t % 1300 < 90){ ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x + dir * 8, y, 2, 0, 6.3); ctx.fill(); }
-        } else {
-          ctx.save(); ctx.translate(x, y); ctx.scale(dir, 1); ctx.fillStyle = "rgba(246,248,255,.95)";
-          ctx.beginPath(); ctx.ellipse(0, 0, 10, 1.7, 0, 0, 6.3); ctx.fill();
-          ctx.beginPath(); ctx.moveTo(2, 0); ctx.lineTo(-4, 7); ctx.lineTo(-6.5, 7); ctx.lineTo(-2, 0); ctx.fill();
-          ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(-10, -5); ctx.lineTo(-11, -5); ctx.lineTo(-10, 0); ctx.fill(); ctx.restore();
-        }
-        return inside(x, 300); }};
-    }
-    if(k === "balloon"){
-      let x = R(.15, .85) * W, y = H * R(.45, .7); const vy = -R(9, 15), vx = R(-5, 5) + st.wind * .3, r = R(12, 18);
-      const C = [["#FF6B6B", "#FFD166"], ["#4ECDC4", "#FFFFFF"], ["#9B5DE5", "#F15BB5"], ["#FFB347", "#5BC0EB"]][Math.floor(R(0, 4))];
-      return {k, step(dt, t){ x += vx * dt; y += vy * dt;
-        ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(t / 1500) * .06); ctx.globalAlpha = .92;
-        ctx.beginPath(); ctx.moveTo(-r * .35, r * 1.05); ctx.bezierCurveTo(-r * 1.4, r * .2, -r, -r * 1.25, 0, -r * 1.25); ctx.bezierCurveTo(r, -r * 1.25, r * 1.4, r * .2, r * .35, r * 1.05); ctx.closePath();
-        ctx.fillStyle = C[0]; ctx.fill(); ctx.save(); ctx.clip(); ctx.fillStyle = C[1]; ctx.beginPath(); ctx.ellipse(0, 0, r * .36, r * 1.5, 0, 0, 6.3); ctx.fill();
-        ctx.fillStyle = "rgba(255,255,255,.25)"; ctx.beginPath(); ctx.ellipse(-r * .45, -r * .5, r * .2, r * .5, -.3, 0, 6.3); ctx.fill(); ctx.restore();
-        ctx.strokeStyle = "rgba(80,60,40,.8)"; ctx.lineWidth = .8; ctx.beginPath(); ctx.moveTo(-r * .35, r * 1.05); ctx.lineTo(-r * .2, r * 1.45); ctx.moveTo(r * .35, r * 1.05); ctx.lineTo(r * .2, r * 1.45); ctx.stroke();
-        ctx.fillStyle = "#8B5A2B"; ctx.fillRect(-r * .22, r * 1.45, r * .44, r * .3); ctx.restore();
-        return y > -r * 3; }};
-    }
-    if(k === "meteor"){
-      let x = R(.35, 1) * W, y = R(.02, .25) * H; const a = Math.PI * R(.72, .85), v = R(600, 900), life = R(.6, 1.1), cx = Math.cos(a), cy = Math.sin(a);
-      return {k, step(dt){ age += dt; x += cx * v * dt; y += cy * v * dt; const al = Math.sin(Math.PI * Math.min(1, age / life));
-        const g = ctx.createLinearGradient(x, y, x - cx * 120, y - cy * 120); g.addColorStop(0, `rgba(255,255,255,${al})`); g.addColorStop(1, "rgba(255,255,255,0)");
-        ctx.strokeStyle = g; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - cx * 120, y - cy * 120); ctx.stroke();
-        ctx.fillStyle = `rgba(255,255,255,${al})`; ctx.beginPath(); ctx.arc(x, y, 1.8, 0, 6.3); ctx.fill();
-        return age < life; }};
-    }
-    if(k === "dragonfly"){
-      const fs = Array.from({length:Math.round(R(1, 3))}, () => { const x = dir > 0 ? -20 - R(0, 80) : W + 20 + R(0, 80), y = R(.08, .32) * H; return {x, y, tx:x, ty:y, h:R(0, .8)}; });
-      return {k, step(dt, t){ age += dt;
-        fs.forEach(f => { f.h -= dt; if(f.h < 0){ f.tx = f.x + dir * R(50, 150); f.ty = Math.max(20, f.y + R(-35, 35)); f.h = R(.7, 1.8); }
-          f.x += (f.tx - f.x) * Math.min(1, dt * 5); f.y += (f.ty - f.y) * Math.min(1, dt * 5);
-          const x = f.x, y = f.y + Math.sin(t / 300 + f.h) * 1.5;
-          ctx.fillStyle = `rgba(255,255,255,${.35 + .25 * Math.sin(t / 22)})`;
-          [[.55, 2], [-.55, 2], [.85, -1], [-.85, -1]].forEach(([an, o]) => { ctx.beginPath(); ctx.ellipse(x + dir * o, y - 1, 8, 2.2, an * dir, 0, 6.3); ctx.fill(); });
-          ctx.strokeStyle = "#D8452E"; ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(x - dir * 10, y); ctx.lineTo(x + dir * 5, y); ctx.stroke();
-          ctx.fillStyle = "#B8321F"; ctx.beginPath(); ctx.arc(x + dir * 6.5, y, 2, 0, 6.3); ctx.fill(); });
-        return age < 30 && fs.some(f => inside(f.x, 60)); }};
-    }
-    if(k === "leaves" || k === "petals"){
-      const pal = k === "leaves" ? ["#E5743A", "#D94B3A", "#F2B134", "#C8622B"] : ["#FFD1DF", "#FFC2D4", "#FFE3EC"];
-      const it = Array.from({length:Math.round(R(7, 12))}, () => ({x:R(0, W), y:-R(10, H * .5), v:R(28, 55), sw:R(.6, 1.4), ph:R(0, 6), r:R(0, 6), vr:R(-3, 3), c:pal[Math.floor(R(0, pal.length))]}));
-      return {k, step(dt, t){ age += dt;
-        it.forEach(a => { a.y += a.v * dt; a.x += (Math.sin(t / 900 * a.sw + a.ph) * 35 + st.wind * .6) * dt; a.r += a.vr * dt;
-          ctx.save(); ctx.translate(a.x, a.y); ctx.rotate(a.r); ctx.scale(1, .55 + .45 * Math.abs(Math.sin(t / 500 + a.ph))); ctx.fillStyle = a.c;
-          if(k === "leaves"){ ctx.beginPath(); ctx.ellipse(0, 0, 6.5, 3.2, 0, 0, 6.3); ctx.fill(); ctx.strokeStyle = "rgba(90,40,20,.5)"; ctx.lineWidth = .7; ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(7, 0); ctx.stroke(); }
-          else { ctx.beginPath(); ctx.ellipse(0, 0, 4, 2.6, 0, 0, 6.3); ctx.fill(); }
-          ctx.restore(); });
-        return age < 45 && it.some(a => a.y < H + 20); }};
-    }
-    if(k === "paper"){
-      let x = x0; const y0 = R(.1, .28) * H, v = R(80, 110);
-      return {k, step(dt){ age += dt; x += dir * v * dt; const y = y0 + Math.sin(age * 1.4) * 22 + age * 5, an = Math.cos(age * 1.4) * .35;
-        ctx.save(); ctx.translate(x, y); ctx.scale(dir, 1); ctx.rotate(an);
-        ctx.fillStyle = "rgba(255,255,255,.96)"; ctx.strokeStyle = "rgba(60,70,90,.25)"; ctx.lineWidth = .8;
-        ctx.beginPath(); ctx.moveTo(13, 0); ctx.lineTo(-10, -6); ctx.lineTo(-5, 0); ctx.lineTo(-10, 6); ctx.closePath(); ctx.fill(); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(13, 0); ctx.lineTo(-5, 0); ctx.stroke(); ctx.restore();
-        return inside(x, 80); }};
-    }
-    if(k === "umbrella"){
-      const d2 = st.wind > 0 ? 1 : dir; let x = d2 > 0 ? -40 : W + 40, y = R(.12, .35) * H, rot = 0; const v = R(90, 140), vr = R(2.5, 4.5) * d2;
-      const col = ["#FF6B8B", "#FFD166", "#5BC0EB", "#9B5DE5"][Math.floor(R(0, 4))];
-      return {k, step(dt){ age += dt; x += d2 * v * dt; y += Math.sin(age * 2.2) * 40 * dt - 3 * dt; rot += vr * dt;
-        ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
-        ctx.fillStyle = col; ctx.beginPath(); ctx.arc(0, 0, 14, Math.PI, 0); ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = "rgba(0,0,0,.18)"; ctx.lineWidth = 1; ctx.beginPath(); for(let i = -1; i <= 1; i++){ ctx.moveTo(0, -14); ctx.quadraticCurveTo(i * 6, -6, i * 7, 0); } ctx.stroke();
-        ctx.strokeStyle = "#444"; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 15); ctx.arc(-3, 15, 3, 0, Math.PI); ctx.stroke(); ctx.restore();
-        return inside(x, 60); }};
-    }
-    if(k === "rainbow"){
-      const life = 24, r0 = Math.max(W, H) * .8, C = ["#FF5A5A", "#FFA24C", "#FFE35A", "#6BE38A", "#5AB8FF", "#8A6BFF"];
-      return {k, step(dt){ age += dt; ctx.globalAlpha = .32 * Math.max(0, Math.min(1, age / 3, (life - age) / 3)); ctx.lineWidth = 8;
-        C.forEach((c, i) => { ctx.strokeStyle = c; ctx.beginPath(); ctx.arc(W * .5, H * 1.05, r0 - i * 8, Math.PI, 0); ctx.stroke(); }); ctx.globalAlpha = 1;
-        return age < life; }};
-    }
-    if(k === "ufo"){
-      let x = x0, y = R(.08, .2) * H, mode = 0; const xt = R(.3, .7) * W;
-      return {k, step(dt, t){ age += dt;
-        if(mode === 0){ x += dir * 90 * dt; if((x - xt) * dir > 0){ mode = 1; age = 0; } }
-        else if(mode === 1){ if(age > 2.4) mode = 2;
-          const g = ctx.createLinearGradient(0, y, 0, y + 130); g.addColorStop(0, "rgba(170,255,210,.4)"); g.addColorStop(1, "rgba(170,255,210,0)");
-          ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x - 6, y + 3); ctx.lineTo(x + 6, y + 3); ctx.lineTo(x + 30, y + 130); ctx.lineTo(x - 30, y + 130); ctx.fill(); }
-        else { x += dir * 700 * dt; y -= 160 * dt; }
-        const yy = y + Math.sin(t / 260) * 2;
-        ctx.fillStyle = "rgba(180,230,255,.85)"; ctx.beginPath(); ctx.ellipse(x, yy - 4, 7, 6, 0, Math.PI, 0); ctx.fill();
-        ctx.fillStyle = "#AEB6C8"; ctx.beginPath(); ctx.ellipse(x, yy, 18, 4.5, 0, 0, 6.3); ctx.fill();
-        ["#FF5A5A", "#FFE35A", "#5AB8FF"].forEach((c, i) => { ctx.fillStyle = Math.floor(t / 200 + i) % 3 === 0 ? c : "rgba(255,255,255,.5)"; ctx.beginPath(); ctx.arc(x - 9 + i * 9, yy + 1, 1.5, 0, 6.3); ctx.fill(); });
-        return inside(x, 80) && y > -40; }};
-    }
-    if(k === "sleigh"){
-      let x = -120; const y = R(.08, .18) * H, sp = [];
-      return {k, step(dt, t){ x += 70 * dt; const yy = y + Math.sin(t / 600) * 4;
-        if(Math.random() < .5) sp.push({x:x - 26, y:yy + 2, a:1});
-        sp.forEach(q => { q.a -= dt * .8; q.y += 6 * dt; ctx.fillStyle = `rgba(255,226,150,${Math.max(0, q.a) * .8})`; ctx.beginPath(); ctx.arc(q.x, q.y, 1.2, 0, 6.3); ctx.fill(); });
-        while(sp.length && sp[0].a <= 0) sp.shift();
-        ctx.fillStyle = ctx.strokeStyle = "rgba(255,226,150,.92)"; ctx.lineWidth = 1.2;
-        ctx.beginPath(); ctx.moveTo(x - 24, yy - 6); ctx.lineTo(x - 10, yy - 6); ctx.lineTo(x - 8, yy); ctx.lineTo(x - 24, yy); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(x - 27, yy + 3); ctx.lineTo(x - 6, yy + 3); ctx.quadraticCurveTo(x - 3, yy + 3, x - 4, yy); ctx.stroke();
-        [8, 22].forEach(o => { const rx = x + o, ry = yy - 4 + Math.sin(t / 150 + o) * 1.5;
-          ctx.beginPath(); ctx.ellipse(rx, ry, 5, 2.4, 0, 0, 6.3); ctx.fill(); ctx.beginPath(); ctx.arc(rx + 5, ry - 3, 1.7, 0, 6.3); ctx.fill();
-          ctx.beginPath(); ctx.moveTo(rx + 5, ry - 4); ctx.lineTo(rx + 4, ry - 8); ctx.moveTo(rx + 6, ry - 4); ctx.lineTo(rx + 8, ry - 8);
-          ctx.moveTo(rx - 3, ry + 2); ctx.lineTo(rx - 4 + Math.sin(t / 90) * 1.5, ry + 6); ctx.moveTo(rx + 3, ry + 2); ctx.lineTo(rx + 4 - Math.sin(t / 90) * 1.5, ry + 6); ctx.stroke(); });
-        ctx.beginPath(); ctx.moveTo(x - 9, yy - 4); ctx.lineTo(x + 7, yy - 5); ctx.stroke();
-        return x < W + 80 || sp.length > 0; }};
-    }
-    return null;
-  }
-  function visit(k){
-    if(!st || !document.body.classList.contains("wxfx-on")) return false;
-    const v = spawn(k || pickVis(visPool())); if(v){ vis.push(v); if(vis.length > 4) vis.shift(); } return !!v;
+    vis = vis.filter(v => v.kind !== "rainbow" && v.kind !== "fireflies");
   }
   function newDrop(any){ return {x:R(0, W), y:any ? R(0, H) : R(-20, H * .3), r:R(2, 6.5), vy:0, slide:false, t:R(0, 8)}; }
+  /* ---------- visitors ---------- */
+  const TAU = Math.PI * 2, pick = a => a[Math.floor(Math.random() * a.length)];
+  function eligible(){
+    const mo = new Date().getMonth() + 1, wet = st.kind === "rain" || st.kind === "thunder", day = !st.night;
+    const calm = !wet && st.kind !== "snow" && st.kind !== "fog", open = st.cover < .6;
+    const L = [];
+    if(day && calm) L.push(["birds", 5], ["paper", 1]);
+    if(day && !wet && st.kind !== "fog") L.push(["plane", 3]);
+    if(st.night && st.kind !== "fog" && !(wet && st.lvl >= 3)) L.push(["nightplane", 3]);
+    if(st.night && open && !wet) L.push(["meteor", 5], ["ufo", .35]);
+    if(day && open && calm) L.push(["balloon", 1.5]);
+    if(!wet && st.kind !== "snow" && (mo >= 9 && mo <= 11)) L.push(["leaves", 3]);
+    if(!wet && st.kind !== "snow" && (mo === 3 || mo === 4)) L.push(["petals", 3]);
+    if(wet && st.lvl >= 3) L.push(["umbrella", 3]);
+    if(day && ((st.kind === "rain" && st.lvl <= 2) || st.kind === "few" || st.kind === "partly")) L.push(["rainbow", st.kind === "rain" ? 3 : .6]);
+    if(st.night && !wet && (mo === 6 || mo === 7)) L.push(["fireflies", 3]);
+    if(st.kind === "snow") L.push(["birds", 1]);
+    return L;
+  }
+  function choose(){ const L = eligible(); if(!L.length) return null; let r = Math.random() * L.reduce((a, b) => a + b[1], 0); for(const [k, w] of L){ if((r -= w) <= 0) return k; } return L[0][0]; }
+  const LINES = {birds:["鳥さんたち、どこ行くのかな", "あ、鳥さん！"], plane:["あ、飛行機！", "飛行機雲だ〜"], nightplane:["夜の飛行機、ちかちか", "どこまで行くんだろう"],
+    meteor:["流れ星！お願いごとした？", "いま流れ星見えた！"], ufo:["……いまの、見た？", "えっ、UFO！？"], balloon:["気球がふわふわ〜", "乗ってみたいなあ"],
+    leaves:["葉っぱが舞ってる", "秋だねえ"], petals:["花びらがひらひら", "春だね〜"], umbrella:["傘が飛んでった！", "すごい雨…気をつけてね"],
+    rainbow:["虹が出てる！", "いいことありそう"], fireflies:["ほたる…きれい", "夏の夜だね"], paper:["紙ひこうき！", "よく飛ぶね〜"]};
+  function spawn(kind, at){
+    kind = kind || choose(); if(!kind || !st) return;
+    const dir = at ? (at.x < W / 2 ? 1 : -1) : (Math.random() < .5 ? 1 : -1), x0 = at && at.x0 != null ? at.x0 : dir > 0 ? -60 : W + 60;
+    const v = {kind, t:0, dir};
+    if(kind === "birds"){ const n = Math.round(R(3, 7)), y = at ? at.y : R(.08, .32) * H, sp = R(45, 75);
+      v.b = Array.from({length:n}, (_, i) => ({dx:-Math.abs(i - (n >> 1)) * R(16, 24) * dir - (i % 2) * 6 * dir, dy:(i - (n >> 1)) * R(8, 12) + R(-3, 3), ph:R(0, TAU), f:R(8, 11), s:R(8, 12)}));
+      Object.assign(v, {x:x0, y, sp}); }
+    else if(kind === "plane" || kind === "nightplane"){ Object.assign(v, {x:x0, y:R(.06, .26) * H, sp:R(28, 42), x0, rise:R(-.04, .04)}); }
+    else if(kind === "meteor"){ Object.assign(v, {x:R(.2, 1) * W, y:R(0, .25) * H, life:R(.7, 1.1), ang:R(2.4, 2.75)}); }
+    else if(kind === "ufo"){ Object.assign(v, {x:x0, y:R(.12, .3) * H, phase:0, hx:R(.3, .7) * W}); }
+    else if(kind === "balloon"){ Object.assign(v, {x:x0, y:R(.1, .35) * H, sp:R(9, 14), col:pick([["#FF6B6B", "#FFD166"], ["#4ECDC4", "#FFFFFF"], ["#7B61FF", "#FFB3C7"], ["#3B82F6", "#FDE68A"]]), sc:R(.8, 1.15)}); }
+    else if(kind === "paper"){ Object.assign(v, {x:x0, y:R(.2, .45) * H, sp:R(80, 110), ph:R(0, TAU)}); }
+    else if(kind === "leaves" || kind === "petals"){ const n = Math.round(R(8, 14)), pet = kind === "petals";
+      v.p = Array.from({length:n}, () => ({x:x0 + R(-80, 80) * dir - R(0, 240) * dir, y:R(-.1, .5) * H, vx:R(50, 90) * dir * (1 + st.wind / 30), vy:R(14, 36), r:R(0, TAU), vr:R(-3, 3), ph:R(0, TAU),
+        s:pet ? R(3.5, 5.5) : R(5, 8), c:pet ? pick(["#F9C9D6", "#FBD9E2", "#F4B4C6"]) : pick(["#E07A2F", "#C9452B", "#E9B53B", "#B85C2C"])})); }
+    else if(kind === "umbrella"){ Object.assign(v, {x:x0, y:R(.15, .45) * H, sp:R(140, 200), r:0, col:pick(["#EF4444", "#F59E0B", "#3B82F6", "#10B981"])}); v.dir = 1; v.x = at && at.x0 != null ? at.x0 : -60; }
+    else if(kind === "rainbow"){ Object.assign(v, {life:20}); }
+    else if(kind === "fireflies"){ v.p = Array.from({length:Math.round(R(7, 12))}, () => ({x:R(0, W), y:R(.45, .95) * H, ph:R(0, TAU), vx:R(-12, 12), vy:R(-8, 8)})); v.life = 22; }
+    vis.push(v);
+    if(Math.random() < .45 && performance.now() - lastTalk > 120000 && typeof concierge !== "undefined" && concierge.has && concierge.has()){
+      lastTalk = performance.now(); setTimeout(() => { try { concierge.say(pick(LINES[kind]), pick(["surprise", "sparkle", "joy"]), 3800); } catch(e){} }, 900); }
+  }
+  function bird(x, y, s, w, col){ ctx.strokeStyle = col; ctx.lineWidth = Math.max(1.2, s * .22); ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.beginPath(); ctx.moveTo(x - s, y - s * .45 * w); ctx.quadraticCurveTo(x - s * .45, y - s * .2 * w - s * .15, x, y); ctx.quadraticCurveTo(x + s * .45, y - s * .2 * w - s * .15, x + s, y - s * .45 * w); ctx.stroke(); }
+  function drawVis(v, dt, t){
+    v.t += dt; const dk = st.night ? "rgba(15,18,30,.85)" : st.phase === "sunset" || st.phase === "dusk" ? "rgba(40,25,45,.8)" : "rgba(35,42,60,.72)";
+    switch(v.kind){
+      case "birds": v.x += v.sp * v.dir * dt; v.y += Math.sin(v.t * .8) * 6 * dt;
+        v.b.forEach(b => { const w = Math.sin(v.t * b.f + b.ph); bird(v.x + b.dx, v.y + b.dy + w * 1.5, b.s, w, dk); });
+        return v.dir > 0 ? v.x < W + 220 : v.x > -220;
+      case "plane": { v.x += v.sp * v.dir * dt; v.y += v.rise * v.sp * dt; const L = Math.min(Math.abs(v.x - v.x0), W * .55);
+        const g = ctx.createLinearGradient(v.x, 0, v.x - L * v.dir, 0); g.addColorStop(0, "rgba(255,255,255,.7)"); g.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.strokeStyle = g; ctx.lineCap = "round"; [[-1.6, 2.2], [1.6, 2.2]].forEach(([o, w]) => { ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(v.x - 6 * v.dir, v.y + o); ctx.lineTo(v.x - L * v.dir, v.y + o + L * .004); ctx.stroke(); });
+        ctx.save(); ctx.translate(v.x, v.y); ctx.scale(v.dir, 1); ctx.fillStyle = "rgba(245,248,255,.95)";
+        ctx.beginPath(); ctx.ellipse(0, 0, 9, 1.8, 0, 0, TAU); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(1, 0); ctx.lineTo(-3, -6); ctx.lineTo(-5, -6); ctx.lineTo(-2, 0); ctx.lineTo(-5, 6); ctx.lineTo(-3, 6); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-6, 0); ctx.lineTo(-9, -3.5); ctx.lineTo(-10, -3.5); ctx.lineTo(-9, 0); ctx.closePath(); ctx.fill(); ctx.restore();
+        return v.dir > 0 ? v.x < W + 40 : v.x > -40; }
+      case "nightplane": { v.x += v.sp * v.dir * dt; const blink = (v.t % 1.2) < .12, nav = (v.t % 1.6) < .9;
+        ctx.fillStyle = "rgba(200,210,235,.35)"; ctx.fillRect(v.x - 7, v.y - .6, 14, 1.2);
+        if(nav){ ctx.fillStyle = "rgba(255,80,80,.95)"; ctx.beginPath(); ctx.arc(v.x - 3 * v.dir, v.y - 4, 1.4, 0, TAU); ctx.fill(); ctx.fillStyle = "rgba(90,255,140,.95)"; ctx.beginPath(); ctx.arc(v.x - 3 * v.dir, v.y + 4, 1.4, 0, TAU); ctx.fill(); }
+        if(blink){ const g = ctx.createRadialGradient(v.x, v.y, 0, v.x, v.y, 10); g.addColorStop(0, "rgba(255,255,255,.95)"); g.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(v.x, v.y, 10, 0, TAU); ctx.fill(); }
+        return v.dir > 0 ? v.x < W + 40 : v.x > -40; }
+      case "meteor": { const k = v.t / v.life, d = 520 * v.t, x = v.x + Math.cos(v.ang) * d, y = v.y + Math.sin(v.ang) * d, L = 130 * Math.sin(Math.PI * Math.min(1, k));
+        const tx = x - Math.cos(v.ang) * L, ty = y - Math.sin(v.ang) * L, g = ctx.createLinearGradient(x, y, tx, ty);
+        g.addColorStop(0, `rgba(255,255,255,${.95 * (1 - k)})`); g.addColorStop(1, "rgba(180,200,255,0)"); ctx.strokeStyle = g; ctx.lineWidth = 2; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(tx, ty); ctx.stroke(); return k < 1; }
+      case "ufo": { let x = v.x, y = v.y;
+        if(v.phase === 0){ v.x += (v.hx - v.x) * Math.min(1, dt * 1.6); if(Math.abs(v.hx - v.x) < 4){ v.phase = 1; v.t = 0; } }
+        else if(v.phase === 1){ v.x = v.hx + Math.sin(v.t * 3) * 14; if(v.t > 3.2){ v.phase = 2; v.t = 0; } }
+        else { v.x += 900 * dt * -v.dir; v.y -= 220 * dt; }
+        x = v.x; y = v.y + Math.sin(v.t * 4) * 3;
+        if(v.phase === 1){ const g = ctx.createLinearGradient(0, y, 0, y + 140); g.addColorStop(0, `rgba(180,255,200,${.28 + .12 * Math.sin(v.t * 6)})`); g.addColorStop(1, "rgba(180,255,200,0)");
+          ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x - 7, y + 3); ctx.lineTo(x + 7, y + 3); ctx.lineTo(x + 34, y + 140); ctx.lineTo(x - 34, y + 140); ctx.closePath(); ctx.fill(); }
+        ctx.fillStyle = "rgba(190,230,255,.75)"; ctx.beginPath(); ctx.ellipse(x, y - 4, 7, 6, 0, Math.PI, TAU); ctx.fill();
+        ctx.fillStyle = "#9AA3B8"; ctx.beginPath(); ctx.ellipse(x, y, 18, 5, 0, 0, TAU); ctx.fill();
+        for(let i = -2; i <= 2; i++){ ctx.fillStyle = (Math.floor(v.t * 6) + i) % 2 ? "#FFE36E" : "#FF7AA8"; ctx.beginPath(); ctx.arc(x + i * 7, y + 1, 1.5, 0, TAU); ctx.fill(); }
+        return v.phase < 2 || (x > -60 && x < W + 60 && y > -60); }
+      case "balloon": { v.x += v.sp * v.dir * dt; const y = v.y + Math.sin(v.t * .9) * 6, s = 16 * v.sc, x = v.x;
+        ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(v.t * .7) * .04);
+        ctx.strokeStyle = "rgba(80,60,40,.8)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-s * .45, s * .95); ctx.lineTo(-s * .22, s * 1.55); ctx.moveTo(s * .45, s * .95); ctx.lineTo(s * .22, s * 1.55); ctx.stroke();
+        ctx.fillStyle = "#8B5E3C"; ctx.fillRect(-s * .25, s * 1.5, s * .5, s * .38);
+        ctx.beginPath(); ctx.moveTo(0, -s * 1.2); ctx.bezierCurveTo(s * 1.25, -s * 1.2, s * 1.15, s * .3, s * .4, s); ctx.lineTo(-s * .4, s); ctx.bezierCurveTo(-s * 1.15, s * .3, -s * 1.25, -s * 1.2, 0, -s * 1.2); ctx.closePath();
+        ctx.fillStyle = v.col[0]; ctx.fill(); ctx.save(); ctx.clip(); ctx.fillStyle = v.col[1]; [-.55, .1].forEach(o => ctx.fillRect(s * o, -s * 1.3, s * .42, s * 2.4)); ctx.restore();
+        const g = ctx.createRadialGradient(-s * .4, -s * .6, 1, 0, 0, s * 1.3); g.addColorStop(0, "rgba(255,255,255,.35)"); g.addColorStop(1, "rgba(0,0,0,.12)"); ctx.fillStyle = g; ctx.fill(); ctx.restore();
+        return v.dir > 0 ? v.x < W + 60 : v.x > -60; }
+      case "paper": { v.x += v.sp * v.dir * dt; const y = v.y + Math.sin(v.t * 1.6 + v.ph) * 34, a = Math.cos(v.t * 1.6 + v.ph) * .45;
+        ctx.save(); ctx.translate(v.x, y); ctx.scale(v.dir, 1); ctx.rotate(a * .6);
+        ctx.fillStyle = "rgba(255,255,255,.95)"; ctx.beginPath(); ctx.moveTo(12, 0); ctx.lineTo(-10, -6); ctx.lineTo(-6, 0); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "rgba(210,220,240,.95)"; ctx.beginPath(); ctx.moveTo(12, 0); ctx.lineTo(-6, 0); ctx.lineTo(-10, 4); ctx.closePath(); ctx.fill(); ctx.restore();
+        return v.dir > 0 ? v.x < W + 40 : v.x > -40; }
+      case "leaves": case "petals": { let alive = false;
+        v.p.forEach(q => { q.x += q.vx * dt + Math.sin(v.t * 2 + q.ph) * 20 * dt; q.y += q.vy * dt + Math.cos(v.t * 1.7 + q.ph) * 12 * dt; q.r += q.vr * dt;
+          if(q.y < H + 20 && (v.dir > 0 ? q.x < W + 30 : q.x > -30)) alive = true;
+          ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.r); ctx.scale(1, .55 + .45 * Math.sin(v.t * 3 + q.ph)); ctx.fillStyle = q.c;
+          ctx.beginPath(); if(v.kind === "petals"){ ctx.ellipse(0, 0, q.s, q.s * .62, 0, 0, TAU); } else { ctx.moveTo(-q.s, 0); ctx.quadraticCurveTo(0, -q.s * .75, q.s, 0); ctx.quadraticCurveTo(0, q.s * .75, -q.s, 0); }
+          ctx.fill(); if(v.kind === "leaves"){ ctx.strokeStyle = "rgba(90,40,20,.45)"; ctx.lineWidth = .7; ctx.beginPath(); ctx.moveTo(-q.s, 0); ctx.lineTo(q.s, 0); ctx.stroke(); } ctx.restore(); });
+        return alive && v.t < 30; }
+      case "umbrella": { v.x += v.sp * dt; v.r += dt * 3.2; const y = v.y + Math.sin(v.t * 2.4) * 40, s = 16;
+        ctx.save(); ctx.translate(v.x, y); ctx.rotate(v.r);
+        ctx.fillStyle = v.col; ctx.beginPath(); ctx.moveTo(-s, 0); ctx.quadraticCurveTo(0, -s * 1.3, s, 0);
+        for(let i = 0; i < 4; i++){ const a = s - i * s / 2; ctx.quadraticCurveTo(a - s / 4, -s * .22, a - s / 2, 0); } ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = "rgba(60,50,40,.9)"; ctx.lineWidth = 1.6; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(0, -s * .62); ctx.lineTo(0, s * .95); ctx.arc(-s * .22, s * .95, s * .22, 0, Math.PI); ctx.stroke(); ctx.restore();
+        return v.x < W + 60; }
+      case "rainbow": { const a = Math.min(1, v.t / 3, (v.life - v.t) / 3) * (st.kind === "rain" ? .38 : .26); if(a <= 0) return false;
+        const cx = W * .7, cy = H * 1.02, r0 = Math.max(W, H) * .62;
+        ["#FF5A5A", "#FF9A3C", "#FFE15A", "#5AD27A", "#4AA8FF", "#6A6CFF", "#B26BFF"].forEach((c, i) => { ctx.strokeStyle = c; ctx.globalAlpha = a; ctx.lineWidth = 7; ctx.beginPath(); ctx.arc(cx, cy, r0 - i * 6.5, Math.PI * 1.05, Math.PI * 1.75); ctx.stroke(); });
+        ctx.globalAlpha = 1; return true; }
+      case "fireflies": { const a = Math.min(1, v.t / 2, (v.life - v.t) / 2); if(a <= 0) return false;
+        v.p.forEach(q => { q.x += (q.vx + Math.sin(v.t + q.ph) * 10) * dt; q.y += (q.vy + Math.cos(v.t * 1.3 + q.ph) * 8) * dt; const gl = a * (.5 + .5 * Math.sin(v.t * 2.2 + q.ph));
+          const g = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, 9); g.addColorStop(0, `rgba(230,255,140,${gl})`); g.addColorStop(1, "rgba(230,255,140,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(q.x, q.y, 9, 0, TAU); ctx.fill(); });
+        return true; }
+    }
+    return false;
+  }
   function cloud(c){
     const s = c.s * Math.min(W, 700) / 3.2, col = st.night ? "rgba(70,78,100," : st.kind === "rain" || st.kind === "thunder" ? "rgba(90,100,120," : "rgba(255,255,255,";
     const al = st.night ? .35 : st.kind === "rain" ? .55 : .5;
@@ -1490,10 +1451,10 @@ const wxfx = (() => {
     clouds.forEach(c => { c.x += c.v * dt; if(c.x - c.s * 300 > W) c.x = -c.s * 300; cloud(c); });
     // fog bands
     fog.forEach(f => { f.x = (f.x + f.v * dt) % (W * 2); const g = ctx.createLinearGradient(0, f.y - 70, 0, f.y + 70); g.addColorStop(0, "rgba(230,234,240,0)"); g.addColorStop(.5, `rgba(230,234,240,${st.night ? .12 : .28})`); g.addColorStop(1, "rgba(230,234,240,0)"); ctx.fillStyle = g; ctx.fillRect(0, f.y - 70, W, 140); });
-    // visitors: something passes by every so often
-    if(!nextVis) nextVis = t + R(4000, 9000);
-    if(t > nextVis){ if(vis.length < 2){ const p = visPool(); if(p.length) visit(pickVis(p)); } nextVis = t + R(12000, 26000); }
-    vis = vis.filter(v => { ctx.save(); let ok = false; try { ok = v.step(dt, t); } catch(e){} ctx.restore(); return ok; });
+    // visitors
+    if(!nextVis) nextVis = t + R(3000, 7000);
+    if(t > nextVis){ nextVis = t + R(14000, 32000); if(vis.length < 2) spawn(); }
+    vis = vis.filter(v => { try { return drawVis(v, dt, t); } catch(e){ return false; } });
     // rain streaks (slanted by wind)
     if(streaks.length){
       const sl = Math.min(.35, .08 + st.wind / 120);
@@ -1527,9 +1488,14 @@ const wxfx = (() => {
     document.body.classList.toggle("wxfx-on", on);
     if(!on) document.body.classList.remove("sky-dark");
   }
-  return {sync, state:() => st, visit};
+  // tap the open sky on 今日 to call a visitor
+  document.addEventListener("click", e => {
+    if(!raf || !st || !document.body.classList.contains("wxfx-on")) return;
+    if(e.target.closest("button,a,input,textarea,select,label,.card,.hero,.flipcard,nav,.tabbar,#pane,.row,.sheet,.concierge,[data-act]")) return;
+    if(vis.length >= 4) return; spawn(null, {x:e.clientX, y:Math.min(e.clientY, H * .5)});
+  });
+  return {sync, state:() => st, spawn:(k, at) => { if(st) spawn(k, at); }, get visitors(){ return vis.map(v => v.kind); }};
 })();
-if(location.port === "8765") window.__fdWx = wxfx;
 function heroMood(){
   const st = currentState(), d = new Date(), m = d.getHours() * 60 + d.getMinutes(), sec = m * 60 + d.getSeconds();
   const t = todayS(), dis = isWeekday(t) && OFFICIAL[dayMode(t)] ? mins(OFFICIAL[dayMode(t)].dismiss) : 15 * 60;
@@ -2399,7 +2365,7 @@ function settingsPane(){
         <div class="setrow"><span class="main"><b>スター付きメールをタスクに</b><small>タスクを完了すると Gmail のスターも外します</small></span><button class="switch" role="switch" aria-checked="${G().starred}" data-g-toggle="starred" aria-label="スター付きメールをタスクに"></button></div>
         <div class="setrow"><span class="main"><b>Gmail を AI で読む</b><small id="g-ai">やること・予定・返信待ちを1時間ごとに取り出します</small></span><button class="switch" role="switch" aria-checked="${G().gmailAi}" data-g-toggle="gmailAi" aria-label="Gmail を AI で読む"></button></div>
         <div class="setrow"><span class="main"><b>予定から時程を自動で切り替える</b><small>「短縮」「朝会」などの名前の終日予定がある日は、その時程にします（手で選んだ日はそのまま）</small></span><button class="switch" role="switch" aria-checked="${pref("autoMode") !== false}" data-pref-switch="autoMode" aria-label="予定から時程を自動で切り替える"></button></div>
-        <div class="setrow"><span class="main"><b>「今日」の背景を天気と時間で変える</b><small>雨・雪・雲・朝焼け・夕焼け・星空などを動きで表示（オフで電池を節約）</small></span><button class="switch" role="switch" aria-checked="${ls.get("fd-wxfx", true) !== false}" data-wxfx-toggle aria-label="天気の背景"></button></div>
+        <div class="setrow"><span class="main"><b>「今日」の背景を天気と時間で変える</b><small>雨・雪・雲・朝焼け・夕焼け・星空などを動きで表示。鳥や飛行機、流れ星もときどき（オフで電池を節約）</small></span><button class="switch" role="switch" aria-checked="${ls.get("fd-wxfx", true) !== false}" data-wxfx-toggle aria-label="天気の背景"></button></div>
         <div class="setrow"><span class="main"><b>背景のお試し</b><small>天気と時間帯を選んで見た目を確認</small></span><button class="chip" data-wxfx-try>試す</button></div>
         <div class="setrow"><span class="main"><b>同じ名前の予定をまとめる</b><small>同じ日・同じ名前の予定（個人・学校・メールから・手入力）を1つにして表示</small></span><button class="switch" role="switch" aria-checked="${pref("mergeEvents") !== false}" data-pref-switch="mergeEvents" aria-label="同じ名前の予定をまとめる"></button></div>
         <div class="setrow"><span class="main"><b>今すぐ同期</b><small id="g-last">連絡先・ドライブは各画面から使えます</small></span><button class="chip accent" data-g-sync>同期</button></div>
@@ -2692,7 +2658,7 @@ document.addEventListener("click", async (ev) => {
   if(b.matches("[data-school-guide]")){ schoolGuide(); return; }
   if(b.matches("[data-wxfx-toggle]")){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); ls.set("fd-wxfx", on); wxfx.sync(); return; }
   if(b.matches("[data-wxfx-try]")){ wxTryPane(); return; }
-  if(d.wxVisit){ const k = d.wxVisit; closePane(); go("today"); setTimeout(() => wxfx.visit(k), 700); return; }
+  if(d.wxVisit){ closePane(); go("today"); setTimeout(() => wxfx.spawn(d.wxVisit), 700); return; }
   if(d.wxTry){ const [k, v] = d.wxTry.split(":"); let t = null; try { t = JSON.parse(localStorage.getItem("fd-wxfx-test") || "null") || {}; } catch(e){ t = {}; }
     if(k === "off"){ localStorage.removeItem("fd-wxfx-test"); closePane(); go("today"); toast("いまの天気に戻しました"); return; }
     t[k] = +v; localStorage.setItem("fd-wxfx-test", JSON.stringify(t)); b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); closePane(); go("today"); return; }
@@ -3923,7 +3889,7 @@ function schoolHandoffPane(){
     <div class="btns"><a class="btn primary" href="${esc(link)}">アプリで接続する</a><button class="btn" data-act="close">このままでよい</button></div>`);
 }
 setTimeout(schoolHandoffPane, 900);
-if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, concierge, dayMode, eventForm, closePane};
+if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, concierge, dayMode, eventForm, closePane, wxfx};
 })();
 </script>
 </body>
