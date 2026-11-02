@@ -46,7 +46,7 @@ object NowNotif {
         val pct = (((now - dayStart).toFloat() / (w.second - dayStart).coerceAtLeast(1)) * 100).toInt().coerceIn(0, 100)
         val mode = s?.let { Sched.today(it) }?.optString("mode") ?: ""
         val text = when {
-            st.target > 0 && st.now -> listOf("${hm(st.target)}まで", st.next).filter { it.isNotEmpty() }.joinToString("  ・  ")
+            st.target > 0 && st.now -> listOf("${hm(st.target)}まで", st.next).filter { it.isNotEmpty() }.joinToString("　")
             else -> st.next
         }
         val open = PendingIntent.getActivity(c, 5, Intent(c, MainActivity::class.java).putExtra("route", "today")

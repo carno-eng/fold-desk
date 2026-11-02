@@ -217,8 +217,8 @@ object Widgets {
         // header text
         val modeLbl = segDay?.optString("mode") ?: ""
         val eyebrow = (heroJ?.optString("eyebrow")?.takeIf { it.isNotEmpty() } ?: "${cal.get(Calendar.YEAR)}年") +
-            (if (!plan.seg && modeLbl.isNotEmpty() && modeLbl != "通常" && isToday) "  ・  $modeLbl" else "") +
-            (s?.optJSONObject("weather")?.takeIf { w >= 300 }?.let { "  ・  ${wxShort(it)} ${it.optInt("t")}°" } ?: "")
+            (if (!plan.seg && modeLbl.isNotEmpty() && modeLbl != "通常" && isToday) "　$modeLbl" else "") +
+            (s?.optJSONObject("weather")?.takeIf { w >= 300 }?.let { "　${wxShort(it)} ${it.optInt("t")}°" } ?: "")
         v.setTextViewText(R.id.eyebrow, eyebrow); v.size(R.id.eyebrow, eyz)
         v.setTextViewText(R.id.date, "${cal.get(Calendar.MONTH) + 1}月${cal.get(Calendar.DAY_OF_MONTH)}日"); v.size(R.id.date, plan.ds)
         v.setTextViewText(R.id.status, st.line); v.size(R.id.status, stz)
@@ -277,7 +277,7 @@ object Widgets {
             val first = items(shown).firstOrNull()?.optString("s") ?: ""
             v.setTextViewText(R.id.barstart, if (isToday) first else "${shown!!.optString("label")}  $first")
             val dis = shown!!.optString("dismiss")
-            v.setTextViewText(R.id.barend, listOf(if (dis.isNotEmpty()) "下校 $dis" else "", if (segDay?.optBoolean("pending") == true) "切り替え中…" else stale(s)).filter { it.isNotEmpty() }.joinToString("  ・  "))
+            v.setTextViewText(R.id.barend, listOf(if (dis.isNotEmpty()) "下校 $dis" else "", if (segDay?.optBoolean("pending") == true) "切り替え中…" else stale(s)).filter { it.isNotEmpty() }.joinToString("　"))
         }
 
         // remaining periods when the widget is tall
@@ -334,7 +334,7 @@ object Widgets {
         v.setTextViewText(R.id.mode, listOf(
             if (off == 1) day?.optString("label") ?: "" else "",
             when { mk == "off" -> "休み"; mk.isEmpty() -> "授業なし"; else -> (day?.optString("mode") ?: "") + "時程" },
-            day?.optString("dismiss")?.takeIf { it.isNotEmpty() }?.let { "下校 $it" } ?: "").filter { it.isNotEmpty() }.joinToString("  ・  "))
+            day?.optString("dismiss")?.takeIf { it.isNotEmpty() }?.let { "下校 $it" } ?: "").filter { it.isNotEmpty() }.joinToString("　"))
         // arrows
         v.setOnClickPendingIntent(R.id.prev, ActionReceiver.pi(c, "nav", "$wid/prev") { putExtra("wid", wid); putExtra("to", off - 1) })
         v.setOnClickPendingIntent(R.id.next, ActionReceiver.pi(c, "nav", "$wid/next") { putExtra("wid", wid); putExtra("to", off + 1) })
@@ -407,8 +407,8 @@ object Widgets {
         }
         if (x != null) {
             v.setTextViewText(R.id.temp, "${x.optInt("t")}°")
-            v.setTextViewText(R.id.label, "${wxShort(x)}  ・  ${WxScene.PHASE_JA[st.phase]}" + (if (w >= 220) "  ・  ${x.optString("place")}" else ""))
-        } else { v.setTextViewText(R.id.temp, ""); v.setTextViewText(R.id.label, "${WxScene.PHASE_JA[st.phase]}  ・  アプリを開くと天気が入ります") }
+            v.setTextViewText(R.id.label, "${wxShort(x)}　${WxScene.PHASE_JA[st.phase]}" + (if (w >= 220) "　${x.optString("place")}" else ""))
+        } else { v.setTextViewText(R.id.temp, ""); v.setTextViewText(R.id.label, "${WxScene.PHASE_JA[st.phase]}　アプリを開くと天気が入ります") }
         return v
     }
 
@@ -431,7 +431,7 @@ object Widgets {
         v.setTextViewText(R.id.label, "${if (w >= 300) x.optString("label") else wxShort(x)}  ${x.optInt("hi")}° / ${x.optInt("lo")}°")
         v.setTextViewText(R.id.place, x.optString("place"))
         val uv = x.optInt("uv", -1)
-        v.setTextViewText(R.id.stats, listOf("湿度 ${x.optInt("hum")}%", if (uv >= 0) "UV $uv ${x.optString("uvLabel")}" else "", if (x.optInt("pop", -1) >= 0) "雨 ${x.optInt("pop")}%" else "").filter { it.isNotEmpty() }.joinToString("  ・  "))
+        v.setTextViewText(R.id.stats, listOf("湿度 ${x.optInt("hum")}%", if (uv >= 0) "UV $uv ${x.optString("uvLabel")}" else "", if (x.optInt("pop", -1) >= 0) "雨 ${x.optInt("pop")}%" else "").filter { it.isNotEmpty() }.joinToString("　"))
         v.removeAllViews(R.id.hours)
         val hrs = x.optJSONArray("hours")
         val room = h >= 190 && hrs != null
@@ -528,7 +528,7 @@ object Widgets {
     }
 
     fun events(c: Context, s: JSONObject?, h: Float) = list(c, h, "これからの予定", "",
-        arr(s, "events").map { Row(it.optString("label").replace(Regex("\\(.\\)"), ""), it.optString("title"), listOf(it.optString("time"), it.optString("place")).filter { x -> x.isNotEmpty() }.joinToString(" ・ "), it.optString("account")) },
+        arr(s, "events").map { Row(it.optString("label").replace(Regex("\\(.\\)"), ""), it.optString("title"), listOf(it.optString("time"), it.optString("place")).filter { x -> x.isNotEmpty() }.joinToString("　"), it.optString("account")) },
         "2週間以内の予定はありません", "events")
 
     fun reminders(c: Context, s: JSONObject?, h: Float): RemoteViews {
@@ -536,7 +536,7 @@ object Widgets {
         val rows = arr(s, "reminders").filter { it.optLong("at") > now }.map {
             val cal = Calendar.getInstance().apply { timeInMillis = it.optLong("at") }
             val tomorrow = cal.get(Calendar.DAY_OF_YEAR) != Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
-            Row((if (tomorrow) "明日 " else "") + "%d:%02d".format(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)), it.optString("title"), it.optString("body").substringBefore(" ・ "))
+            Row((if (tomorrow) "明日 " else "") + "%d:%02d".format(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)), it.optString("title"), it.optString("body").substringBefore("　"))
         }
         return list(c, h, "お知らせ予定", "", rows, "これからのお知らせはありません", "settings")
     }
@@ -545,7 +545,7 @@ object Widgets {
         val f = arr(s, "follow")
         return list(c, h, "返信待ち", if (f.isNotEmpty()) "${f.size}" else "",
             f.map { val id = it.optString("id")
-                Row(if (it.optBoolean("me")) "返す" else "待ち", it.optString("subject"), it.optString("who") + "  ・  ${it.optInt("days")}日",
+                Row(if (it.optBoolean("me")) "返す" else "待ち", it.optString("subject"), it.optString("who") + "　${it.optInt("days")}日",
                     warn = it.optInt("days") >= 3 && it.optBoolean("me"),
                     btn = "済み", btnPi = if (id.isNotEmpty()) ActionReceiver.pi(c, "follow", id) { putExtra("id", id) } else null) },
             "返信待ちはありません", "follow")

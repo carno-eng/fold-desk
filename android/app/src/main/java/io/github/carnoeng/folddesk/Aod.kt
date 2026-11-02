@@ -59,7 +59,7 @@ class AodView(ctx: Context) : View(ctx) {
         c.drawText("%d:%02d".format(cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE)), cx, y, timeP)
         dateP.textSize = unit * 0.045f
         y += unit * 0.085f
-        c.drawText("${cal.get(Calendar.MONTH) + 1}月${cal.get(Calendar.DAY_OF_MONTH)}日（$wd）" + (s?.let { Sched.today(it) }?.optString("mode")?.takeIf { it.isNotEmpty() && it != "通常" }?.let { "  ・  $it" } ?: ""), cx, y, dateP)
+        c.drawText("${cal.get(Calendar.MONTH) + 1}月${cal.get(Calendar.DAY_OF_MONTH)}日（$wd）" + (s?.let { Sched.today(it) }?.optString("mode")?.takeIf { it.isNotEmpty() && it != "通常" }?.let { "　$it" } ?: ""), cx, y, dateP)
 
         y += unit * 0.15f
         lineP.textSize = unit * 0.058f

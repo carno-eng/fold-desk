@@ -123,7 +123,7 @@ object Pomo {
         val title = when { end > 0 && brk -> if (mode == "long") "長い休憩中" else "休憩中"; end > 0 -> "集中中"; s.optBoolean("rdy") -> if (brk) "休憩の準備OK" else "次の集中の準備OK"; else -> "一時停止中  %d:%02d".format(mm, ss) }
         val log = s.optJSONObject("log"); val n = if (log?.optString("d") == today()) log.optInt("n") else 0
         val b = NotificationCompat.Builder(c, CH).setSmallIcon(R.drawable.ic_notify).setColor(if (brk) 0xFF12A594.toInt() else 0xFFE5484D.toInt())
-            .setContentTitle(title).setContentText(listOf(if (!brk) task else "", if (n > 0) "今日${n}回" else "").filter { it.isNotEmpty() }.joinToString("  ・  ").ifEmpty { "ポモドーロ" })
+            .setContentTitle(title).setContentText(listOf(if (!brk) task else "", if (n > 0) "今日${n}回" else "").filter { it.isNotEmpty() }.joinToString("　").ifEmpty { "ポモドーロ" })
             .setOngoing(true).setOnlyAlertOnce(true).setSilent(true).setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setCategory(NotificationCompat.CATEGORY_STOPWATCH).setPriority(NotificationCompat.PRIORITY_LOW).setContentIntent(open(c))
         val full = s.optLong("full").coerceAtLeast(1)
