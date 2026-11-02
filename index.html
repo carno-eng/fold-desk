@@ -112,6 +112,40 @@ body:not([data-mode="cover-p"]) .rail{display:flex;flex-direction:column;gap:3px
 :is(body[data-mode="cover-l"],body[data-mode="main-p"]) .rail .tab{padding:10px}
 :is(body[data-mode="cover-l"],body[data-mode="main-p"]) .rail .add{padding:11px}
 body[data-mode="main-l"] .rail{width:220px}
+.rail{transition:width .5s var(--spring),padding .5s var(--spring),opacity .3s}
+.rail .brand{position:relative}
+.rail .rtog{margin-left:auto;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;color:var(--muted);flex:none}
+.rail .rtog svg{width:19px;height:19px}
+.rail .rtog:hover{background:color-mix(in srgb,var(--fg) 7%,transparent)}
+body[data-rail="mini"]:not([data-mode="cover-p"]) .rail{width:72px;padding-inline:10px;align-items:center}
+body[data-rail="mini"]:not([data-mode="cover-p"]) .rail :is(.brand span,.tab span,.add span,.status span){display:none}
+body[data-rail="mini"]:not([data-mode="cover-p"]) .rail .brand{flex-direction:column;padding:4px 0 12px;gap:8px}
+body[data-rail="mini"]:not([data-mode="cover-p"]) .rail .rtog{margin:0}
+body[data-rail="mini"]:not([data-mode="cover-p"]) .rail :is(.tab,.add){padding:10px;justify-content:center}
+body[data-rail="hide"]:not([data-mode="cover-p"]) #app{grid-template-columns:0 1fr}
+body[data-rail="hide"][data-mode="main-l"].pane-open #app{grid-template-columns:0 1fr 400px}
+body[data-rail="hide"]:not([data-mode="cover-p"]) .rail{width:0;padding:0;opacity:0;overflow:hidden;border:0}
+body[data-rail="hide"].rail-peek:not([data-mode="cover-p"]) .rail{position:fixed;left:0;top:0;bottom:0;z-index:45;width:230px;opacity:1;padding:16px 10px 14px max(10px,env(safe-area-inset-left,0px));box-shadow:20px 0 50px rgba(0,0,0,.25);background:var(--surface);border-right:.5px solid var(--line);overflow-y:auto}
+body[data-rail="hide"].rail-peek:not([data-mode="cover-p"]) .rail :is(.brand span,.tab span,.add span,.status span){display:revert}
+#railhandle{display:none;position:fixed;left:max(8px,env(safe-area-inset-left,0px));top:calc(14px + env(safe-area-inset-top,0px));z-index:44;width:42px;height:42px;border-radius:14px;place-items:center;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:var(--shadow);color:var(--fg)}
+#railhandle svg{width:21px;height:21px}
+body[data-rail="hide"]:not([data-mode="cover-p"]):not(.rail-peek) #railhandle{display:grid}
+body[data-rail="hide"]:not([data-mode="cover-p"]) .page-h{padding-left:52px}
+body:not([data-mode="cover-p"]) #view{grid-column:2;grid-row:1}
+body[data-mode="main-l"] #pane{grid-column:3;grid-row:1}
+#railscrim{display:none;position:fixed;inset:0;z-index:44;background:rgba(0,0,0,.25)}
+body.rail-peek #railscrim{display:block}
+.navedit{display:grid;gap:0}
+.navedit .nr{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:8px;align-items:center;padding:9px 0;border-top:.5px solid var(--line)}
+.navedit .nr:first-child{border-top:0}
+.navedit .nr > svg{width:20px;height:20px;color:var(--muted)}
+.navedit .nr b{font-weight:800}
+.navedit .nr.off b{color:var(--muted);font-weight:700}
+.navedit .nr button.mv{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--fg) 6%,transparent)}
+.navedit .nr button.mv svg{width:17px;height:17px}
+.navedit .nr button.mv:disabled{opacity:.3}
+.railsize{display:flex;gap:6px}
+.railsize .chip[aria-pressed="true"]{background:var(--accent);color:#fff}
 body:not([data-mode="cover-p"]) .fab{display:none}
 body:not([data-mode="cover-p"]) main{padding-bottom:40px}
 body:is([data-mode="main-l"],[data-mode="main-p"]) main{padding-left:28px;padding-right:max(28px,env(safe-area-inset-right,0px))}
@@ -997,6 +1031,11 @@ const I = {
   share2:'<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13"/>',
   camera:'<path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.4-2h5.8l1.4 2h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.5"/>',
   image:'<rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M20.5 16l-5-5-8 8"/>',
+  sidebar:'<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M9.5 4.5v15"/><path d="M5.8 8.5h1.6M5.8 11.5h1.6"/>',
+  grip:'<path d="M9 6.5h.01M15 6.5h.01M9 12h.01M15 12h.01M9 17.5h.01M15 17.5h.01" stroke-width="3"/>',
+  up:'<path d="M6 14.5l6-6 6 6"/>',
+  down:'<path d="M6 9.5l6 6 6-6"/>',
+  more:'<circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/>',
   timer:'<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.6 1.8"/><path d="M9.5 2.5h5"/><path d="M12 2.5V6"/><path d="M18.5 6.5l1.3-1.3"/>',
   play:'<path d="M8 5.5v13l10.5-6.5z"/>',
   pause:'<path d="M8.5 5.5v13"/><path d="M15.5 5.5v13"/>',
@@ -1117,6 +1156,12 @@ function setMode(){
   if(document.body.dataset.mode !== m){ document.body.dataset.mode = m; schedule(); }
 }
 addEventListener("resize", () => { setMode(); if(navBuilt) renderNav(); });
+(() => { let sx = -1, sy = 0;
+  document.addEventListener("touchstart", e => { const t = e.touches[0]; sx = e.touches.length === 1 ? t.clientX : -1; sy = t.clientY; }, {passive:true});
+  document.addEventListener("touchend", e => { if(sx < 0) return; const t = e.changedTouches[0], dx = t.clientX - sx, dy = Math.abs(t.clientY - sy), m = document.body.dataset.mode;
+    if(m === "cover-p" || document.body.dataset.rail !== "hide" || document.getElementById("pdfv") || document.getElementById("phv")) return;
+    if(sx < 24 && dx > 60 && dy < 60 && !document.body.classList.contains("rail-peek")){ document.body.classList.add("rail-peek"); buzz(6); }
+    else if(document.body.classList.contains("rail-peek") && dx < -60 && dy < 60) document.body.classList.remove("rail-peek"); sx = -1; }, {passive:true}); })();
 
 function readHash(){ const k = location.hash.slice(1); if(VIEWS.some(v => v.k === k)) view = k; }
 const REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1162,22 +1207,54 @@ function schedule(){ if(!rafId) rafId = requestAnimationFrame(() => { rafId = 0;
 setInterval(() => { if(view === "today" || view === "timetable") schedule(); }, 30000);
 
 let navBuilt = false;
+/* the side bar / tab bar can be arranged: order, items put away into 「その他」, and the side bar can be wide, icons only, or hidden */
+const navCfg = () => { let c = null; try { c = JSON.parse(localStorage.getItem("fd-nav") || "null"); } catch(e){} c = c || {}; return {order:Array.isArray(c.order) ? c.order : [], off:Array.isArray(c.off) ? c.off : [], rail:c.rail || "full"}; };
+const saveNav = c => { try { localStorage.setItem("fd-nav", JSON.stringify(c)); } catch(e){} };
+function navViews(){ const c = navCfg(), keys = VIEWS.map(v => v.k), order = [...c.order.filter(k => keys.includes(k)), ...keys.filter(k => !c.order.includes(k))]; return order.map(k => VIEWS.find(v => v.k === k)); }
+const navShown = () => { const c = navCfg(); return navViews().filter(v => v.k === "today" || !c.off.includes(v.k)); };
+const navHidden = () => { const c = navCfg(); return navViews().filter(v => v.k !== "today" && c.off.includes(v.k)); };
+function applyRail(){ const r = navCfg().rail; document.body.dataset.rail = r === "mini" || r === "hide" ? r : "full"; if(r !== "hide") document.body.classList.remove("rail-peek"); }
+function setRail(r){ const c = navCfg(); c.rail = r; saveNav(c); applyRail(); setTimeout(() => { try { renderNav(); } catch(e){} }, 520); }
+function rebuildNav(){ navBuilt = false; renderNav(); }
+function navMorePane(){
+  const hid = navHidden();
+  openPane(`${paneHead("その他")}<div class="card" style="padding:4px 14px">${hid.map(v => `<button class="row" data-go="${v.k}" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico(v.i)}</span><span class="main"><b>${v.l}</b></span><span class="when">${ico("right")}</span></button>`).join("")}</div>
+    <div class="btns"><button class="btn" data-act="navedit">${ico("pen")} メニューを編集</button></div>`);
+}
+function navEditPane(){
+  const c = navCfg(), vs = navViews();
+  openPane(`${paneHead("メニューを編集")}
+    <p class="hint" style="margin-top:0">よく使うものを上に。使わないものは「しまう」と「その他」の中に入ります（消えるわけではありません）。「今日」はしまえません。</p>
+    <div class="group navedit">${vs.map((v, i) => { const off = v.k !== "today" && c.off.includes(v.k); return `<div class="nr ${off ? "off" : ""}">${ico(v.i)}<b>${v.l}</b>
+      <button class="mv" data-nav-mv="${v.k}:-1" ${i === 0 ? "disabled" : ""} aria-label="上へ">${ico("up")}</button><button class="mv" data-nav-mv="${v.k}:1" ${i === vs.length - 1 ? "disabled" : ""} aria-label="下へ">${ico("down")}</button>
+      ${v.k === "today" ? `<span class="chip muted">固定</span>` : `<button class="switch" role="switch" aria-checked="${!off}" data-nav-tog="${v.k}" aria-label="${v.l}を表示"></button>`}</div>`; }).join("")}</div>
+    <div class="field" style="margin-top:14px"><label>横のバーの大きさ（開いた画面）</label><div class="railsize">${[["full", "名前つき"], ["mini", "アイコンだけ"], ["hide", "しまう"]].map(([k, l]) => `<button class="chip" data-rail-set="${k}" aria-pressed="${c.rail === k}">${l}</button>`).join("")}</div>
+      <p class="hint">横のバーの上にあるボタンでも切り替えられます。しまったときは左上のボタンか、画面の左はしから右へなぞると出てきます。</p></div>
+    <div class="btns"><button class="btn" data-nav-reset>元に戻す</button><button class="btn primary" data-act="close">完了</button></div>`);
+}
 function renderNav(){
+  applyRail();
   if(!navBuilt){
     navBuilt = true;
-    const tabs = VIEWS.map(v => `<button class="tab" data-go="${v.k}">${ico(v.i)}<span>${v.l}</span></button>`).join("");
+    const hid = navHidden(), rail = navCfg().rail;
+    const tabs = navShown().map(v => `<button class="tab" data-go="${v.k}">${ico(v.i)}<span>${v.l}</span></button>`).join("") + (hid.length ? `<button class="tab" data-act="navmore">${ico("more")}<span>その他</span></button>` : "");
     $("#tabbar").innerHTML = `<span class="ind" aria-hidden="true"></span>${tabs}`;
-    $("#rail").innerHTML = `<div class="brand"><i class="logo" aria-hidden="true"></i><span>Fold Desk</span></div>${tabs}
+    $("#rail").innerHTML = `<div class="brand"><i class="logo" aria-hidden="true"></i><span>Fold Desk</span><button class="rtog" data-act="railtog" aria-label="横のバーを${rail === "full" ? "小さく" : "広げる"}" title="横のバーの大きさ">${ico("sidebar")}</button></div>${tabs}
       <button class="tab" data-act="search">${ico("search")}<span>検索</span></button>
       <button class="tab" data-act="settings">${ico("gear")}<span>通知と設定</span></button>
+      <button class="tab" data-act="navedit" title="メニューを編集">${ico("pen")}<span>メニューを編集</span></button>
       <div class="sp"></div>
       <button class="add" data-act="add">${ico("plus")}<span>追加</span></button>
       <div class="status" id="syncst" style="padding:10px 6px 0"><i></i><span></span></div>`;
     $("#fab").innerHTML = ico("plus");
   }
   document.querySelectorAll(".tab[data-go]").forEach(b => { if(b.dataset.go === view) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+  document.querySelectorAll('.tab[data-act="navmore"]').forEach(b => { if(navHidden().some(v => v.k === view)) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  if(!document.getElementById("railhandle")){ const h = document.createElement("button"); h.id = "railhandle"; h.dataset.act = "railpeek"; h.setAttribute("aria-label", "横のバーを出す"); h.innerHTML = ico("sidebar"); document.body.appendChild(h);
+    const sc = document.createElement("div"); sc.id = "railscrim"; sc.addEventListener("click", () => document.body.classList.remove("rail-peek")); document.body.appendChild(sc); }
   const st = $("#syncst"); st.classList.toggle("local", S.local); st.querySelector("span").textContent = S.local ? "この端末のみ" : "同期中";
   const bar = $("#tabbar"), cur = bar.querySelector('[aria-current="page"]'), ind = bar.querySelector(".ind");
+  if(!cur && ind) ind.style.width = "0px";
   if(cur && bar.offsetWidth){ ind.style.width = cur.offsetWidth + "px"; ind.style.transform = `translateX(${cur.offsetLeft - 4}px)`; }
 }
 
@@ -3630,7 +3707,7 @@ function toast(m){ const t = $("#toast"); t.textContent = m; t.classList.add("on
 document.addEventListener("click", async (ev) => {
   const b = ev.target.closest("button,[data-day]"); if(!b) return;
   const d = b.dataset;
-  if(d.go){ closePaneIfSheet(); go(d.go); return; }
+  if(d.go){ document.body.classList.remove("rail-peek"); closePaneIfSheet(); go(d.go); return; }
   if(d.act === "close"){ closePane(); return; }
   if(d.act === "add"){ addPane(); return; }
   if(d.act === "search"){ searchPane(); return; }
@@ -3753,7 +3830,15 @@ document.addEventListener("click", async (ev) => {
   if(d.gcalToggle){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); const cals = {...(G().calendars || {})}; if(on) delete cals[d.gcalToggle]; else cals[d.gcalToggle] = false; await putGoogle({calendars:cals}); return; }
   if(d.gToggle){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); await putGoogle({[d.gToggle]:on}); if(on && d.gToggle === "tasks") googleSyncNow(); return; }
   if(b.matches("[data-g-sync]")){ b.disabled = true; await googleSyncNow(); b.disabled = false; return; }
-  if(d.act === "settings"){ settingsPane(); return; }
+  if(d.act === "settings"){ document.body.classList.remove("rail-peek"); settingsPane(); return; }
+  if(d.act === "navmore"){ navMorePane(); return; }
+  if(d.act === "navedit"){ document.body.classList.remove("rail-peek"); navEditPane(); return; }
+  if(d.act === "railtog"){ const r = navCfg().rail; if(document.body.classList.contains("rail-peek")){ document.body.classList.remove("rail-peek"); setRail("mini"); } else setRail(r === "full" ? "mini" : r === "mini" ? "hide" : "full"); buzz(8); toast({full:"横のバー：名前つき", mini:"横のバー：アイコンだけ", hide:"横のバー：しまいました（左上か左はしから出せます）"}[navCfg().rail]); rebuildNav(); return; }
+  if(d.act === "railpeek"){ document.body.classList.add("rail-peek"); buzz(6); return; }
+  if(d.railSet){ setRail(d.railSet); b.parentNode.querySelectorAll("[data-rail-set]").forEach(x => x.setAttribute("aria-pressed", x === b)); rebuildNav(); return; }
+  if(d.navTog){ const c = navCfg(), k = d.navTog, on = b.getAttribute("aria-checked") !== "true"; c.off = c.off.filter(x => x !== k); if(!on) c.off.push(k); saveNav(c); b.setAttribute("aria-checked", on); b.closest(".nr").classList.toggle("off", !on); rebuildNav(); return; }
+  if(d.navMv){ const [k, dir] = d.navMv.split(":"); const c = navCfg(), order = navViews().map(v => v.k), i = order.indexOf(k), j = i + +dir; if(j < 0 || j >= order.length) return; [order[i], order[j]] = [order[j], order[i]]; c.order = order; saveNav(c); rebuildNav(); navEditPane(); return; }
+  if(b.matches("[data-nav-reset]")){ saveNav({order:[], off:[], rail:"full"}); rebuildNav(); navEditPane(); toast("元に戻しました"); return; }
   if(d.act === "pomo"){ timerTab("pomo"); return; }
   if(d.act === "cdpill"){ timerTab("cd"); return; }
   if(d.act === "swpill"){ timerTab("sw"); return; }
