@@ -73,7 +73,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         web = WebView(this)
         val dark = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-        web.setBackgroundColor(if (dark) 0xFF000000.toInt() else 0xFFF2F2F7.toInt())
+        web.setBackgroundColor(if (dark) 0xFF0B0D14.toInt() else 0xFFF3F5FA.toInt())
         setContentView(web)
         ViewCompat.setOnApplyWindowInsetsListener(web) { v, insets ->
             val i = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.ime())

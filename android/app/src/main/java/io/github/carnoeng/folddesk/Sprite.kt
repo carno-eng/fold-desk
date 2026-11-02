@@ -72,7 +72,7 @@ class Sprite(private val ctx: Context, heightDp: Float = 92f) {
     // follows the phone's font-size setting (sp), and is larger than in-app text so it reads at a glance
     private fun sp(v: Float) = android.util.TypedValue.applyDimension(android.util.TypedValue.COMPLEX_UNIT_SP, v, ctx.resources.displayMetrics)
     private val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF0B0B0F.toInt(); textSize = sp(19f); isFakeBoldText = true }
-    private val namePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF0A62F5.toInt(); textSize = sp(13f); isFakeBoldText = true }
+    private val namePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF3B5BFF.toInt(); textSize = sp(13f); isFakeBoldText = true }
 
     fun load(): Boolean {
         val f = artFile(ctx)

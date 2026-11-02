@@ -60,7 +60,7 @@ object Paint2 {
             }
             val n = it.optInt("n")
             if (n > 0 && k != "block" && r - l > dp(c, 12f)) {
-                txt.color = if (k == "joho") col(0xFF0A62F5L) else col(0xE6FFFFFFL)
+                txt.color = if (k == "joho") col(0xFF3B5BFFL) else col(0xE6FFFFFFL)
                 cv.drawText(n.toString(), (l + r) / 2, h / 2f + dp(c, 4f), txt)
             }
         }
@@ -83,7 +83,7 @@ object Paint2 {
         val headH = dp(c, 30f); val colW0 = dp(c, 26f); val gap = dp(c, 3f)
         val cw = (wPx - colW0) / days.length(); val ch = (hPx - headH) / np
         val fg = if (dk) 0xFFF5F5F7.toInt() else 0xFF0B0B0F.toInt(); val muted = if (dk) 0xFF9A9AA2.toInt() else 0xFF6C6C74.toInt()
-        val accent = if (dk) 0xFF3D8BFF.toInt() else 0xFF0A62F5.toInt()
+        val accent = if (dk) 0xFF7088FF.toInt() else 0xFF3B5BFF.toInt()
         val t = Paint(Paint.ANTI_ALIAS_FLAG).apply { textAlign = Paint.Align.CENTER }
         val f = Paint(Paint.ANTI_ALIAS_FLAG)
         for (i in 0 until np) {
@@ -105,7 +105,7 @@ object Paint2 {
                 when (k) {
                     "joho" -> { f.color = accent; f.style = Paint.Style.FILL; cv.drawRoundRect(r, rad, rad, f); tc = 0xFFFFFFFF.toInt() }
                     "meeting" -> { f.color = if (dk) 0xFF26272B.toInt() else 0xFFECEDF1.toInt(); f.style = Paint.Style.FILL; cv.drawRoundRect(r, rad, rad, f); tc = muted }
-                    "class" -> { f.color = if (today) (if (dk) 0xFF11264A.toInt() else 0xFFE5EDFF.toInt()) else (if (dk) 0xFF2A2A2E.toInt() else 0xFFEFEFF4.toInt()); f.style = Paint.Style.FILL; cv.drawRoundRect(r, rad, rad, f) }
+                    "class" -> { f.color = if (today) (if (dk) 0xFF1C2350.toInt() else 0xFFE8ECFF.toInt()) else (if (dk) 0xFF2A2A2E.toInt() else 0xFFEFEFF4.toInt()); f.style = Paint.Style.FILL; cv.drawRoundRect(r, rad, rad, f) }
                     "none" -> { continue }
                     else -> { f.color = if (dk) 0x33FFFFFF else 0x22000000; f.style = Paint.Style.STROKE; f.strokeWidth = dp(c, 1.2f); cv.drawRoundRect(r, rad, rad, f); tc = muted }
                 }

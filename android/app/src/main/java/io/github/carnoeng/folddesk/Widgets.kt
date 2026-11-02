@@ -103,7 +103,7 @@ object Widgets {
     private const val WHITE = 0xFFFFFFFF.toInt()
     private const val DIM = 0x99FFFFFF.toInt()
     private const val RED = 0xFFE5483B.toInt()
-    private const val BLUE = 0xFF0A62F5.toInt()
+    private const val BLUE = 0xFF3B5BFF.toInt()
     private const val L = 1.45f   // line height used for layout budgeting (CJK fonts run tall)
 
     private inline fun <reified T : Any> ids(c: Context, m: AppWidgetManager) = m.getAppWidgetIds(ComponentName(c, T::class.java))

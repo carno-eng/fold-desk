@@ -5,8 +5,8 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src https://script.google.com https://script.googleusercontent.com https://api.github.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
 <meta name="referrer" content="no-referrer">
-<meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F3F5FA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0D14" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
@@ -477,6 +477,95 @@ body.unpaired #app{grid-template-columns:1fr!important}
   *,*::before,*::after{animation:none!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
 .automode{font-size:12px;font-weight:600;opacity:.85;margin-top:6px}
+
+/* ================= v10: 2026 look — fresher colors, aurora backdrop, physical motion ================= */
+:root{
+  --bg:#F3F5FA; --surface:#FFFFFF; --surface-2:#EEF1F7; --line:rgba(40,48,80,.10); --fg:#0E1020; --muted:#666B80;
+  --accent:#3B5BFF; --accent-2:#7B61FF; --accent-soft:#E8ECFF; --warn:#F04452; --warn-soft:#FFE7EA; --ok:#13B07A; --chg:#FF8A00;
+  --glass:rgba(255,255,255,.66); --glass-line:rgba(255,255,255,.8);
+  --shadow:0 1px 0 rgba(255,255,255,.9) inset,0 1px 2px rgba(20,28,60,.04),0 12px 32px -10px rgba(40,52,130,.16);
+  --shadow-lg:0 30px 70px -12px rgba(30,40,110,.28),0 2px 8px rgba(20,28,60,.06);
+  --grad:linear-gradient(135deg,#3B5BFF,#7B61FF);
+  --r:26px;
+  --spring:linear(0, 0.039, 0.136, 0.267, 0.413, 0.558, 0.692, 0.808, 0.904, 0.978, 1.032, 1.067, 1.087, 1.094, 1.093, 1.085, 1.073, 1.06, 1.046, 1.033, 1.021, 1.012, 1.004, 0.998, 0.994, 0.992, 0.991, 0.991, 0.992, 0.993, 0.994, 0.995, 0.997, 0.998, 0.999, 0.999, 1, 1, 1.001, 1.001, 1.001, 1.001, 1.001, 1.001, 1); --spring-soft:linear(0, 0.049, 0.162, 0.301, 0.443, 0.573, 0.686, 0.778, 0.85, 0.905, 0.944, 0.972, 0.99, 1.001, 1.007, 1.01, 1.011, 1.011, 1.009, 1.008, 1.006, 1.005, 1.003, 1.002, 1.002, 1.001, 1.001, 1, 1, 1, 1, 1, 1);
+  --sheet:cubic-bezier(.22,1,.36,1);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0B0D14; --surface:#161925; --surface-2:#1F2331; --line:rgba(225,230,255,.09); --fg:#F2F3FA; --muted:#9499AE;
+  --accent:#7088FF; --accent-2:#A08BFF; --accent-soft:#1C2350; --warn:#FF6170; --warn-soft:#3A1720; --ok:#2BD49A; --chg:#FFA23A;
+  --glass:rgba(22,25,37,.62); --glass-line:rgba(255,255,255,.07);
+  --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 12px 30px -12px rgba(0,0,0,.6); --shadow-lg:0 30px 70px -10px rgba(0,0,0,.7)}}
+:root[data-theme="dark"]{
+  --bg:#0B0D14; --surface:#161925; --surface-2:#1F2331; --line:rgba(225,230,255,.09); --fg:#F2F3FA; --muted:#9499AE;
+  --accent:#7088FF; --accent-2:#A08BFF; --accent-soft:#1C2350; --warn:#FF6170; --warn-soft:#3A1720; --ok:#2BD49A; --chg:#FFA23A;
+  --glass:rgba(22,25,37,.62); --glass-line:rgba(255,255,255,.07);
+  --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 12px 30px -12px rgba(0,0,0,.6); --shadow-lg:0 30px 70px -10px rgba(0,0,0,.7)}
+
+/* soft aurora behind everything (glass chrome picks up its color) */
+body::before{content:"";position:fixed;inset:-10%;z-index:0;pointer-events:none;
+  background:radial-gradient(40% 35% at 12% 8%,rgba(123,97,255,.16),transparent 70%),radial-gradient(38% 32% at 92% 4%,rgba(59,91,255,.14),transparent 70%),
+    radial-gradient(45% 40% at 85% 95%,rgba(255,138,190,.12),transparent 70%),radial-gradient(40% 35% at 5% 90%,rgba(60,210,180,.10),transparent 70%);
+  animation:aurora 28s ease-in-out infinite alternate}
+@keyframes aurora{to{transform:translate3d(2%,-2%,0) scale(1.06)}}
+#app{position:relative;z-index:1}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) body::before{opacity:.75}}
+
+/* surfaces */
+.card{border:1px solid color-mix(in srgb,var(--line) 60%,transparent)}
+.rail .tab[aria-current="page"],.rail .add{background:var(--grad)}
+.fab{background:radial-gradient(120% 120% at 25% 15%,#8FA2FF,var(--accent) 55%,var(--accent-2))}
+.logo{background:linear-gradient(140deg,#8FA2FF,var(--accent) 55%,var(--accent-2))}
+.tabbar .ind{background:color-mix(in srgb,var(--accent) 15%,transparent);transition:transform .7s var(--spring),width .5s var(--spring)}
+.hero{background:linear-gradient(150deg,#2B3FE0,#3B5BFF 45%,#7B61FF);box-shadow:0 22px 50px -10px color-mix(in srgb,var(--accent) 55%,transparent)}
+.hero .b1{background:#6FD3FF} .hero .b2{background:#2417A6} .hero .b3{background:#FF9EDB;opacity:.4}
+.hero .seg.mini button[aria-pressed="true"]{box-shadow:0 4px 14px rgba(20,20,90,.25)}
+
+/* press: quick squeeze, springy release */
+:is(.row,.pcard,.cell,.chip,.pill-btn,.btn,.icon-btn,.tab,.cal button,.fab,.rail .add,.prow.xrow,.seg button,.check,.card button){transition:transform .6s var(--spring),background-color .25s,color .25s,box-shadow .25s,opacity .25s}
+:is(.row,.pcard,.cell,.chip,.pill-btn,.btn,.icon-btn,.tab,.cal button,.fab,.rail .add,.prow.xrow,.seg button,.check):active{transform:scale(.94);transition:transform .12s cubic-bezier(.3,0,.5,1)}
+:is(.pcard,.row):active{transform:scale(.975)}
+.fab:active{transform:scale(.88)}
+
+/* touch glow: a soft light that blooms from the finger, clipped to the pressed control */
+.tapfx{position:fixed;z-index:999;pointer-events:none;overflow:hidden;contain:strict}
+.tapfx i{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--fx,var(--accent)) 34%,transparent),transparent 70%);
+  animation:bloom .55s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes bloom{0%{transform:scale(1);opacity:1}100%{transform:scale(var(--k,24));opacity:0}}
+
+/* screen changes: the page slides a little in the direction you moved, everything else stays put */
+#view{view-transition-name:page}
+.tabbar{view-transition-name:tabbar} .rail{view-transition-name:rail} .fab{view-transition-name:fab}
+::view-transition-group(page){animation-duration:.5s}
+::view-transition-old(page){animation:vtOut .26s cubic-bezier(.4,0,1,1) both}
+::view-transition-new(page){animation:vtIn .55s var(--spring-soft) both}
+html[data-dir="back"]::view-transition-old(page){animation-name:vtOutB}
+html[data-dir="back"]::view-transition-new(page){animation-name:vtInB}
+@keyframes vtOut{to{opacity:0;transform:translateX(-36px) scale(.985);filter:blur(3px)}}
+@keyframes vtIn{from{opacity:0;transform:translateX(48px) scale(.985)}}
+@keyframes vtOutB{to{opacity:0;transform:translateX(36px) scale(.985);filter:blur(3px)}}
+@keyframes vtInB{from{opacity:0;transform:translateX(-48px) scale(.985)}}
+main.vt.enter .page-h,main.vt.enter .grid > *,main.vt.enter .stack > *,main.vt.enter .pgrid > *{animation-duration:.5s}
+
+/* sheets: the page behind steps back like a card stack */
+body[data-mode="cover-p"] main{transition:transform .6s var(--sheet),border-radius .6s var(--sheet),filter .4s}
+body[data-mode="cover-p"].pane-open main{transform:scale(.94) translateY(8px);border-radius:26px;filter:saturate(.9) brightness(.94)}
+#pane{transition:transform .62s var(--sheet)}
+body:is([data-mode="cover-l"],[data-mode="main-p"]) #pane{transition:transform .62s var(--sheet)}
+#scrim{background:rgba(12,14,30,.26)}
+
+/* toast: drops in with a springy pop */
+#toast{transition:transform .6s var(--spring),opacity .25s;backdrop-filter:blur(12px)}
+
+/* checks: color wash when done */
+.check[aria-pressed="true"]{background:var(--grad);border-color:transparent}
+
+@media (prefers-reduced-motion: reduce){
+  body::before{animation:none}
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}
+  .tapfx{display:none}
+  body[data-mode="cover-p"].pane-open main{transform:none}
+}
 </style>
 </head>
 <body>
@@ -628,7 +717,40 @@ function setMode(){
 addEventListener("resize", () => { setMode(); if(navBuilt) renderNav(); });
 
 function readHash(){ const k = location.hash.slice(1); if(VIEWS.some(v => v.k === k)) view = k; }
-addEventListener("hashchange", () => { readHash(); schedule(); $("#view").scrollTop = 0; });
+const REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
+addEventListener("hashchange", () => {
+  const prev = view, k = location.hash.slice(1), next = VIEWS.some(v => v.k === k) ? k : prev;
+  const i0 = VIEWS.findIndex(v => v.k === prev), i1 = VIEWS.findIndex(v => v.k === next);
+  if(next !== prev && document.startViewTransition && !REDUCE && !document.hidden && paired()){
+    document.documentElement.dataset.dir = i1 < i0 ? "back" : "fwd";
+    const v = $("#view"); v.classList.add("vt");
+    cancelAnimationFrame(rafId); rafId = 0;
+    try {
+      // the old page is captured first; only then switch the view and draw the new one
+      const t = document.startViewTransition(() => { view = next; cancelAnimationFrame(rafId); rafId = 0; render(); v.scrollTop = 0; });
+      t.finished.finally(() => v.classList.remove("vt"));
+    } catch(e){ view = next; schedule(); $("#view").scrollTop = 0; }
+    buzz(6);
+    return;
+  }
+  view = next; schedule(); $("#view").scrollTop = 0;
+});
+function buzz(ms){ try { if(!REDUCE && navigator.vibrate) navigator.vibrate(ms); } catch(e){} }
+/* touch glow, clipped to the control under the finger */
+const TAPSEL = ".row,.pcard,.cell,.chip,.pill-btn,.btn,.icon-btn,.tab,.cal button,.fab,.rail .add,.seg button,.check,.card button,.setrow button,#cc";
+addEventListener("pointerdown", e => {
+  if(REDUCE || e.button > 0) return;
+  const el = e.target.closest && e.target.closest(TAPSEL); if(!el || el.id === "cc") return;
+  const r = el.getBoundingClientRect(); if(r.width < 8 || r.width > innerWidth * 1.05) return;
+  const cs = getComputedStyle(el), fx = document.createElement("div"); fx.className = "tapfx";
+  fx.style.cssText = `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;border-radius:${cs.borderRadius}`;
+  const dot = document.createElement("i"); dot.style.left = (e.clientX - r.left) + "px"; dot.style.top = (e.clientY - r.top) + "px";
+  dot.style.setProperty("--k", Math.ceil(Math.hypot(r.width, r.height) / 6 + 2));
+  if(el.closest(".hero")) dot.style.setProperty("--fx", "#fff");
+  fx.appendChild(dot); document.body.appendChild(fx); setTimeout(() => fx.remove(), 600);
+}, {passive:true, capture:true});
+/* small haptics for toggles */
+addEventListener("click", e => { const el = e.target.closest && e.target.closest(".check,.seg button,.switch,.fab,[data-daymode]"); if(el) buzz(8); }, {capture:true, passive:true});
 function go(k){ if(location.hash.slice(1) !== k) location.hash = k; else { view = k; schedule(); } }
 
 /* ================= render loop ================= */

@@ -4,6 +4,6 @@
     <color name="card_fg">#FF0B0B0F</color>
     <color name="card_muted">#FF6C6C74</color>
     <color name="card_line">#1F3C3C43</color>
-    <color name="accent">#FF0A62F5</color>
-    <color name="accent_soft">#FFE5EDFF</color>
+    <color name="accent">#FF3B5BFF</color>
+    <color name="accent_soft">#FFE8ECFF</color>
 </resources>
