@@ -52,3 +52,17 @@ class PomoTest {
         assertEquals("focus", Pomo.get(c).getString("mode"))
     }
 }
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
+class TimerTest {
+    private val c: Context = ApplicationProvider.getApplicationContext()
+    @Test fun countdownEndsAndPauses() {
+        Timer.set(c, JSONObject().put("end", System.currentTimeMillis() + 60_000).put("left", 0).put("full", 60_000).put("at", 1).toString())
+        assertFalse(Timer.due(c, true))
+        Timer.action(c, Timer.A_PAUSE); assertEquals(0L, Timer.get(c).getLong("end")); assertTrue(Timer.get(c).getLong("left") > 50_000)
+        Timer.action(c, Timer.A_RESUME); assertTrue(Timer.get(c).getLong("end") > System.currentTimeMillis())
+        Timer.set(c, JSONObject().put("end", System.currentTimeMillis() - 10).put("full", 60_000).put("at", System.currentTimeMillis() + 5).toString())
+        assertTrue(Timer.due(c, true)); assertTrue(Timer.get(c).getBoolean("done"))
+    }
+}

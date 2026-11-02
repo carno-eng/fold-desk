@@ -87,7 +87,7 @@ object Pomo {
 
     private fun pi(c: Context, a: String, code: Int) = PendingIntent.getBroadcast(c, code, Intent(c, AlarmReceiver::class.java).setAction(a), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
-    private fun channels(c: Context) {
+    fun channels(c: Context) {
         val nm = c.getSystemService(NotificationManager::class.java)
         if (nm.getNotificationChannel(CH) == null) nm.createNotificationChannel(NotificationChannel(CH, "ポモドーロ（カウント中）", NotificationManager.IMPORTANCE_LOW).apply {
             setShowBadge(false); lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC; setSound(null, null); enableVibration(false) })
@@ -132,6 +132,70 @@ object Pomo {
         else if (s.optBoolean("rdy")) b.addAction(0, "はじめる", pi(c, A_GO, 73)).setShowWhen(false)
         else b.addAction(0, "再開", pi(c, A_RESUME, 74)).setShowWhen(false)
         b.addAction(0, "おわる", pi(c, A_STOP, 75))
+        try { nm.notify(ID, b.build()) } catch (_: SecurityException) { }
+    }
+}
+
+/** Countdown timer (タイマー tab): live countdown in the notification shade, an alarm-style alert at the end. */
+object Timer {
+    const val A_END = "io.github.carnoeng.folddesk.TIMER_END"
+    const val A_PAUSE = "io.github.carnoeng.folddesk.TIMER_PAUSE"
+    const val A_RESUME = "io.github.carnoeng.folddesk.TIMER_RESUME"
+    const val A_STOP = "io.github.carnoeng.folddesk.TIMER_STOP"
+    private const val ID = 79; private const val ID_ALERT = 80
+    private fun prefs(c: Context) = c.getSharedPreferences("fd", Context.MODE_PRIVATE)
+    fun get(c: Context): JSONObject = try { JSONObject(prefs(c).getString("timer", null) ?: "{}") } catch (_: Exception) { JSONObject() }
+    private fun put(c: Context, s: JSONObject) { s.put("at", System.currentTimeMillis()); prefs(c).edit().putString("timer", s.toString()).apply() }
+    fun set(c: Context, json: String) {
+        val n = try { JSONObject(json) } catch (_: Exception) { return }
+        if (n.optLong("at") < get(c).optLong("at")) return
+        prefs(c).edit().putString("timer", n.toString()).apply(); apply(c)
+    }
+    fun due(c: Context, fromApp: Boolean): Boolean {
+        val s = get(c); val end = s.optLong("end")
+        if (end <= 0 || end > System.currentTimeMillis() + 500) return false
+        s.put("end", 0).put("left", 0).put("done", true); put(c, s); apply(c)
+        if (!fromApp && !MainActivity.foreground) {
+            val t = (s.optString("label").ifEmpty { "タイマー" }) + " 終了"
+            val b = NotificationCompat.Builder(c, "pomo_alert").setSmallIcon(R.drawable.ic_notify).setColor(0xFF3B5BFF.toInt())
+                .setContentTitle(t).setContentText("時間になりました").setAutoCancel(true).setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setPriority(NotificationCompat.PRIORITY_HIGH).setVisibility(NotificationCompat.VISIBILITY_PUBLIC).setContentIntent(open(c))
+            try { NotificationManagerCompat.from(c).notify(ID_ALERT, b.build()) } catch (_: SecurityException) { }
+            try { OverlayService.say(c, t, "時間になりました") } catch (_: Exception) { }
+        }
+        return true
+    }
+    fun action(c: Context, a: String) {
+        val s = get(c); val now = System.currentTimeMillis()
+        when (a) {
+            A_END -> { due(c, false); return }
+            A_PAUSE -> if (s.optLong("end") > 0) s.put("left", maxOf(1000, s.optLong("end") - now)).put("end", 0)
+            A_RESUME -> if (s.optLong("end") == 0L && s.optLong("left") > 0) s.put("end", now + s.optLong("left")).put("left", 0)
+            A_STOP -> s.put("end", 0).put("left", 0).put("done", false)
+        }
+        NotificationManagerCompat.from(c).cancel(ID_ALERT); put(c, s); apply(c)
+    }
+    private fun pi(c: Context, a: String, code: Int) = PendingIntent.getBroadcast(c, code, Intent(c, AlarmReceiver::class.java).setAction(a), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    private fun open(c: Context) = PendingIntent.getActivity(c, 8, Intent(c, MainActivity::class.java).putExtra("route", "cd")
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    fun apply(c: Context) {
+        val s = get(c); val nm = NotificationManagerCompat.from(c); val am = c.getSystemService(AlarmManager::class.java)
+        val endPi = pi(c, A_END, 90); am.cancel(endPi)
+        val end = s.optLong("end"); val left = s.optLong("left")
+        if (end <= 0 && left <= 0) { nm.cancel(ID); return }
+        Pomo.channels(c)
+        if (end > 0) {
+            if (Build.VERSION.SDK_INT < 31 || am.canScheduleExactAlarms()) am.setAlarmClock(AlarmManager.AlarmClockInfo(end, open(c)), endPi)
+            else am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, end, endPi)
+        }
+        val full = s.optLong("full").coerceAtLeast(1); val rem = if (end > 0) maxOf(0, end - System.currentTimeMillis()) else left
+        val b = NotificationCompat.Builder(c, "pomo").setSmallIcon(R.drawable.ic_notify).setColor(0xFF3B5BFF.toInt())
+            .setContentTitle(if (end > 0) (s.optString("label").ifEmpty { "タイマー" }) else "タイマー 一時停止中  %d:%02d".format(rem / 60_000, (rem / 1000) % 60))
+            .setContentText(if (end > 0) "のこり時間" else "再開で続きから").setOngoing(true).setOnlyAlertOnce(true).setSilent(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC).setCategory(NotificationCompat.CATEGORY_STOPWATCH).setPriority(NotificationCompat.PRIORITY_LOW).setContentIntent(open(c))
+        if (end > 0) b.setWhen(end).setShowWhen(true).setUsesChronometer(true).setChronometerCountDown(true).setProgress(1000, (1000 * (full - rem) / full).toInt(), false).addAction(0, "一時停止", pi(c, A_PAUSE, 91))
+        else b.setShowWhen(false).addAction(0, "再開", pi(c, A_RESUME, 92))
+        b.addAction(0, "やめる", pi(c, A_STOP, 93))
         try { nm.notify(ID, b.build()) } catch (_: SecurityException) { }
     }
 }

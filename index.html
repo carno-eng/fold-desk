@@ -411,15 +411,54 @@ button.prow{width:100%;text-align:left}
 
 /* ---------- toast & banner (in-app notification) ---------- */
 /* pomodoro */
-#pomo-pill{position:fixed;z-index:31;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translate(-50%,-140%);display:flex;align-items:center;gap:7px;
+#pills{position:fixed;z-index:31;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);display:flex;gap:8px;pointer-events:none}
+#pills > button{pointer-events:auto}
+#pills > button:not(.on){display:none}
+#pills > button.on{animation:pillIn .55s var(--spring) both}
+@keyframes pillIn{from{transform:translateY(-140%)}to{transform:none}}
+body.pane-open #pills,body.bigclock-on #pills{display:none}
+#cd-pill,#sw-pill{display:flex;align-items:center;gap:7px;padding:7px 14px 7px 10px;border-radius:999px;border:0;font:inherit;font-weight:800;font-size:14px;font-variant-numeric:tabular-nums;color:#fff;cursor:pointer;
+  background:linear-gradient(135deg,#2B3FE0,#7B61FF);box-shadow:0 8px 24px rgba(59,91,255,.32)}
+#sw-pill{background:linear-gradient(135deg,#B45309,#F59E0B);box-shadow:0 8px 24px rgba(217,119,6,.3)}
+#cd-pill.idle,#sw-pill.idle{background:linear-gradient(135deg,#6B7280,#9CA3AF);box-shadow:0 8px 24px rgba(0,0,0,.18)}
+#cd-pill svg,#sw-pill svg{width:16px;height:16px}
+#pomo-pill{position:static!important;transform:none!important;display:flex;align-items:center;gap:7px;
   padding:7px 14px 7px 10px;border-radius:999px;border:0;font:inherit;font-weight:800;font-size:14px;font-variant-numeric:tabular-nums;color:#fff;
   background:linear-gradient(135deg,#E5484D,#FF7A59);box-shadow:0 8px 24px rgba(229,72,77,.35);transition:transform .5s var(--spring),background .4s;cursor:pointer}
-#pomo-pill.on{transform:translate(-50%,0)}
+
 #pomo-pill.brk{background:linear-gradient(135deg,#12A594,#3DD6B0);box-shadow:0 8px 24px rgba(18,165,148,.32)}
 #pomo-pill.idle{background:linear-gradient(135deg,#6B7280,#9CA3AF);box-shadow:0 8px 24px rgba(0,0,0,.18)}
 #pomo-pill svg{width:16px;height:16px}
 #pomo-pill .pp-t{min-width:3.2em;text-align:left}
-body.pane-open #pomo-pill{transform:translate(-50%,-140%)}
+/* timer tab */
+.tmr-seg{display:flex;gap:4px;padding:4px;border-radius:16px;background:var(--surface-2,color-mix(in srgb,var(--fg) 6%,transparent));margin-bottom:14px}
+.tmr-seg button{flex:1;border:0;background:transparent;font:inherit;font-weight:700;padding:10px 6px;border-radius:12px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.tmr-seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.tmr-card{display:grid;justify-items:center;gap:12px;padding:20px 16px}
+.tmr-card .pomo{width:100%}
+.cd-ring .arc{stroke:url(#cd-g)}
+.cd.done .pomo-ring{animation:cdDone 1s ease-in-out 3}
+@keyframes cdDone{50%{transform:scale(1.05)}}
+.cd-adj{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.cd-in{display:flex;align-items:center;gap:6px;justify-content:center}
+.cd-in input{width:72px;text-align:center;font-size:20px;font-weight:800}
+.sw-time{font-family:var(--f-num);font-size:clamp(46px,15vw,76px);font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+.sw-time small{font-size:.45em;color:var(--muted)}
+.sw-laps{width:100%;max-height:260px;overflow:auto}
+.sw-laps .row{display:flex;justify-content:space-between;padding:8px 4px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.tmr-wide{display:grid;gap:16px}
+@container (min-width:720px){.tmr-wide{grid-template-columns:1fr 1fr}}
+#bigclock{position:fixed;inset:0;z-index:80;display:none;place-content:center;text-align:center;color:#fff;cursor:pointer;
+  background:radial-gradient(120% 90% at 50% 10%,#2B3FE0,#121646 70%)}
+#bigclock.brk{background:radial-gradient(120% 90% at 50% 10%,#12A594,#0B3B37 70%)}
+#bigclock.focus{background:radial-gradient(120% 90% at 50% 10%,#E5484D,#4A1416 70%)}
+#bigclock.done{animation:bigDone .5s ease-in-out 6 alternate}
+@keyframes bigDone{to{filter:brightness(1.6)}}
+body.bigclock-on #bigclock{display:grid}
+#bigclock b{font-family:var(--f-num);font-weight:800;font-size:min(30vw,52vh);letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+#bigclock small{font-size:min(5vw,5vh);font-weight:700;opacity:.85;margin-top:2vh}
+#bigclock i{position:absolute;left:0;bottom:0;height:1.4vh;background:rgba(255,255,255,.85);transition:width .25s linear}
+#bigclock .hint2{position:absolute;bottom:4vh;left:0;right:0;font-size:13px;opacity:.6}
 .pomo{display:grid;justify-items:center;gap:10px;padding:4px 0 6px}
 .pomo-ring{position:relative;width:min(240px,64vw);aspect-ratio:1}
 .pomo-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
@@ -764,6 +803,19 @@ body:not([data-mode="cover-p"]) .wx .wx-hours{grid-column:1/-1}
 #pdfv .msg{color:#fff;text-align:center;padding:40px 20px}
 
 /* ================= v16: living weather sky behind 今日 ================= */
+/* v19: the sky is vivid at the top and calms down behind the cards */
+body.wxfx-on::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,transparent 0,transparent 14%,color-mix(in srgb,var(--bg) 55%,transparent) 34%,color-mix(in srgb,var(--bg) 84%,transparent) 58%,color-mix(in srgb,var(--bg) 93%,transparent) 100%)}
+body.wxfx-on .card{background:color-mix(in srgb,var(--surface) 97%,transparent)!important}
+body.wxfx-on .hero.front{background:linear-gradient(150deg,#2B3FE0,#3B5BFF 45%,#7B61FF)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+body.wxfx-on.sky-dark .hero.front{background:linear-gradient(150deg,#1E2A9E,#3247D6 45%,#5E4BD8)!important}
+body.wxfx-on .hero.front .blob{opacity:1!important}
+body.wxfx-on .page-h h1{text-shadow:0 1px 10px color-mix(in srgb,var(--bg) 70%,transparent)}
+.hero.back canvas.wxsky{position:absolute;inset:0;width:100%;height:100%;z-index:-1;border-radius:inherit;pointer-events:none}
+.hero.back .wxscrim{position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;background:linear-gradient(180deg,rgba(8,12,30,.30),rgba(8,12,30,.08) 42%,rgba(8,12,30,.38))}
+.hero.back.has-sky .blob{display:none}
+.hero.back.has-sky{text-shadow:0 1px 8px rgba(0,0,0,.35)}
+.hero.back.has-sky .wxb-stats > div,.hero.back.has-sky .chip{background:rgba(10,16,40,.28);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 #wxfx{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:0;transition:opacity 1.2s ease}
 body.wxfx-on #wxfx{opacity:1}
 body.wxfx-on::before{opacity:0!important}
@@ -912,7 +964,7 @@ const cellKind = c => !c || !c.subject ? "free" : c.kind === "meeting" ? "meetin
 /* ================= router & mode ================= */
 const VIEWS = [
   {k:"today", l:"今日", i:"today"}, {k:"timetable", l:"時間割", i:"tt"}, {k:"tasks", l:"タスク", i:"tasks"},
-  {k:"events", l:"予定", i:"events"}, {k:"people", l:"人", i:"people"}, {k:"memo", l:"メモ", i:"memo"}, {k:"docs", l:"資料", i:"docs"}
+  {k:"events", l:"予定", i:"events"}, {k:"people", l:"人", i:"people"}, {k:"memo", l:"メモ", i:"memo"}, {k:"docs", l:"資料", i:"docs"}, {k:"timer", l:"タイマー", i:"timer"}
 ];
 let view = "today";
 const ui = { day:null, week:0, edit:false, taskFilter:"open", peopleQ:"", peopleTie:"", calMonth:null, calSel:null, pane:null };
@@ -993,18 +1045,18 @@ function renderNav(){
   if(cur && bar.offsetWidth){ ind.style.width = cur.offsetWidth + "px"; ind.style.transform = `translateX(${cur.offsetLeft - 4}px)`; }
 }
 
-const TITLES = {today:"今日", timetable:"時間割", tasks:"タスク", events:"予定", people:"人", memo:"メモ", docs:"資料"};
+const TITLES = {today:"今日", timetable:"時間割", tasks:"タスク", events:"予定", people:"人", memo:"メモ", docs:"資料", timer:"タイマー"};
 let lastView = null;
 function render(){
   renderNav();
   const v = $("#view");
   const changed = lastView !== view; lastView = view;
-  try { wxfx.sync(); } catch(e){}
+  try { wxfx.sync(); wxmini.sync(); } catch(e){}
   const st = changed ? 0 : v.scrollTop;
   const ok = paired() && syncState !== "auth";
   document.body.classList.toggle("unpaired", !ok);
   if(!ok){ v.innerHTML = setupView(); return; }
-  v.innerHTML = `<div class="navbar" aria-hidden="true"><b>${TITLES[view] || ""}</b></div>` + ({today:vToday, timetable:vTT, tasks:vTasks, events:vEvents, people:vPeople, memo:vMemo, docs:vDocs}[view] || vToday)();
+  v.innerHTML = `<div class="navbar" aria-hidden="true"><b>${TITLES[view] || ""}</b></div>` + ({today:vToday, timetable:vTT, tasks:vTasks, events:vEvents, people:vPeople, memo:vMemo, docs:vDocs, timer:vTimer}[view] || vToday)();
   if(changed){ v.classList.remove("enter"); void v.offsetWidth; v.classList.add("enter"); render.at = performance.now(); }
   else if(performance.now() - (render.at||0) > 700) v.classList.remove("enter");
   v.scrollTop = st;
@@ -1211,13 +1263,13 @@ function wxCard(){
 function wxMini(){ const w = wxNow(); if(!w) return ""; const [, kind] = WMO(w.code); return `<span class="wxmini">${wxIcon(kind, w.day, true)}${w.t}°</span>`; }
 function heroBack(){
   const w = wxNow();
-  if(!w) return `<div class="hero face back cloud"><div class="wxb-top"><div class="wxb-ic">${wxIcon("cloud", true, true)}</div><div><div class="eyebrow">${esc(wxPlace().name)} の天気</div><div class="wxb-l">天気を読み込んでいます…</div></div></div>
+  if(!w) return `<div class="hero face back cloud has-sky"><canvas class="wxsky" aria-hidden="true"></canvas><i class="wxscrim" aria-hidden="true"></i><div class="wxb-top"><div class="wxb-ic">${wxIcon("cloud", true, true)}</div><div><div class="eyebrow">${esc(wxPlace().name)} の天気</div><div class="wxb-l">天気を読み込んでいます…</div></div></div>
     <div class="wxb-foot" style="margin-top:auto"><button class="chip" data-wx-place>場所：${esc(wxPlace().name)}</button><span>タップで戻る</span></div></div>`;
   const [lab, kind] = WMO(w.code), uv = UVL(w.uvMax), tips = wxTip(w), [, tk] = WMO(w.tm.code);
   const tone = !w.day ? "night" : kind === "rain" || kind === "thunder" || kind === "snow" ? "rain" : kind === "cloud" || kind === "fog" ? "cloud" : "sun";
   const short = {sun:"晴れ", part:"晴れ曇", cloud:"くもり", fog:"霧", rain:"雨", snow:"雪", thunder:"雷雨"};
   const uvCol = ["#13A06E", "#B98500", "#E0700F", "#E23A47", "#9A3FC0"][uv[1]];
-  return `<div class="hero face back ${tone}"><i class="blob b1"></i><i class="blob b2"></i>
+  return `<div class="hero face back ${tone} has-sky"><canvas class="wxsky" aria-hidden="true"></canvas><i class="wxscrim" aria-hidden="true"></i><i class="blob b1"></i><i class="blob b2"></i>
     <div class="wxb-top"><div class="wxb-ic">${wxIcon(kind, w.day)}</div>
       <div style="min-width:0;flex:1"><div class="eyebrow">${esc(w.place)} の天気</div><div class="wxb-t">${w.t}<small>℃</small></div>
       <div class="wxb-l">${esc(lab)} ・ 体感 ${w.feels}℃ ・ ${w.hi}° / ${w.lo}°</div></div></div>
@@ -1239,7 +1291,7 @@ document.addEventListener("click", e => {
   if(e.target.closest("button,.seg,.day,.wxb-hours,a,input,select")) return;
   const onBack = card.classList.contains("flipped");
   if(!onBack && !e.target.closest(".hero-top")) return;
-  ui.heroFlip = !onBack; card.classList.toggle("flipped", ui.heroFlip); buzz(8);
+  ui.heroFlip = !onBack; card.classList.toggle("flipped", ui.heroFlip); buzz(8); try { wxmini.sync(); } catch(e){}
   if(ui.heroFlip) fetchWeather();
 });
 function wxTryPane(){
@@ -1304,16 +1356,17 @@ function sceneState(){
   cols = cols.map(c => mix(c, tgt, Math.min(.9, k)));
   return {phase, kind:kl.kind, lvl:kl.lvl, cover, wind:fx.wind || 0, cols, night, m, sr, ss, dark:lum(cols[1]) < .5};
 }
-const wxfx = (() => {
+function makeSky(opt = {}){
   let cv = null, ctx = null, sky = null, st = null, key = "", raf = 0, last = 0, W = 0, H = 0, dpr = 1;
   let streaks = [], drops = [], flakes = [], clouds = [], stars = [], fog = [], flash = 0, vis = [], nextVis = 0, lastTalk = 0;
   const R = (a, b) => a + Math.random() * (b - a);
   function ensure(){
+    if(opt.sel){ const el = document.querySelector(opt.sel); if(el !== cv){ cv = el; ctx = el ? el.getContext("2d") : null; key = ""; vis = []; } return; }
     if(cv) return; cv = document.createElement("canvas"); cv.id = "wxfx"; cv.setAttribute("aria-hidden", "true"); document.body.prepend(cv); ctx = cv.getContext("2d");
     addEventListener("resize", () => { key = ""; });
   }
   function build(){
-    dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    dpr = Math.min(2, devicePixelRatio || 1); W = opt.sel ? Math.max(1, cv.clientWidth) : innerWidth; H = opt.sel ? Math.max(1, cv.clientHeight) : innerHeight; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     sky = document.createElement("canvas"); sky.width = cv.width; sky.height = cv.height; const g = sky.getContext("2d");
     const gr = g.createLinearGradient(0, 0, 0, sky.height); gr.addColorStop(0, st.cols[0]); gr.addColorStop(.55, st.cols[1]); gr.addColorStop(1, st.cols[2]);
     g.fillStyle = gr; g.fillRect(0, 0, sky.width, sky.height);
@@ -1342,7 +1395,7 @@ const wxfx = (() => {
     clouds = Array.from({length:nc}, () => ({x:R(-.2, 1.1) * W, y:R(.02, .45) * H, s:R(.6, 1.4), v:R(4, 12) * (1 + st.wind / 20)}));
     stars = st.night && st.cover < .7 ? Array.from({length:Math.round(90 * area)}, () => ({x:R(0, W), y:R(0, H * .6), r:R(.4, 1.3), p:R(0, 6)})) : [];
     fog = st.kind === "fog" ? Array.from({length:4}, (_, i) => ({y:H * (.25 + i * .18), x:R(0, W), v:R(6, 14)})) : [];
-    document.body.classList.toggle("sky-dark", st.dark);
+    if(!opt.sel) document.body.classList.toggle("sky-dark", st.dark);
     vis = vis.filter(v => v.kind !== "rainbow" && v.kind !== "fireflies");
   }
   function newDrop(any){ return {x:R(0, W), y:any ? R(0, H) : R(-20, H * .3), r:R(2, 6.5), vy:0, slide:false, t:R(0, 8)}; }
@@ -1389,7 +1442,7 @@ const wxfx = (() => {
     else if(kind === "rainbow"){ Object.assign(v, {life:20}); }
     else if(kind === "fireflies"){ v.p = Array.from({length:Math.round(R(7, 12))}, () => ({x:R(0, W), y:R(.45, .95) * H, ph:R(0, TAU), vx:R(-12, 12), vy:R(-8, 8)})); v.life = 22; }
     vis.push(v);
-    if(Math.random() < .45 && performance.now() - lastTalk > 120000 && typeof concierge !== "undefined" && concierge.has && concierge.has()){
+    if(!opt.sel && Math.random() < .45 && performance.now() - lastTalk > 120000 && typeof concierge !== "undefined" && concierge.has && concierge.has()){
       lastTalk = performance.now(); setTimeout(() => { try { concierge.say(pick(LINES[kind]), pick(["surprise", "sparkle", "joy"]), 3800); } catch(e){} }, 900); }
   }
   function bird(x, y, s, w, col){ ctx.strokeStyle = col; ctx.lineWidth = Math.max(1.2, s * .22); ctx.lineCap = "round"; ctx.lineJoin = "round";
@@ -1474,9 +1527,10 @@ const wxfx = (() => {
   }
   function frame(t){
     raf = requestAnimationFrame(frame);
-    if(document.hidden || !document.body.classList.contains("wxfx-on")) return;
+    if(opt.sel){ ensure(); if(document.hidden || !cv || !cv.clientWidth) return; }
+    else if(document.hidden || !document.body.classList.contains("wxfx-on")) return;
     if(t - last < 33) return; const dt = Math.min(.06, (t - last) / 1000); last = t;
-    const s2 = sceneState(), k2 = JSON.stringify([s2.phase, s2.kind, s2.lvl, s2.cover > .4, innerWidth, innerHeight, s2.cols]);
+    const s2 = sceneState(), k2 = JSON.stringify([s2.phase, s2.kind, s2.lvl, s2.cover > .4, opt.sel ? cv.clientWidth : innerWidth, opt.sel ? cv.clientHeight : innerHeight, s2.cols]);
     if(k2 !== key){ st = s2; key = k2; build(); }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.drawImage(sky, 0, 0, W, H);
@@ -1495,7 +1549,7 @@ const wxfx = (() => {
       const sl = Math.min(.35, .08 + st.wind / 120);
       ctx.lineCap = "round"; ctx.strokeStyle = st.night ? "rgba(190,205,235,1)" : "rgba(235,242,255,1)";
       streaks.forEach(r => { r.y += r.v * dt; r.x += r.v * sl * dt; if(r.y > H){ r.y = R(-60, -10); r.x = R(-W * .2, W); }
-        ctx.globalAlpha = r.a; ctx.lineWidth = .9 + st.lvl * .15; ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x - r.l * sl, r.y - r.l); ctx.stroke(); });
+        ctx.globalAlpha = r.a * (opt.sel ? 1 : .7); ctx.lineWidth = .9 + st.lvl * .15; ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x - r.l * sl, r.y - r.l); ctx.stroke(); });
       ctx.globalAlpha = 1;
     }
     // snow
@@ -1514,9 +1568,14 @@ const wxfx = (() => {
     if(drops.length > 160) drops.splice(0, drops.length - 160);
     // lightning
     if(st.kind === "thunder" && flash <= 0 && Math.random() < .004) flash = 1;
-    if(flash > 0){ ctx.fillStyle = `rgba(235,240,255,${flash * .55})`; ctx.fillRect(0, 0, W, H); flash -= dt * 3.2; }
+    if(flash > 0){ ctx.fillStyle = `rgba(235,240,255,${flash * (opt.sel ? .55 : .3)})`; ctx.fillRect(0, 0, W, H); flash -= dt * 3.2; }
   }
   function sync(){
+    if(opt.sel){
+      const on2 = view === "today" && ui.heroFlip && ls.get("fd-wxfx", true) !== false && !REDUCE;
+      if(on2 && !raf){ last = 0; raf = requestAnimationFrame(frame); } else if(!on2 && raf){ cancelAnimationFrame(raf); raf = 0; cv = null; }
+      return;
+    }
     const on = view === "today" && paired() && ls.get("fd-wxfx", true) !== false && !matchMedia("(prefers-reduced-motion: reduce)").matches;
     if(on){ ensure(); if(!raf){ last = 0; raf = requestAnimationFrame(frame); } }
     else if(raf){ cancelAnimationFrame(raf); raf = 0; }
@@ -1524,13 +1583,157 @@ const wxfx = (() => {
     if(!on) document.body.classList.remove("sky-dark");
   }
   // tap the open sky on 今日 to call a visitor
-  document.addEventListener("click", e => {
+  if(!opt.sel) document.addEventListener("click", e => {
     if(!raf || !st || !document.body.classList.contains("wxfx-on")) return;
     if(e.target.closest("button,a,input,textarea,select,label,.card,.hero,.flipcard,nav,.tabbar,#pane,.row,.sheet,.concierge,[data-act]")) return;
     if(vis.length >= 4) return; spawn(null, {x:e.clientX, y:Math.min(e.clientY, H * .5)});
   });
   return {sync, state:() => st, spawn:(k, at) => { if(st) spawn(k, at); }, get visitors(){ return vis.map(v => v.kind); }};
+}
+const wxfx = makeSky(), wxmini = makeSky({sel:".flipcard.flipped .hero.back canvas.wxsky"});
+/* ================= タイマー（ポモドーロ／タイマー／ストップウォッチ） ================= */
+function pillHost(){ let h = document.getElementById("pills"); if(!h){ h = document.createElement("div"); h.id = "pills"; document.body.appendChild(h); } return h; }
+const tfmt = ms => { const t = Math.ceil(Math.max(0, ms) / 1000), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), x = t % 60; return h ? `${h}:${String(m).padStart(2, "0")}:${String(x).padStart(2, "0")}` : `${m}:${String(x).padStart(2, "0")}`; };
+function beep(n = 3){
+  try { const A = window.__fdAC || (window.__fdAC = new (window.AudioContext || window.webkitAudioContext)()); A.resume && A.resume();
+    for(let i = 0; i < n; i++){ const o = A.createOscillator(), g = A.createGain(), t0 = A.currentTime + i * .32;
+      o.type = "sine"; o.frequency.value = i % 2 ? 1046 : 880; g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(.35, t0 + .02); g.gain.exponentialRampToValueAtTime(.001, t0 + .26);
+      o.connect(g); g.connect(A.destination); o.start(t0); o.stop(t0 + .28); } } catch(e){}
+}
+/* countdown timer (same rules as Android Timer in Pomo.kt) */
+const cdown = (() => {
+  const K = "fd-timer";
+  let st = load(), iv = 0, lastDue = 0;
+  function load(){ let x = null; try { x = JSON.parse(localStorage.getItem(K) || "null"); } catch(e){} return Object.assign({end:0, left:0, full:5 * 60000, done:false, label:"", at:0, sound:true}, x || {}); }
+  const remain = () => st.end ? Math.max(0, st.end - Date.now()) : (st.left || (st.done ? 0 : st.full));
+  const state = () => st.end ? "run" : st.done ? "done" : st.left && st.left < st.full ? "pause" : "ready";
+  function save(push = true){ st.at = Date.now(); try { localStorage.setItem(K, JSON.stringify(st)); } catch(e){}
+    if(push && NATIVE && NATIVE.timerSet) try { NATIVE.timerSet(JSON.stringify(st)); } catch(e){} run(); paintTimer(true); }
+  function setTo(ms){ if(st.end) return; st.full = Math.max(1000, Math.min(ms, 24 * 3600000)); st.left = 0; st.done = false; save(); }
+  function start(){ const r = st.left || st.full; st.end = Date.now() + r; st.left = 0; st.done = false; save(); buzz(20); beep(0); }
+  function pause(){ if(!st.end) return; st.left = remain(); st.end = 0; save(); }
+  function reset(){ st.end = 0; st.left = 0; st.done = false; save(); }
+  function add(ms){ if(st.end){ st.end += ms; st.full += ms; } else if(state() === "pause"){ st.left = Math.max(1000, st.left + ms); st.full = Math.max(st.full, st.left); } else { st.full = Math.max(1000, st.full + ms); st.done = false; } save(); }
+  function finish(){ st.end = 0; st.left = 0; st.done = true; save(); ring(); }
+  function adopt(n){ if(!n || !n.at || n.at <= st.at) return; const was = st.end; st = Object.assign(load(), n); try { localStorage.setItem(K, JSON.stringify(st)); } catch(e){} if(was && st.done) ring(); run(); paintTimer(true); }
+  function ring(){
+    buzz([300, 120, 300, 120, 500]); if(st.sound) beep(6);
+    toast(`${st.label || "タイマー"} 終了！`); document.getElementById("bigclock")?.classList.add("done");
+    try { concierge.say(pickOne(["時間だよ〜！", "タイマー終わったよ！", "ピピピ、時間です！"]), "surprise", 3600); } catch(e){}
+    if(!NATIVE && document.hidden) try { if(Notification.permission === "granted") navigator.serviceWorker.ready.then(r => r.showNotification("タイマー終了", {body:st.label || "時間になりました", icon:"icons/icon-192.png", tag:"timer"})); } catch(e){}
+  }
+  function tick(){
+    if(st.end && Date.now() >= st.end){
+      if(NATIVE && NATIVE.timerDue){ if(Date.now() - lastDue > 800){ lastDue = Date.now(); try { adopt(JSON.parse(NATIVE.timerDue() || "null")); } catch(e){} } }
+      else finish();
+    }
+    paintTimer();
+  }
+  function run(){ if(st.end && !iv) iv = setInterval(tick, 200); else if(!st.end && iv){ clearInterval(iv); iv = 0; } }
+  function syncNative(){ if(NATIVE && NATIVE.timerGet) try { adopt(JSON.parse(NATIVE.timerGet() || "null")); } catch(e){} }
+  document.addEventListener("visibilitychange", () => { if(!document.hidden){ syncNative(); paintTimer(true); } });
+  setTimeout(() => { syncNative(); run(); paintTimer(true); }, 0);
+  return {get st(){ return st; }, remain, state, setTo, start, pause, reset, add, save, finishNow:() => { st.end = Date.now() - 1; tick(); }};
 })();
+/* stopwatch */
+const swatch = (() => {
+  const K = "fd-sw"; let st = (() => { try { return Object.assign({start:0, acc:0, laps:[]}, JSON.parse(localStorage.getItem(K) || "null") || {}); } catch(e){ return {start:0, acc:0, laps:[]}; } })(), iv = 0;
+  const el = () => st.acc + (st.start ? Date.now() - st.start : 0);
+  function save(){ try { localStorage.setItem(K, JSON.stringify(st)); } catch(e){} run(); paintTimer(true); }
+  function run(){ if(st.start && !iv) iv = setInterval(() => paintTimer(), 100); else if(!st.start && iv){ clearInterval(iv); iv = 0; } }
+  setTimeout(run, 0);
+  return {get st(){ return st; }, el, start(){ if(!st.start){ st.start = Date.now(); save(); buzz(15); } }, stop(){ if(st.start){ st.acc = el(); st.start = 0; save(); } },
+    lap(){ if(st.start){ st.laps.unshift(el()); st.laps = st.laps.slice(0, 50); save(); } }, reset(){ st = {start:0, acc:0, laps:[]}; save(); }};
+})();
+const swfmt = ms => { const cs = Math.floor(ms / 100) % 10, t = Math.floor(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), x = t % 60; return `${h ? h + ":" + String(m).padStart(2, "0") : m}:${String(x).padStart(2, "0")}<small>.${cs}</small>`; };
+let bigWhich = "";
+function timerTab(k){ if(k) { ui.ttab = k; ls.set("fd-ttab", k); } closePaneIfSheet && closePaneIfSheet(); if(ui.pane) closePane(); if(view === "timer") render(); else go("timer"); }
+function ringSVG(id, g1, g2, gid){
+  const C = (2 * Math.PI * 88).toFixed(1);
+  return `<svg viewBox="0 0 200 200" aria-hidden="true"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${g1}"/><stop offset="1" stop-color="${g2}"/></linearGradient></defs>
+    <circle class="bg" cx="100" cy="100" r="88"/><circle class="arc" id="${id}" cx="100" cy="100" r="88" stroke-dasharray="${C}" stroke-dashoffset="0" style="stroke:url(#${gid})"/></svg>`;
+}
+function cdBody(){
+  const c = cdown, s0 = c.state(), pre = [[1, "1分"], [3, "3分"], [5, "5分"], [10, "10分"], [15, "15分"], [20, "20分"], [30, "30分"], [45, "45分"]];
+  const btns = s0 === "run" ? `<button class="btn primary" data-cd="pause">${ico("pause")} 一時停止</button><button class="btn" data-cd="reset">リセット</button>`
+    : s0 === "pause" ? `<button class="btn primary" data-cd="start">${ico("play")} 再開</button><button class="btn" data-cd="reset">リセット</button>`
+    : `<button class="btn primary" data-cd="start">${ico("play")} スタート</button>${s0 === "done" ? `<button class="btn" data-cd="reset">もとに戻す</button>` : ""}`;
+  return `<div class="pomo cd ${s0 === "done" ? "done" : ""}" id="cd">
+    <div class="pomo-ring cd-ring">${ringSVG("cd-arc", "#7B61FF", "#2B3FE0", "cd-g")}<div class="in"><b id="cd-time"></b><small id="cd-lab"></small></div></div>
+    <div class="cd-adj">${["-60", "-10", "+10", "+60"].map(v => `<button class="chip" data-cd="add:${v}">${v.replace("60", "1分").replace("10", "10秒")}</button>`).join("")}</div>
+    <div class="pomo-btns" id="cd-btns">${btns}</div>
+    ${s0 === "run" ? "" : `<div class="cd-adj">${pre.map(([m, l]) => `<button class="chip" data-cd="set:${m * 60}" aria-pressed="${c.st.full === m * 60000}">${l}</button>`).join("")}</div>
+    <div class="cd-in"><input class="input" id="cd-m" type="number" inputmode="numeric" min="0" max="600" value="${Math.floor(c.st.full / 60000)}" aria-label="分"><span>分</span>
+      <input class="input" id="cd-s" type="number" inputmode="numeric" min="0" max="59" value="${Math.floor(c.st.full / 1000) % 60}" aria-label="秒"><span>秒</span><button class="chip accent" data-cd="custom">セット</button></div>`}
+    <div class="setrow" style="width:100%"><span class="main"><b>音でも知らせる</b><small>終わったらピピピと鳴らします（アプリを開いているとき）</small></span><button class="switch" role="switch" aria-checked="${!!c.st.sound}" data-cd="sound" aria-label="音でも知らせる"></button></div>
+  </div>`;
+}
+function swBody(){
+  const w = swatch, on = !!w.st.start, any = w.el() > 0;
+  return `<div class="pomo sw" id="sw"><div class="sw-time" id="sw-time">${swfmt(w.el())}</div>
+    <div class="pomo-btns">${on ? `<button class="btn primary" data-sw="stop">${ico("pause")} ストップ</button><button class="btn" data-sw="lap">ラップ</button>`
+      : `<button class="btn primary" data-sw="start">${ico("play")} ${any ? "再開" : "スタート"}</button>${any ? `<button class="btn" data-sw="reset">リセット</button>` : ""}`}</div>
+    ${w.st.laps.length ? `<div class="sw-laps">${w.st.laps.map((l, i) => `<div class="row"><span>ラップ ${w.st.laps.length - i}</span><span>${swfmt(l - (w.st.laps[i + 1] || 0))}</span><span class="muted">${swfmt(l)}</span></div>`).join("")}</div>` : ""}
+  </div>`;
+}
+function vTimer(){
+  const k = ui.ttab || (ui.ttab = ls.get("fd-ttab", "pomo"));
+  const seg = `<div class="tmr-seg" role="tablist">${[["pomo", "ポモドーロ"], ["cd", "タイマー"], ["sw", "ストップウォッチ"]].map(([a, l]) => `<button role="tab" data-ttab="${a}" aria-pressed="${k === a}">${l}</button>`).join("")}</div>`;
+  const big = `<button class="btn" data-big="${k}">大きく表示</button>`;
+  const body = k === "pomo" ? pomo.body() : k === "cd" ? cdBody() : swBody();
+  setTimeout(() => { pomo.paint(true); paintTimer(true); }, 0);
+  return `<div class="page-h"><h1>タイマー</h1></div>${seg}<section class="card tmr-card">${body}<div class="pomo-btns">${big}</div></section>
+    <p class="hint" style="margin-top:10px">${k === "pomo" ? "25分集中して5分休む、をくり返す方法です。空きコマ中は残り時間に合わせることもできます。" : k === "cd" ? "「大きく表示」で、画面いっぱいに残り時間を出せます。授業の活動時間を子どもに見せるときに。" : "ラップは最大50件まで残ります。"}</p>`;
+}
+function bigClock(which){
+  bigWhich = which; let el = document.getElementById("bigclock");
+  if(!el){ el = document.createElement("div"); el.id = "bigclock"; el.setAttribute("role", "timer"); el.innerHTML = `<b></b><small></small><i></i><span class="hint2">タップでもとの画面に戻ります</span>`; document.body.appendChild(el);
+    el.addEventListener("click", () => { document.body.classList.remove("bigclock-on"); bigWhich = ""; el.classList.remove("done"); try { document.fullscreenElement && document.exitFullscreen(); } catch(e){} }); }
+  el.classList.remove("done"); document.body.classList.add("bigclock-on"); try { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); } catch(e){}
+  if(!window.__bigIv) window.__bigIv = setInterval(() => { if(bigWhich) paintBig(); }, 200);
+  paintBig();
+}
+function paintBig(){
+  const el = document.getElementById("bigclock"); if(!el || !bigWhich) return;
+  let t = "", l = "", pc = 0, cls = "";
+  if(bigWhich === "cd"){ const r = cdown.remain(); t = tfmt(r); l = cdown.st.label || (cdown.state() === "done" ? "おしまい" : cdown.state() === "run" ? "のこり" : "一時停止"); pc = cdown.st.full ? 1 - r / cdown.st.full : 0; }
+  else if(bigWhich === "pomo"){ const s2 = pomo.state, r = pomo.remain(); t = tfmt(s2.mode === "idle" ? s2.cfg.f * 60000 : r); l = pomo.label(); pc = s2.full ? 1 - r / s2.full : 0; cls = s2.mode === "focus" ? "focus" : s2.mode === "idle" ? "" : "brk"; }
+  else { t = swfmt(swatch.el()).replace(/<small>.*<\/small>/, ""); l = "経過時間"; }
+  el.querySelector("b").textContent = t; el.querySelector("small").textContent = l; el.querySelector("i").style.width = Math.max(0, Math.min(1, pc)) * 100 + "%";
+  el.classList.toggle("brk", cls === "brk"); el.classList.toggle("focus", cls === "focus");
+}
+function paintTimer(full){
+  // pills
+  const host = pillHost();
+  let cp = document.getElementById("cd-pill"); if(!cp){ cp = document.createElement("button"); cp.id = "cd-pill"; cp.type = "button"; cp.dataset.act = "cdpill"; cp.setAttribute("aria-label", "タイマーを開く"); host.appendChild(cp); }
+  const cs = cdown.state(), con = cs === "run" || cs === "pause";
+  cp.classList.toggle("on", con); cp.classList.toggle("idle", cs === "pause");
+  const ch = con ? `${ico(cs === "run" ? "timer" : "pause")}<span>${cs === "run" ? "タイマー" : "停止中"}</span><span>${tfmt(cdown.remain())}</span>` : ""; if(cp.innerHTML !== ch) cp.innerHTML = ch;
+  let sp = document.getElementById("sw-pill"); if(!sp){ sp = document.createElement("button"); sp.id = "sw-pill"; sp.type = "button"; sp.dataset.act = "swpill"; sp.setAttribute("aria-label", "ストップウォッチを開く"); host.appendChild(sp); }
+  const son = !!swatch.st.start; sp.classList.toggle("on", son);
+  const sh = son ? `${ico("timer")}<span>${swfmt(swatch.el()).replace(/<small>.*<\/small>/, "")}</span>` : ""; if(sp.innerHTML !== sh) sp.innerHTML = sh;
+  if(view !== "timer") return;
+  const ct = document.getElementById("cd-time");
+  if(ct){ const r = cdown.remain(), t2 = tfmt(r); if(ct.textContent !== t2) ct.textContent = t2;
+    const lb = document.getElementById("cd-lab"), l2 = {run:"のこり", pause:"一時停止", done:"おしまい", ready:"スタートで開始"}[cs]; if(lb.textContent !== l2) lb.textContent = l2;
+    const arc = document.getElementById("cd-arc"), C = 2 * Math.PI * 88; if(arc) arc.style.strokeDashoffset = cs === "ready" ? 0 : C * (1 - r / Math.max(1, cdown.st.full));
+    const box = document.getElementById("cd"); if(box) box.classList.toggle("run", cs === "run");
+    if(full && ui.ttab === "cd" && !(document.activeElement && document.activeElement.matches && document.activeElement.matches("#cd input"))) { const c0 = document.querySelector(".tmr-card"); if(c0 && box && box.dataset.s !== cs){ box.outerHTML = cdBody(); document.getElementById("cd").dataset.s = cs; paintTimer(); } } }
+  const swt = document.getElementById("sw-time");
+  if(swt){ swt.innerHTML = swfmt(swatch.el()); if(full && ui.ttab === "sw"){ const box = document.getElementById("sw"); const key = `${!!swatch.st.start}|${swatch.st.laps.length}|${swatch.el() > 0}`; if(box && box.dataset.k !== key){ box.outerHTML = swBody(); document.getElementById("sw").dataset.k = key; } } }
+}
+function timerClick(b){
+  const d = b.dataset;
+  if(d.big !== undefined){ bigClock(d.big); return; }
+  if(d.cd !== undefined){ const [k, v] = d.cd.split(":");
+    if(k === "start") cdown.start(); else if(k === "pause") cdown.pause(); else if(k === "reset") cdown.reset();
+    else if(k === "add") cdown.add(+v * 1000); else if(k === "set"){ cdown.setTo(+v * 1000); }
+    else if(k === "custom"){ const m = +($("#cd-m").value || 0), x = +($("#cd-s").value || 0); if(m * 60 + x > 0) cdown.setTo((m * 60 + x) * 1000); else toast("時間を入れてください"); }
+    else if(k === "sound"){ cdown.st.sound = !cdown.st.sound; cdown.save(); }
+    if(k === "set" || k === "custom" || k === "reset" || k === "sound") { const box = document.getElementById("cd"); if(box){ box.outerHTML = cdBody(); } paintTimer(); }
+    return; }
+  if(d.sw !== undefined){ swatch[d.sw](); return; }
+}
 /* ================= ポモドーロ ================= */
 const POMO_DEF = {f:25, s:5, l:15, n:4, auto:true};
 const pomo = (() => {
@@ -1608,7 +1811,7 @@ const pomo = (() => {
   const label = () => st.mode === "idle" ? `集中 ${st.cfg.f}分` : st.mode === "focus" ? (ready() ? "集中の準備OK" : st.end ? "集中" : "一時停止") : (ready() ? "休憩の準備OK" : st.end ? (st.mode === "long" ? "長い休憩" : "休憩") : "一時停止");
   function pill(){
     let el = document.getElementById("pomo-pill");
-    if(!el){ el = document.createElement("button"); el.id = "pomo-pill"; el.type = "button"; el.dataset.act = "pomo"; el.setAttribute("aria-label", "ポモドーロを開く"); document.body.appendChild(el); }
+    if(!el){ el = document.createElement("button"); el.id = "pomo-pill"; el.type = "button"; el.dataset.act = "pomo"; el.setAttribute("aria-label", "ポモドーロを開く"); pillHost().appendChild(el); }
     const on = st.mode !== "idle";
     el.classList.toggle("on", on); el.classList.toggle("brk", isBrk()); el.classList.toggle("idle", on && !st.end);
     const html = on ? `${ico(st.end ? "timer" : "pause")}<span class="pp-l">${st.end ? (isBrk() ? "休憩" : "集中") : ready() ? "次へ" : "停止中"}</span><span class="pp-t">${fmt(remain())}</span>` : "";
@@ -1643,7 +1846,13 @@ const pomo = (() => {
     syncNative(true);
     const tasks = openTasks().slice(0, 6), C = 2 * Math.PI * 88;
     const chips = (k, arr, cur, unit) => arr.map(v => `<button class="chip" data-pomo-cfg="${k}:${v}" aria-pressed="${cur === v}">${v}${unit}</button>`).join("");
-    openPane(`${paneHead("ポモドーロ")}
+    openPane(paneHead("ポモドーロ") + body()); paint(true);
+  }
+  function body(){
+    syncNative(true);
+    const tasks = openTasks().slice(0, 6), C = 2 * Math.PI * 88;
+    const chips = (k, arr, cur, unit) => arr.map(v => `<button class="chip" data-pomo-cfg="${k}:${v}" aria-pressed="${cur === v}">${v}${unit}</button>`).join("");
+    return `
       <div class="pomo ${isBrk() ? "brk" : ""} ${st.end ? "run" : ""}" id="pomo">
         <div class="pomo-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><defs>
           <linearGradient id="pomo-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF7A59"/><stop offset="1" stop-color="#E5484D"/></linearGradient>
@@ -1663,8 +1872,7 @@ const pomo = (() => {
         <div class="sec" style="margin-top:8px">長い休憩までの回数</div><div class="seg">${chips("n", [2, 3, 4], st.cfg.n, "回")}</div>
         <div class="setrow" style="margin-top:8px"><span class="main"><b>休憩を自動で始める</b><small>集中が終わったらそのまま休憩のカウントへ</small></span><button class="switch" role="switch" aria-checked="${!!st.cfg.auto}" data-pomo-cfg="auto:${st.cfg.auto ? 0 : 1}" aria-label="休憩を自動で始める"></button></div>
       </details>
-      <p class="hint" style="margin-top:10px">${NATIVE ? "アプリを閉じても通知とロック画面でカウントが続き、終わるとお知らせします。" : "このページを開いている間カウントします。終わったら通知でお知らせします（通知を許可している場合）。"}</p>`);
-    paint(true);
+      <p class="hint" style="margin-top:10px">${NATIVE ? "アプリを閉じても通知とロック画面でカウントが続き、終わるとお知らせします。" : "このページを開いている間カウントします。終わったら通知でお知らせします（通知を許可している場合）。"}</p>`;
   }
   function click(b){
     const d = b.dataset;
@@ -1687,7 +1895,7 @@ const pomo = (() => {
   }
   document.addEventListener("visibilitychange", () => { if(!document.hidden){ syncNative(true); paint(true); } });
   setTimeout(() => { syncNative(true); run(); paint(true); }, 0);
-  return {pane, click, get state(){ return st; }, start, stop, finishNow:() => { st.end = Date.now() - 1; tick(); }, freeLeft};
+  return {pane, body, paint, remain, fmt, label, click, get state(){ return st; }, start, stop, finishNow:() => { st.end = Date.now() - 1; tick(); }, freeLeft};
 })();
 function heroMood(){
   const st = currentState(), d = new Date(), m = d.getHours() * 60 + d.getMinutes(), sec = m * 60 + d.getSeconds();
@@ -2890,7 +3098,11 @@ document.addEventListener("click", async (ev) => {
   if(d.gToggle){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); await putGoogle({[d.gToggle]:on}); if(on && d.gToggle === "tasks") googleSyncNow(); return; }
   if(b.matches("[data-g-sync]")){ b.disabled = true; await googleSyncNow(); b.disabled = false; return; }
   if(d.act === "settings"){ settingsPane(); return; }
-  if(d.act === "pomo"){ pomo.pane(); return; }
+  if(d.act === "pomo"){ timerTab("pomo"); return; }
+  if(d.act === "cdpill"){ timerTab("cd"); return; }
+  if(d.act === "swpill"){ timerTab("sw"); return; }
+  if(d.ttab){ timerTab(d.ttab); return; }
+  if(d.cd !== undefined || d.sw !== undefined || d.big !== undefined){ timerClick(b); return; }
   if(d.pomo || d.pomoTask !== undefined || d.pomoCfg){ pomo.click(b); return; }
   if(d.act === "install"){ if(installEvt){ installEvt.prompt(); installEvt = null; } closePane(); return; }
   if(d.act === "syncnow"){ toast("同期しています…"); await store.pull("sync"); toast(syncState === "ok" ? "同期しました" : "同期できませんでした"); return; }
@@ -4044,7 +4256,7 @@ if(paired()){
   window.__fdResume = () => { store.reload(); store.pull(); refreshSchool(); refreshDevice(); };
   addEventListener("online", () => store.pull());
 }
-if(["#ask","#prep","#settings","#follow","#share","#pomo"].includes(location.hash)) setTimeout(() => openRoute(location.hash), 500);
+if(["#ask","#prep","#settings","#follow","#share","#pomo","#cd"].includes(location.hash)) setTimeout(() => openRoute(location.hash), 500);
 async function widgetAct(a){
   if(a.a === "task"){ const t = S.tasks.find(x => x.id === a.id); if(t && t.status !== "done"){ if(t.gcalId) await gcalDelete(t.gcalId); await put("tasks", t.id, {...t, status:"done", gcalId:""}); } }
   else if(a.a === "follow"){ const f = S.followups.find(x => x.id === a.id); if(f && f.status !== "done") await put("followups", f.id, {...f, status:"done"}); }
@@ -4072,7 +4284,8 @@ function openRoute(h){
   else if(h === "#prep"){ go("today"); setTimeout(() => prepPane(prepTarget()), 300); }
   else if(h === "#settings"){ go("today"); setTimeout(() => settingsPane(), 300); }
   else if(h === "#follow"){ go("tasks"); }
-  else if(h === "#pomo"){ go("today"); setTimeout(() => pomo.pane(), 300); }
+  else if(h === "#pomo"){ timerTab("pomo"); }
+  else if(h === "#cd"){ timerTab("cd"); }
   else if(h === "#share"){ history.replaceState(null, "", location.pathname + "#" + (view || "today")); handleShare(); }
 }
 addEventListener("hashchange", () => {
@@ -4086,7 +4299,7 @@ function schoolHandoffPane(){
     <div class="btns"><a class="btn primary" href="${esc(link)}">アプリで接続する</a><button class="btn" data-act="close">このままでよい</button></div>`);
 }
 setTimeout(schoolHandoffPane, 900);
-if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, concierge, dayMode, eventForm, closePane, wxfx, pomo};
+if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, concierge, dayMode, eventForm, closePane, wxfx, wxmini, pomo, cdown, swatch};
 })();
 </script>
 </body>
