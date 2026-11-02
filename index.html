@@ -795,6 +795,37 @@ body:not([data-mode="cover-p"]) .wx .wx-hours{grid-column:1/-1}
 #pdfv .bar{display:flex;align-items:center;gap:6px;padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px;background:rgba(20,22,30,.85);backdrop-filter:blur(16px);color:#fff}
 #pdfv .bar b{flex:1;min-width:0;font-size:14.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #pdfv .bar .pg{font-family:var(--f-num);font-size:12.5px;font-weight:700;color:rgba(255,255,255,.75);white-space:nowrap}
+#pdfv .bar button.on{background:#fff;color:#1E2A9E}
+#pdfv .tools{display:flex;align-items:center;gap:6px;padding:6px 10px;background:rgba(20,22,30,.92);overflow-x:auto;scrollbar-width:none}
+#pdfv .tools[hidden]{display:none}
+#pdfv .tools button{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.08);border:2px solid transparent;position:relative}
+#pdfv .tools button svg{width:20px;height:20px}
+#pdfv .tools button[aria-pressed="true"]{background:rgba(255,255,255,.2);border-color:#fff}
+#pdfv .tools button i{position:absolute;right:5px;bottom:5px;width:9px;height:9px;border-radius:50%;box-shadow:0 0 0 1.5px rgba(0,0,0,.4)}
+#pdfv .tools .sp{flex:1}
+#pdfv .tools .done{width:auto;padding:0 14px;font-weight:800;background:#3B5BFF}
+#pdfv .pg2{position:relative;background:#fff;box-shadow:0 6px 24px rgba(0,0,0,.35);border-radius:4px;flex:none}
+#pdfv .pg2 canvas{position:absolute;inset:0;width:100%;height:100%;box-shadow:none;border-radius:4px;background:transparent}
+#pdfv .pg2 canvas.pdf{background:#fff}
+#pdfv .sc.drawing{touch-action:none}
+#pdfv .sc.texting .pg2{cursor:text}
+#pdfv .pages.pinching{transition:none;will-change:transform}
+#pdfv .zhud{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-weight:800;font-family:var(--f-num);opacity:0;transition:opacity .25s;pointer-events:none}
+#pdfv .zhud.on{opacity:1}
+#pdfv .tedit{position:absolute;z-index:3;min-width:140px;min-height:44px;padding:6px 8px;border:2px solid #3B5BFF;border-radius:6px;background:#FFF6B8;color:#1F2430;font:700 15px/1.4 system-ui,sans-serif;resize:both;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+#pdfv .memo{position:absolute;left:0;right:0;bottom:0;z-index:4;background:var(--surface);color:var(--fg);border-radius:20px 20px 0 0;padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 30px rgba(0,0,0,.35);transform:translateY(105%);transition:transform .45s var(--spring-soft)}
+#pdfv .memo.on{transform:none}
+#pdfv .memo .mh{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+#pdfv .memo .mh b{flex:1;font-size:16px}
+#pdfv .memo textarea{width:100%;min-height:150px;max-height:40vh}
+#pdfv .memo small{display:block;margin-top:6px;color:var(--muted)}
+#pdfv .menu{position:absolute;right:10px;top:58px;z-index:5;min-width:240px;background:var(--surface);color:var(--fg);border-radius:16px;padding:6px;box-shadow:0 14px 40px rgba(0,0,0,.4)}
+#pdfv .menu[hidden]{display:none}
+#pdfv .menu button{display:flex;align-items:center;gap:10px;width:100%;padding:12px;border-radius:10px;background:none;font:inherit;font-weight:700;color:inherit;text-align:left}
+#pdfv .menu button:hover{background:color-mix(in srgb,var(--fg) 6%,transparent)}
+#pdfv .menu button svg{width:19px;height:19px}
+#pdfv .menu .danger{color:var(--warn)}
+body.pdfv-on #cc,body.pdfv-on #ccb,body.pdfv-on #pills{display:none!important}
 #pdfv .bar button{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.1)}
 #pdfv .bar button svg{width:19px;height:19px}
 #pdfv .sc{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:12px 0 calc(24px + env(safe-area-inset-bottom,0px))}
@@ -865,6 +896,12 @@ const I = {
   left:'<path d="m14.5 6-6 6 6 6"/>', right:'<path d="m9.5 6 6 6-6 6"/>',
   card:'<rect x="3" y="6" width="18" height="12" rx="2.5"/><circle cx="8.5" cy="11.2" r="1.8"/><path d="M6 15.2c.5-1.2 1.4-1.8 2.5-1.8s2 .6 2.5 1.8M13.5 10h5M13.5 13h3.5"/>',
   spark:'<path d="M12 3.5l1.7 4.8 4.8 1.7-4.8 1.7L12 16.5l-1.7-4.8L5.5 10l4.8-1.7z"/><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/>',
+  pen:'<path d="M4 20l1.2-4.6L15.6 5a2 2 0 0 1 2.8 0l.6.6a2 2 0 0 1 0 2.8L8.6 18.8z"/><path d="M13.5 7l3.5 3.5"/>',
+  hl:'<path d="M9 15.5l-3 3H3.5l2.2-2.2"/><path d="M8.5 15l-2-2 8.8-8.8a2 2 0 0 1 2.8 0l.7.7a2 2 0 0 1 0 2.8z"/><path d="M13.5 20.5h7"/>',
+  eraser:'<path d="M8.5 19.5l-4-4a2 2 0 0 1 0-2.8l8-8a2 2 0 0 1 2.8 0l4 4a2 2 0 0 1 0 2.8l-8 8z"/><path d="M8 19.5h12"/><path d="M8.7 8.8l6.5 6.5"/>',
+  undo:'<path d="M9 7.5L4.5 12 9 16.5"/><path d="M5 12h9.5a5 5 0 0 1 0 10H12"/>',
+  textT:'<path d="M5 6.5V5h14v1.5"/><path d="M12 5v14"/><path d="M9.5 19h5"/>',
+  share2:'<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13"/>',
   timer:'<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.6 1.8"/><path d="M9.5 2.5h5"/><path d="M12 2.5V6"/><path d="M18.5 6.5l1.3-1.3"/>',
   play:'<path d="M8 5.5v13l10.5-6.5z"/>',
   pause:'<path d="M8.5 5.5v13"/><path d="M15.5 5.5v13"/>',
@@ -2341,22 +2378,67 @@ function docEditPane(id, fresh){
       <div class="btns"><button class="btn primary" type="submit">保存</button><button class="btn" type="button" data-doc-open="${esc(d.id)}">開く</button>${NATIVE ? `<button class="btn" type="button" data-doc-save="${esc(d.id)}">${ico("dl")} ダウンロードへ</button>` : ""}<button class="btn danger" type="button" data-doc-del="${esc(d.id)}">削除</button></div>
     </form>`);
 }
-/* full-screen viewer */
+/* full-screen viewer: pinch to zoom, write on pages (pen, marker, text, eraser), memo, export with the writing */
 let pdfv = null;
+const INK = {pen:{w:.0032, a:1}, hl:{w:.02, a:.38}};
+const INKCOL = [["#1F2430", "黒"], ["#E5484D", "赤"], ["#2B6BFF", "青"]], HLCOL = [["#FFE24A", "黄"], ["#7CF29A", "緑"]];
+let pdflibP = null;
+function loadPdfLib(){ return pdflibP || (pdflibP = new Promise((ok, ng) => { const sc = document.createElement("script"); sc.src = "vendor/pdf-lib/pdf-lib.min.js"; sc.onload = () => ok(window.PDFLib); sc.onerror = () => { pdflibP = null; ng(new Error("pdflib")); }; document.head.appendChild(sc); })); }
 async function openDoc(id){
   const d = (docsList || []).find(x => x.id === id); if(!d) return;
   closePaneIfSheet();
   const el = document.createElement("div"); el.id = "pdfv"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", d.title);
   el.innerHTML = `<div class="bar"><button data-pv="close" aria-label="閉じる">${ico("left")}</button><b>${esc(d.title)}</b><span class="pg num">… </span>
-    <button data-pv="out" aria-label="縮小">${ico("zout")}</button><button data-pv="in" aria-label="拡大">${ico("zin")}</button></div>
-    <div class="sc"><div class="pages"><p class="msg">開いています…</p></div></div>`;
-  document.body.appendChild(el); requestAnimationFrame(() => el.classList.add("on"));
-  const st = pdfv = {el, zoom:1, pdf:null, io:null, id};
-  el.addEventListener("click", e => { const b = e.target.closest("[data-pv]"); if(!b) return; const k = b.dataset.pv;
-    if(k === "close") closeDoc(); else { st.zoom = Math.max(.6, Math.min(3, st.zoom * (k === "in" ? 1.3 : 1 / 1.3))); layoutPages(); } });
+      <button data-pv="memo" aria-label="メモ">${ico("memo")}</button><button data-pv="ink" aria-label="書き込み">${ico("pen")}</button><button data-pv="more" aria-label="保存と共有">${ico("share2")}</button></div>
+    <div class="tools" hidden role="toolbar" aria-label="書き込みの道具">
+      ${INKCOL.map(([c, l], i) => `<button data-tool="pen" data-col="${c}" aria-label="ペン ${l}" aria-pressed="${i === 0}">${ico("pen")}<i style="background:${c}"></i></button>`).join("")}
+      ${HLCOL.map(([c, l]) => `<button data-tool="hl" data-col="${c}" aria-label="マーカー ${l}" aria-pressed="false">${ico("hl")}<i style="background:${c}"></i></button>`).join("")}
+      <button data-tool="text" aria-label="文字（ふせん）" aria-pressed="false">${ico("textT")}</button>
+      <button data-tool="erase" aria-label="消しゴム" aria-pressed="false">${ico("eraser")}</button>
+      <span class="sp"></span><button data-pv="undo" aria-label="元に戻す">${ico("undo")}</button></div>
+    <div class="sc"><div class="pages"><p class="msg">開いています…</p></div></div>
+    <div class="zhud num"></div>
+    <div class="menu" hidden>
+      <button data-pv="save">${ico("dl")} 書き込み入りのPDFを保存</button>
+      <button data-pv="copy">${ico("docs")} 書き込み入りを資料に追加</button>
+      <button data-pv="clear" class="danger">${ico("eraser")} 書き込みをすべて消す</button></div>
+    <div class="memo" aria-label="メモ"><div class="mh"><b>メモ</b><button class="icon-btn" data-pv="memo" aria-label="閉じる">${ico("close")}</button></div>
+      <textarea class="input" placeholder="例：当日の流れ、気づいたこと、確認したいこと">${esc(d.note || "")}</textarea><small>自動で保存されます（このスマホの中だけ）</small></div>`;
+  document.body.appendChild(el); document.body.classList.add("pdfv-on"); try { NATIVE && NATIVE.overlayHide && NATIVE.overlayHide(true); } catch(e){} requestAnimationFrame(() => el.classList.add("on"));
+  const st = pdfv = {el, zoom:1, pdf:null, io:null, id, d, ink:JSON.parse(JSON.stringify(d.ink || {})), tool:null, col:{pen:INKCOL[0][0], hl:HLCOL[0][0]}, hist:[], saveT:0};
+  const sc = el.querySelector(".sc");
+  el.addEventListener("click", e => {
+    const b = e.target.closest("[data-pv],[data-tool]"); if(!b) { if(!e.target.closest(".menu")) el.querySelector(".menu").hidden = true; return; }
+    if(b.dataset.tool){ setTool(b.dataset.tool, b.dataset.col); el.querySelectorAll("[data-tool]").forEach(x => x.setAttribute("aria-pressed", x === b)); return; }
+    const k = b.dataset.pv; if(k !== "more") el.querySelector(".menu").hidden = true;
+    if(k === "close") closeDoc();
+    else if(k === "ink"){ const on = el.querySelector(".tools").hidden; el.querySelector(".tools").hidden = !on; el.querySelector('.bar [data-pv="ink"]').classList.toggle("on", on);
+      if(on){ const pr = el.querySelector('.tools [aria-pressed="true"]'); setTool(pr ? pr.dataset.tool : "pen", pr ? pr.dataset.col : st.col.pen); toast("1本指で書けます。2本指で拡大・移動。終わったらペンのボタン"); } else { commitText(); setTool(null); } }
+    else if(k === "undo") undoInk();
+    else if(k === "memo"){ const m = el.querySelector(".memo"); m.classList.toggle("on"); el.querySelector('.bar [data-pv="memo"]').classList.toggle("on", m.classList.contains("on")); if(m.classList.contains("on")) setTimeout(() => m.querySelector("textarea").focus(), 300); }
+    else if(k === "more"){ const m = el.querySelector(".menu"); m.hidden = !m.hidden; }
+    else if(k === "save") exportInk("save");
+    else if(k === "copy") exportInk("copy");
+    else if(k === "clear"){ if(!Object.keys(st.ink).length){ toast("書き込みはありません"); return; } if(b.dataset.sure){ st.hist.push(JSON.stringify(st.ink)); st.ink = {}; saveInk(); el.querySelectorAll(".pg2").forEach(drawInk); toast("書き込みを消しました（元に戻すで戻せます）"); delete b.dataset.sure; b.lastChild.textContent = " 書き込みをすべて消す"; }
+      else { b.dataset.sure = "1"; b.lastChild.textContent = " もう一度押すとすべて消す"; } }
+  });
+  el.querySelector(".memo textarea").addEventListener("input", e => { clearTimeout(st.memoT); st.memoT = setTimeout(() => { st.d.note = e.target.value.slice(0, 4000); DOCS.put(st.d).catch(() => {}); }, 500); });
+  // double tap zooms (when not writing)
   let lastTap = 0;
-  el.querySelector(".sc").addEventListener("pointerup", e => { const n = Date.now(); if(n - lastTap < 300){ st.zoom = st.zoom > 1.05 ? 1 : 2; layoutPages(); } lastTap = n; });
-  el.querySelector(".sc").addEventListener("scroll", () => updatePg(), {passive:true});
+  sc.addEventListener("pointerup", e => { if(st.tool || st.pinch) return; const n = Date.now(); if(n - lastTap < 300){ zoomTo(st.zoom > 1.05 ? 1 : 2, e.clientX, e.clientY); } lastTap = n; });
+  sc.addEventListener("scroll", () => updatePg(), {passive:true});
+  // two fingers: pinch to zoom and pan (all modes)
+  sc.addEventListener("touchstart", e => { if(e.touches.length === 2){ e.preventDefault(); cancelStroke(); startPinch(e.touches); } }, {passive:false});
+  sc.addEventListener("touchmove", e => { if(e.touches.length === 2 && st.pinch){ e.preventDefault(); movePinch(e.touches); } }, {passive:false});
+  sc.addEventListener("touchend", e => { if(st.pinch && e.touches.length < 2) endPinch(); });
+  sc.addEventListener("touchcancel", () => { if(st.pinch) endPinch(); });
+  // ctrl + wheel / trackpad pinch on desktop
+  sc.addEventListener("wheel", e => { if(!e.ctrlKey) return; e.preventDefault(); zoomTo(st.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1), e.clientX, e.clientY); }, {passive:false});
+  // one finger / pen: write
+  sc.addEventListener("pointerdown", e => inkDown(e));
+  sc.addEventListener("pointermove", e => inkMove(e));
+  sc.addEventListener("pointerup", e => inkUp(e));
+  sc.addEventListener("pointercancel", () => cancelStroke());
   try {
     const [lib, blob] = await Promise.all([loadPdfjs(), DOCS.file(id)]);
     if(!blob) throw new Error("nofile");
@@ -2367,29 +2449,191 @@ async function openDoc(id){
     layoutPages();
   } catch(e){ el.querySelector(".pages").innerHTML = `<p class="msg">この PDF を開けませんでした。</p>`; }
 }
+function setTool(t, col){
+  const st = pdfv; if(!st) return; commitText(); st.tool = t; if(col && (t === "pen" || t === "hl")) st.col[t] = col;
+  const sc = st.el.querySelector(".sc"); sc.classList.toggle("drawing", !!t && t !== "text"); sc.classList.toggle("texting", t === "text");
+}
 function layoutPages(){
   const st = pdfv; if(!st || !st.pdf) return;
   const box = st.el.querySelector(".pages"), sc = st.el.querySelector(".sc"), avail = sc.clientWidth - 24;
-  const keep = sc.scrollTop / Math.max(1, sc.scrollHeight);
   if(st.io) st.io.disconnect();
-  box.innerHTML = st.sizes.map(([w, h], i) => { const cw = Math.round(avail * st.zoom), ch = Math.round(cw * h / w); return `<canvas data-p="${i + 1}" style="width:${cw}px;height:${ch}px"></canvas>`; }).join("");
+  box.style.transform = "";
+  box.innerHTML = st.sizes.map(([w, h], i) => { const cw = Math.round(avail * st.zoom), ch = Math.round(cw * h / w); return `<div class="pg2" data-p="${i + 1}" style="width:${cw}px;height:${ch}px"><canvas class="pdf"></canvas><canvas class="ink"></canvas></div>`; }).join("");
   st.io = new IntersectionObserver(es => es.forEach(en => { if(en.isIntersecting) renderPage(en.target); }), {root:sc, rootMargin:"800px 0px"});
-  box.querySelectorAll("canvas").forEach(c => st.io.observe(c));
-  sc.scrollTop = keep * sc.scrollHeight; updatePg();
+  box.querySelectorAll(".pg2").forEach(c => st.io.observe(c));
+  updatePg();
 }
-async function renderPage(c){
-  const st = pdfv; if(!st || c.dataset.done) return; c.dataset.done = "1";
-  try { const pg = await st.pdf.getPage(+c.dataset.p), dpr = Math.min(3, devicePixelRatio || 1), w = parseFloat(c.style.width);
-    const vp = pg.getViewport({scale:w * dpr / pg.getViewport({scale:1}).width});
-    c.width = Math.round(vp.width); c.height = Math.round(vp.height);
-    await pg.render({canvasContext:c.getContext("2d"), viewport:vp}).promise; } catch(e){ delete c.dataset.done; }
+async function renderPage(div){
+  const st = pdfv; if(!st || div.dataset.done) return; div.dataset.done = "1";
+  const c = div.querySelector("canvas.pdf");
+  try { const pg = await st.pdf.getPage(+div.dataset.p), dpr = Math.min(3, devicePixelRatio || 1), w = parseFloat(div.style.width);
+    const vp = pg.getViewport({scale:Math.min(w * dpr, 4096) / pg.getViewport({scale:1}).width});
+    const tmp = document.createElement("canvas"); tmp.width = Math.round(vp.width); tmp.height = Math.round(vp.height);
+    await pg.render({canvasContext:tmp.getContext("2d"), viewport:vp}).promise;
+    if(!div.isConnected) return; c.width = tmp.width; c.height = tmp.height; c.getContext("2d").drawImage(tmp, 0, 0);
+    drawInk(div);
+  } catch(e){ delete div.dataset.done; }
+}
+/* ink is stored per page in page-width units, so it follows any zoom */
+function drawInk(div, ctx0, W0, H0){
+  const st = pdfv, p = div ? div.dataset.p : null, pg = st && st.ink[p];
+  let c = null, ctx = ctx0, W = W0, H = H0;
+  if(!ctx){ c = div.querySelector("canvas.ink"); const dpr = Math.min(3, devicePixelRatio || 1); W = Math.round(parseFloat(div.style.width) * dpr); H = Math.round(parseFloat(div.style.height) * dpr);
+    if(c.width !== W || c.height !== H){ c.width = W; c.height = H; } ctx = c.getContext("2d"); ctx.clearRect(0, 0, W, H); }
+  if(!pg) return;
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  (pg.s || []).forEach(k => strokePath(ctx, k, W));
+  (pg.t || []).forEach(t => drawNote(ctx, t, W));
+}
+function strokePath(ctx, k, W){
+  const P = k.p; if(!P || !P.length) return;
+  ctx.save(); ctx.globalAlpha = INK[k.k].a; if(k.k === "hl") ctx.globalCompositeOperation = "multiply";
+  ctx.strokeStyle = k.c; ctx.lineWidth = Math.max(1, k.w * W); ctx.beginPath(); ctx.moveTo(P[0][0] * W, P[0][1] * W);
+  if(P.length === 1) ctx.lineTo(P[0][0] * W + .1, P[0][1] * W);
+  for(let i = 1; i < P.length - 1; i++){ const mx = (P[i][0] + P[i + 1][0]) / 2 * W, my = (P[i][1] + P[i + 1][1]) / 2 * W; ctx.quadraticCurveTo(P[i][0] * W, P[i][1] * W, mx, my); }
+  if(P.length > 1) ctx.lineTo(P[P.length - 1][0] * W, P[P.length - 1][1] * W);
+  ctx.stroke(); ctx.restore();
+}
+function noteBox(ctx, t, W){ const fs = t.s * W, lines = String(t.x || "").split("\n"); ctx.font = `700 ${fs}px system-ui, sans-serif`; const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + fs * .8, h = lines.length * fs * 1.35 + fs * .5; return {x:t.u * W, y:t.v * W, w, h, fs, lines}; }
+function drawNote(ctx, t, W){
+  const b = noteBox(ctx, t, W); ctx.save();
+  ctx.fillStyle = "rgba(255,240,150,.92)"; ctx.shadowColor = "rgba(0,0,0,.18)"; ctx.shadowBlur = b.fs * .4; ctx.shadowOffsetY = b.fs * .1;
+  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(b.x, b.y, b.w, b.h, b.fs * .25) : ctx.rect(b.x, b.y, b.w, b.h); ctx.fill(); ctx.shadowColor = "transparent";
+  ctx.fillStyle = t.c || "#1F2430"; ctx.textBaseline = "top"; b.lines.forEach((l, i) => ctx.fillText(l, b.x + b.fs * .4, b.y + b.fs * .3 + i * b.fs * 1.35)); ctx.restore();
+}
+function pagePt(div, e){ const r = div.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.width]; }
+function inkDown(e){
+  const st = pdfv; if(!st || !st.tool || st.pinch) return; if(e.pointerType === "touch" && !e.isPrimary) return;
+  const div = e.target.closest(".pg2"); if(!div) return;
+  if(st.tool === "text"){ st.tapDown = {x:e.clientX, y:e.clientY, div}; return; }
+  e.preventDefault(); try { e.target.setPointerCapture(e.pointerId); } catch(x){}
+  const p = div.dataset.p, pt = pagePt(div, e);
+  if(st.tool === "erase"){ st.cur = {div, p, erase:true, snap:JSON.stringify(st.ink), hit:false}; eraseAt(div, pt); return; }
+  st.cur = {div, p, snap:JSON.stringify(st.ink), k:{k:st.tool, c:st.col[st.tool], w:INK[st.tool].w, p:[pt]}};
+  (st.ink[p] = st.ink[p] || {s:[], t:[]}).s.push(st.cur.k); drawInk(div);
+}
+function inkMove(e){
+  const st = pdfv; if(!st || !st.cur || st.pinch) return; e.preventDefault();
+  const pt = pagePt(st.cur.div, e);
+  if(st.cur.erase){ eraseAt(st.cur.div, pt); return; }
+  const P = st.cur.k.p, l = P[P.length - 1]; if(Math.hypot(pt[0] - l[0], pt[1] - l[1]) < .0015) return;
+  if(st.cur.k.k === "hl" && P.length > 1) pt[1] = P[0][1] + (pt[1] - P[0][1]) * .25; // markers lean towards straight lines
+  P.push(pt); const c = st.cur.div.querySelector("canvas.ink"), ctx = c.getContext("2d"), W = c.width;
+  if(st.cur.k.k === "hl"){ drawInk(st.cur.div); return; }
+  ctx.save(); ctx.lineCap = "round"; ctx.strokeStyle = st.cur.k.c; ctx.lineWidth = Math.max(1, st.cur.k.w * W); ctx.beginPath(); ctx.moveTo(l[0] * W, l[1] * W); ctx.lineTo(pt[0] * W, pt[1] * W); ctx.stroke(); ctx.restore();
+}
+function inkUp(e){
+  const st = pdfv; if(!st) return;
+  if(st.tool === "text" && st.tapDown){ const t = st.tapDown; st.tapDown = null; if(Math.hypot(e.clientX - t.x, e.clientY - t.y) < 10 && !st.pinch) openText(t.div, e); return; }
+  if(!st.cur) return; const cur = st.cur; st.cur = null;
+  if(cur.erase){ if(cur.hit){ st.hist.push(cur.snap); saveInk(); } return; }
+  st.hist.push(cur.snap); if(st.hist.length > 80) st.hist.shift(); drawInk(cur.div); saveInk();
+}
+function cancelStroke(){ const st = pdfv; if(!st || !st.cur) return; const cur = st.cur; st.cur = null; st.ink = JSON.parse(cur.snap); drawInk(cur.div); }
+function eraseAt(div, pt){
+  const st = pdfv, pg = st.ink[div.dataset.p]; if(!pg) return; const r = .02;
+  const n0 = pg.s.length + pg.t.length;
+  pg.s = pg.s.filter(k => !k.p.some(q => Math.hypot(q[0] - pt[0], q[1] - pt[1]) < r + k.w / 2));
+  const c = div.querySelector("canvas.ink").getContext("2d"), W = 1000;
+  pg.t = pg.t.filter(t => { const b = noteBox(c, t, W); return !(pt[0] * W >= b.x && pt[0] * W <= b.x + b.w && pt[1] * W >= b.y && pt[1] * W <= b.y + b.h); });
+  if(pg.s.length + pg.t.length !== n0){ st.cur.hit = true; drawInk(div); buzz(6); }
+}
+function openText(div, e){
+  const st = pdfv; commitText();
+  const p = div.dataset.p, pt = pagePt(div, e), pg = st.ink[p] = st.ink[p] || {s:[], t:[]}, W = parseFloat(div.style.width);
+  const c = div.querySelector("canvas.ink").getContext("2d");
+  let idx = pg.t.findIndex(t => { const b = noteBox(c, t, 1000); return pt[0] * 1000 >= b.x && pt[0] * 1000 <= b.x + b.w && pt[1] * 1000 >= b.y && pt[1] * 1000 <= b.y + b.h; });
+  const t = idx >= 0 ? pg.t[idx] : {u:pt[0], v:pt[1], s:.03, x:"", c:"#1F2430"};
+  const ta = document.createElement("textarea"); ta.className = "tedit"; ta.value = t.x; ta.placeholder = "メモを入力";
+  ta.style.left = t.u * W + "px"; ta.style.top = t.v * W + "px"; ta.style.fontSize = Math.max(13, t.s * W) + "px";
+  div.appendChild(ta); setTimeout(() => ta.focus(), 30);
+  st.text = {div, p, idx, t, ta, snap:JSON.stringify(st.ink)};
+  if(idx >= 0){ pg.t.splice(idx, 1); drawInk(div); }
+  ta.addEventListener("blur", () => setTimeout(commitText, 50));
+  ta.addEventListener("keydown", ev => { if(ev.key === "Escape") ta.blur(); });
+}
+function commitText(){
+  const st = pdfv; if(!st || !st.text) return; const x = st.text; st.text = null;
+  const v = x.ta.value.replace(/\s+$/, ""); x.ta.remove();
+  const pg = st.ink[x.p] = st.ink[x.p] || {s:[], t:[]};
+  if(v){ x.t.x = v.slice(0, 400); pg.t.push(x.t); }
+  if(v !== (x.idx >= 0 ? null : "")){ st.hist.push(x.snap); }
+  drawInk(x.div); saveInk();
+}
+function undoInk(){ const st = pdfv; if(!st) return; commitText(); const h = st.hist.pop(); if(h == null){ toast("戻せる書き込みはありません"); return; } st.ink = JSON.parse(h); saveInk(); st.el.querySelectorAll(".pg2").forEach(d => { if(d.dataset.done) drawInk(d); }); buzz(8); }
+function saveInk(){
+  const st = pdfv; if(!st) return; clearTimeout(st.saveT);
+  Object.keys(st.ink).forEach(k => { const g = st.ink[k]; if(!g.s.length && !g.t.length) delete st.ink[k]; });
+  st.saveT = setTimeout(() => { st.d.ink = JSON.parse(JSON.stringify(st.ink)); st.d.inked = Object.keys(st.ink).length > 0; DOCS.put(st.d).catch(() => toast("書き込みを保存できませんでした")); }, 400);
+}
+/* pinch */
+function startPinch(T){
+  const st = pdfv, sc = st.el.querySelector(".sc"), r = sc.getBoundingClientRect();
+  const mx = (T[0].clientX + T[1].clientX) / 2 - r.left, my = (T[0].clientY + T[1].clientY) / 2 - r.top;
+  st.pinch = {d0:Math.hypot(T[0].clientX - T[1].clientX, T[0].clientY - T[1].clientY), mx, my, sx:sc.scrollLeft, sy:sc.scrollTop, k:1, dx:0, dy:0};
+  const box = st.el.querySelector(".pages"); box.classList.add("pinching"); box.style.transformOrigin = `${mx + sc.scrollLeft}px ${my + sc.scrollTop}px`;
+}
+function movePinch(T){
+  const st = pdfv, pz = st.pinch, sc = st.el.querySelector(".sc"), r = sc.getBoundingClientRect();
+  const d = Math.hypot(T[0].clientX - T[1].clientX, T[0].clientY - T[1].clientY), mx = (T[0].clientX + T[1].clientX) / 2 - r.left, my = (T[0].clientY + T[1].clientY) / 2 - r.top;
+  pz.k = Math.max(.5 / st.zoom, Math.min(5 / st.zoom, d / pz.d0)); pz.dx = mx - pz.mx; pz.dy = my - pz.my;
+  st.el.querySelector(".pages").style.transform = `translate(${pz.dx}px,${pz.dy}px) scale(${pz.k})`;
+  const h = st.el.querySelector(".zhud"); h.textContent = Math.round(st.zoom * pz.k * 100) + "%"; h.classList.add("on");
+}
+function endPinch(){
+  const st = pdfv, pz = st.pinch; st.pinch = null; if(!pz) return;
+  const box = st.el.querySelector(".pages"); box.classList.remove("pinching");
+  setTimeout(() => st.el.querySelector(".zhud").classList.remove("on"), 500);
+  if(Math.abs(pz.k - 1) < .03){ box.style.transform = ""; const sc = st.el.querySelector(".sc"); sc.scrollLeft = pz.sx - pz.dx; sc.scrollTop = pz.sy - pz.dy; return; }
+  zoomTo(st.zoom * pz.k, null, null, pz);
+}
+function zoomTo(z, cx, cy, pz){
+  const st = pdfv; if(!st || !st.pdf) return; const sc = st.el.querySelector(".sc"), r = sc.getBoundingClientRect();
+  z = Math.max(.5, Math.min(5, z)); const k = z / st.zoom;
+  const mx = pz ? pz.mx : cx - r.left, my = pz ? pz.my : cy - r.top, sx = pz ? pz.sx : sc.scrollLeft, sy = pz ? pz.sy : sc.scrollTop;
+  // the content point under the fingers stays under the fingers
+  const px = sx + mx, py = sy + my; st.zoom = z; layoutPages();
+  sc.scrollLeft = px * k - mx - (pz ? pz.dx : 0); sc.scrollTop = py * k - my - (pz ? pz.dy : 0); updatePg();
+  if(!pz){ const h = st.el.querySelector(".zhud"); h.textContent = Math.round(z * 100) + "%"; h.classList.add("on"); setTimeout(() => h.classList.remove("on"), 700); }
 }
 function updatePg(){
   const st = pdfv; if(!st || !st.pdf) return; const sc = st.el.querySelector(".sc"), mid = sc.scrollTop + sc.clientHeight / 2;
-  let cur = 1; st.el.querySelectorAll(".pages canvas").forEach(c => { if(c.offsetTop <= mid) cur = +c.dataset.p; });
+  let cur = 1; st.el.querySelectorAll(".pages .pg2").forEach(c => { if(c.offsetTop <= mid) cur = +c.dataset.p; });
   st.el.querySelector(".pg").textContent = `${cur} / ${st.pdf.numPages}`;
 }
-function closeDoc(){ const st = pdfv; if(!st) return; pdfv = null; if(st.io) st.io.disconnect(); try { st.pdf && st.pdf.destroy(); } catch(e){} st.el.classList.remove("on"); setTimeout(() => st.el.remove(), 300); }
+/* export: the original PDF with the writing drawn on top (pdf-lib), kept on this phone */
+async function exportInk(how){
+  const st = pdfv; if(!st) return; commitText(); st.el.querySelector(".menu").hidden = true;
+  if(!Object.keys(st.ink).length){ toast("書き込みがまだありません"); return; }
+  toast("書き込み入りのPDFを作っています…");
+  try {
+    const [L, blob] = await Promise.all([loadPdfLib(), DOCS.file(st.id)]);
+    const doc = await L.PDFDocument.load(new Uint8Array(await blob.arrayBuffer()), {ignoreEncryption:true}), pages = doc.getPages();
+    for(const p of Object.keys(st.ink)){
+      const page = pages[+p - 1]; if(!page) continue;
+      const [vw, vh] = st.sizes[+p - 1], W = Math.min(2400, Math.round(vw * 2.2)), H = Math.round(W * vh / vw);
+      const c = document.createElement("canvas"); c.width = W; c.height = H; const ctx = c.getContext("2d"); ctx.lineCap = "round"; ctx.lineJoin = "round";
+      const g = st.ink[p]; (g.s || []).forEach(k => strokePath(ctx, k, W)); (g.t || []).forEach(t => drawNote(ctx, t, W));
+      const png = await doc.embedPng(await new Promise(ok => c.toBlob(b => b.arrayBuffer().then(ok), "image/png")));
+      const rot = ((page.getRotation().angle % 360) + 360) % 360, {width:pw, height:ph} = page.getSize();
+      if(rot === 0) page.drawImage(png, {x:0, y:0, width:pw, height:ph});
+      else if(rot === 90) page.drawImage(png, {x:pw, y:0, width:ph, height:pw, rotate:L.degrees(90)});
+      else if(rot === 180) page.drawImage(png, {x:pw, y:ph, width:pw, height:ph, rotate:L.degrees(180)});
+      else page.drawImage(png, {x:0, y:ph, width:ph, height:pw, rotate:L.degrees(270)});
+    }
+    const out = await doc.save(), name = st.d.title.replace(/[\\/:*?"<>|]/g, "_") + "（書き込み）";
+    if(how === "copy"){
+      const m = {...st.d, id:"d" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), title:st.d.title + "（書き込み）", ink:{}, inked:false, size:out.length, added:new Date().toISOString()};
+      await DOCS.put(m, new Blob([out], {type:"application/pdf"})); loadDocs(); toast("資料に追加しました"); return;
+    }
+    if(NATIVE && NATIVE.saveFile){ let bin = ""; for(let i = 0; i < out.length; i += 0x8000) bin += String.fromCharCode.apply(null, out.subarray(i, i + 0x8000));
+      toast(NATIVE.saveFile(name + ".pdf", "application/pdf", btoa(bin)) ? "「ダウンロード」に保存しました" : "保存できませんでした"); }
+    else { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([out], {type:"application/pdf"})); a.download = name + ".pdf"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); toast("保存しました"); }
+  } catch(e){ toast("PDFを作れませんでした"); }
+}
+function closeDoc(){ const st = pdfv; if(!st) return; commitText(); if(st.saveT){ clearTimeout(st.saveT); st.d.ink = JSON.parse(JSON.stringify(st.ink)); st.d.inked = Object.keys(st.ink).length > 0; DOCS.put(st.d).catch(() => {}); }
+  if(st.memoT){ clearTimeout(st.memoT); st.d.note = st.el.querySelector(".memo textarea").value.slice(0, 4000); DOCS.put(st.d).catch(() => {}); }
+  pdfv = null; if(st.io) st.io.disconnect(); try { st.pdf && st.pdf.destroy(); } catch(e){} document.body.classList.remove("pdfv-on"); try { NATIVE && NATIVE.overlayHide && NATIVE.overlayHide(false); } catch(e){} st.el.classList.remove("on"); setTimeout(() => st.el.remove(), 300); loadDocs(); }
 
 /* ================= things shared from other apps (Android "共有") ================= */
 let shared = null;
@@ -4299,7 +4543,7 @@ function schoolHandoffPane(){
     <div class="btns"><a class="btn primary" href="${esc(link)}">アプリで接続する</a><button class="btn" data-act="close">このままでよい</button></div>`);
 }
 setTimeout(schoolHandoffPane, 900);
-if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, concierge, dayMode, eventForm, closePane, wxfx, wxmini, pomo, cdown, swatch};
+if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, concierge, dayMode, eventForm, closePane, wxfx, wxmini, pomo, cdown, swatch, get pdfv(){ return pdfv; }, openDoc};
 })();
 </script>
 </body>

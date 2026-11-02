@@ -35,6 +35,8 @@ class OverlayService : Service() {
         const val ACTION_SAY = "io.github.carnoeng.folddesk.SAY"
         const val ACTION_STOP = "io.github.carnoeng.folddesk.STOP_OVERLAY"
         @Volatile var running = false
+        /** set by the app while a document is open, so the character does not sit on the page */
+        @Volatile var hidden = false
         fun enabled(c: Context) = c.getSharedPreferences("fd", Context.MODE_PRIVATE).getBoolean("overlay", false)
         fun setEnabled(c: Context, on: Boolean): Boolean {
             if (on && !Settings.canDrawOverlays(c)) {
@@ -99,6 +101,9 @@ class OverlayService : Service() {
             if (!sprite.ready) sprite.load()
             sprite.step(dt, bounds())
             move(); charView.invalidate()
+            val want = if (hidden) android.view.View.GONE else android.view.View.VISIBLE
+            if (charView.visibility != want) { charView.visibility = want; if (hidden && bubbleShown) hideBubble() }
+            if (hidden) { if (screenOn) main.postDelayed(this, 40); return }
             if (sprite.talking) { if (!bubbleShown) showBubble() else bubbleView.invalidate() } else if (bubbleShown) hideBubble()
             val wall = System.currentTimeMillis()
             if (wall - lastCheck > 20_000) { lastCheck = wall; checkTalk(wall) }
