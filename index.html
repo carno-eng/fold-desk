@@ -2421,10 +2421,15 @@ async function linkDoc(docId, e, on){
   if(on){ d.ev.push({id:e.id, title:e.title, date:e.date, time:e.time || ""}); if(!d.date) d.date = e.date; }
   try { await DOCS.put(d); } catch(x){ toast("保存できませんでした"); } schedule();
 }
-const DOCSORT = [["new", "追加が新しい順"], ["opened", "最近開いた順"], ["date", "使う日が近い順"], ["name", "名前順"], ["cat", "分類ごと"], ["old", "追加が古い順"]];
+function nextUse(d){
+  const t = todayS(), ds = [...(d.ev || []).map(x => (liveEvent(x) || x).date), d.date].filter(x => x && x >= t).sort();
+  return ds[0] || "";
+}
+const DOCSORT = [["smart", "おすすめ（予定が近い順→名前順）"], ["new", "追加が新しい順"], ["opened", "最近開いた順"], ["date", "使う日が近い順"], ["name", "名前順"], ["cat", "分類ごと"], ["old", "追加が古い順"]];
 function sortDocs(list, k){
   const t = todayS(), L = list.slice(), byName = (a, b) => a.title.localeCompare(b.title, "ja", {numeric:true});
   if(k === "name") return L.sort(byName);
+  if(k === "smart") return L.sort((a, b) => { const x = nextUse(a), y = nextUse(b); return x && y ? x.localeCompare(y) || byName(a, b) : x ? -1 : y ? 1 : byName(a, b); });
   if(k === "old") return L.sort((a, b) => (a.added || "").localeCompare(b.added || ""));
   if(k === "opened") return L.sort((a, b) => (b.opened || b.added || "").localeCompare(a.opened || a.added || ""));
   if(k === "date"){ const key = d => !d.date ? "3" : d.date >= t ? "1" + d.date : "2" + (99999999 - +d.date.replace(/-/g, "")); return L.sort((a, b) => key(a).localeCompare(key(b)) || byName(a, b)); }
@@ -2491,7 +2496,7 @@ function evDocsSection(e){
 function vDocs(){
   if(!docsList) return `<div class="page-h"><h1>資料</h1></div><p class="thinking">読み込んでいます…</p>`;
   const cat = ui.docCat || "all", cats = docCats(), t = todayS();
-  const sortK = ls.get("fd-docsort", "new");
+  let sortK = ls.get("fd-docsort", "smart"); if(!DOCSORT.some(x => x[0] === sortK)) sortK = "smart";
   const list = sortDocs(docsList.filter(d => cat === "all" || (d.cat || "未分類") === cat), sortK);
   const soon = docsList.filter(d => d.date && d.date >= t && d.date <= addDays(t, 7)).sort((a, b) => a.date.localeCompare(b.date));
   const thumbIco = `<span class="th">${ico("docs")}</span>`;
@@ -2502,15 +2507,18 @@ function vDocs(){
           ${d.cat && d.cat !== "未分類" ? `<span class="cat" style="background:${catColor(d.cat)}">${esc(d.cat)}</span>` : ""}
           ${(d.ev || []).length ? `<span class="evl">${ico("events")}${esc(d.ev[0].title)}${d.ev.length > 1 ? ` ほか${d.ev.length - 1}` : ""}</span>` : ""}</span></button>
       <button class="sel" data-doc-sel="${esc(d.id)}" aria-pressed="${!!(ui.docSel && ui.docSel.includes(d.id))}" aria-label="えらぶ"></button>
-      ${d.date ? `<span class="tag">${esc(d.date === t ? "今日" : md(d.date))}</span>` : ""}
+      ${nextUse(d) ? `<span class="tag">${esc(nextUse(d) === t ? "今日" : nextUse(d) === addDays(t, 1) ? "明日" : md(nextUse(d)))}</span>` : ""}
       <button class="more" data-doc-edit="${esc(d.id)}" aria-label="編集">${ico("dots")}</button></div>`;
   return `<div class="page-h"><h1>資料</h1><button class="pill-btn accent" data-doc-add>${ico("plus")}PDF を追加</button></div>
     ${docsList.length ? `<div class="doc-tools"><input class="doc-search" type="search" placeholder="資料の名前でさがす" data-doc-q aria-label="資料をさがす">
       <select class="input" data-doc-sort aria-label="並べ替え">${DOCSORT.map(([k, l]) => `<option value="${k}" ${k === sortK ? "selected" : ""}>${l}</option>`).join("")}</select></div>
     <div class="doc-cats" role="group" aria-label="分類">${["all", ...cats].map(c => `<button class="chip" data-doc-cat="${esc(c)}" aria-pressed="${cat === c}">${c === "all" ? "" : `<i class="cd" style="background:${catColor(c)}"></i>`}${c === "all" ? "すべて" : esc(c)} <span class="num" style="opacity:.6">${c === "all" ? docsList.length : docsList.filter(d => (d.cat || "未分類") === c).length}</span></button>`).join("")}
       <button class="chip" data-act="catpane">${ico("gear")} 分類</button><button class="chip" data-act="docselect" aria-pressed="${!!ui.docSel}">${ui.docSel ? "選択をやめる" : "えらぶ"}</button></div>
-    ${soon.length && cat === "all" ? `<div class="card" style="margin-bottom:14px"><h3>近いうちに使う資料</h3>${soon.map(d => `<button class="docrow" data-doc-open="${esc(d.id)}">${d.thumb ? `<img src="${d.thumb}" alt="">` : ""}<b>${esc(d.title)}</b><span class="chip mini ${d.date === t ? "accent" : ""}">${esc(d.date === t ? "今日" : md(d.date))}</span></button>`).join("")}</div>` : ""}
+    ${soon.length && cat === "all" && sortK !== "smart" ? `<div class="card" style="margin-bottom:14px"><h3>近いうちに使う資料</h3>${soon.map(d => `<button class="docrow" data-doc-open="${esc(d.id)}">${d.thumb ? `<img src="${d.thumb}" alt="">` : ""}<b>${esc(d.title)}</b><span class="chip mini ${d.date === t ? "accent" : ""}">${esc(d.date === t ? "今日" : md(d.date))}</span></button>`).join("")}</div>` : ""}
     ${sortK === "cat" && cat === "all" ? [...new Set(list.map(d => d.cat || "未分類"))].map(c => `<div class="doc-grp"><i style="background:${catColor(c)}"></i>${esc(c)}<small>${list.filter(d => (d.cat || "未分類") === c).length}件</small></div><div class="docs ${ui.docSel ? "selecting" : ""}">${list.filter(d => (d.cat || "未分類") === c).map(card).join("")}</div>`).join("")
+      : sortK === "smart" && list.some(d => nextUse(d)) ? (() => { const up = list.filter(d => nextUse(d)), rest = list.filter(d => !nextUse(d));
+          return `<div class="doc-grp"><i style="background:var(--accent)"></i>これからの予定で使う<small>${up.length}件・日付が近い順</small></div><div class="docs ${ui.docSel ? "selecting" : ""}">${up.map(card).join("")}</div>
+            ${rest.length ? `<div class="doc-grp"><i style="background:var(--muted)"></i>そのほか<small>${rest.length}件・名前順</small></div><div class="docs ${ui.docSel ? "selecting" : ""}">${rest.map(card).join("")}</div>` : ""}`; })()
       : `<div class="docs ${ui.docSel ? "selecting" : ""}">${list.map(card).join("")}</div>`}
     ${ui.docSel ? `<div class="selbar"><span>${ui.docSel.length}件</span><button class="pri" data-act="docmove" ${ui.docSel.length ? "" : "disabled"}>分類を変える</button><button data-act="docselect">やめる</button></div>` : ""}`
     : `<div class="card"><p class="empty" style="margin:0">説明会・研修・会議の資料（PDF）をここにまとめておけます。<br>入れた資料はこのスマホの中にだけ保存され、電波がなくても開けます。<br>「PDF を追加」から、スマホのファイルや Google ドライブの PDF を選んでください。</p></div>`}`;
