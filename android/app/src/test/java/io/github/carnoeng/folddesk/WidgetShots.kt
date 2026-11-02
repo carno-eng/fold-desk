@@ -101,6 +101,10 @@ class WidgetShots {
         shot("hero-mood-break", Widgets.hero(c, one(-50, -3, 7, 52), 340f, 210f), 340, 210)
         shot("next-mood-soon", Widgets.next(c, one(-40, 3, 13, 58)), 250, 110)
 
+        val wx = JSONObject(s.toString()).put("weather", JSONObject("""{"t":18,"feels":17,"hum":62,"uv":6,"uvLabel":"強い","label":"晴れ時々くもり","kind":"part","day":true,"hi":21,"lo":11,"pop":60,"place":"横浜","tip":"16時ごろ雨・傘を","hours":[{"h":9,"t":18,"p":0,"kind":"part","day":true},{"h":10,"t":19,"p":10,"kind":"sun","day":true},{"h":11,"t":20,"p":10,"kind":"sun","day":true},{"h":12,"t":21,"p":30,"kind":"cloud","day":true},{"h":13,"t":20,"p":50,"kind":"rain","day":true},{"h":14,"t":19,"p":60,"kind":"rain","day":true}]}"""))
+        shot("weather-250x120", Widgets.weather(c, wx, 250f, 120f), 250, 120)
+        shot("weather-340x200", Widgets.weather(c, wx, 340f, 200f), 340, 200)
+        shot("hero-weather-340x210", Widgets.hero(c, wx, 340f, 210f), 340, 210)
         // always-on desk view
         Store.saveSnapshot(c, one(-40, 3, 13, 58).toString())
         renderView("aod-portrait", AodView(c), 400, 880)

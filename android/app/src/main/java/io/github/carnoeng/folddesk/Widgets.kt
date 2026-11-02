@@ -36,6 +36,7 @@ class RemindWidget : FdWidget()
 class FollowWidget : FdWidget()
 class BriefWidget : FdWidget()
 class AddWidget : FdWidget()
+class WeatherWidget : FdWidget()
 
 /** Schedule helpers shared by widgets and alarms. Times are "HH:MM" on a "yyyy-MM-dd" date, local time. */
 object Sched {
@@ -122,6 +123,7 @@ object Widgets {
         each(ids<RemindWidget>(c, m)) { reminders(c, s, minH(m, it)) }
         each(ids<FollowWidget>(c, m)) { follow(c, s, minH(m, it)) }
         each(ids<BriefWidget>(c, m)) { brief(c, s, minH(m, it)) }
+        each(ids<WeatherWidget>(c, m)) { val z = sizes(m, it); weather(c, s, z.minOf { x -> x.width }, z.minOf { x -> x.height }) }
         each(ids<AddWidget>(c, m)) { RemoteViews(c.packageName, R.layout.widget_add).apply { setOnClickPendingIntent(R.id.root, open(c, "ask")) } }
     }
 
@@ -211,7 +213,8 @@ object Widgets {
         // header text
         val modeLbl = segDay?.optString("mode") ?: ""
         val eyebrow = (heroJ?.optString("eyebrow")?.takeIf { it.isNotEmpty() } ?: "${cal.get(Calendar.YEAR)}年") +
-            (if (!plan.seg && modeLbl.isNotEmpty() && modeLbl != "通常" && isToday) "  ・  $modeLbl" else "")
+            (if (!plan.seg && modeLbl.isNotEmpty() && modeLbl != "通常" && isToday) "  ・  $modeLbl" else "") +
+            (s?.optJSONObject("weather")?.takeIf { w >= 300 }?.let { "  ・  ${it.optString("label")} ${it.optInt("t")}°" } ?: "")
         v.setTextViewText(R.id.eyebrow, eyebrow); v.size(R.id.eyebrow, eyz)
         v.setTextViewText(R.id.date, "${cal.get(Calendar.MONTH) + 1}月${cal.get(Calendar.DAY_OF_MONTH)}日"); v.size(R.id.date, plan.ds)
         v.setTextViewText(R.id.status, st.line); v.size(R.id.status, stz)
@@ -366,6 +369,44 @@ object Widgets {
             if (off == 0 && now in a until e) row.setInt(R.id.row, "setBackgroundResource", R.drawable.bg_row_now_card)
             if (it.optBoolean("c") && k != "extra") row.show(R.id.tag, true)
             v.addView(R.id.rows, row)
+        }
+        return v
+    }
+
+    /** Weather: now, humidity, UV, rain chance, and the next hours when there is room. */
+    fun weather(c: Context, s: JSONObject?, w: Float, h: Float): RemoteViews {
+        val v = RemoteViews(c.packageName, R.layout.widget_weather)
+        v.setOnClickPendingIntent(R.id.root, open(c, "today"))
+        val x = s?.optJSONObject("weather")
+        if (x == null) {
+            v.setTextViewText(R.id.temp, "—"); v.setTextViewText(R.id.label, "アプリを開くと天気が表示されます")
+            v.show(R.id.stats, false); v.show(R.id.tip, false); v.show(R.id.place, false); return v
+        }
+        val kind = x.optString("kind"); val day = x.optBoolean("day", true)
+        v.setInt(R.id.root, "setBackgroundResource", when {
+            !day -> R.drawable.bg_hero_night; kind == "rain" || kind == "thunder" || kind == "snow" -> R.drawable.bg_wx_rain
+            kind == "cloud" || kind == "fog" -> R.drawable.bg_wx_cloud; else -> R.drawable.bg_hero_morning })
+        val big = (minOf(w * 0.17f, h * 0.38f)).coerceIn(34f, 58f)
+        v.setImageViewBitmap(R.id.icon, Paint2.wxIcon(c, kind, day, big + 6f))
+        v.setTextViewText(R.id.temp, "${x.optInt("t")}°"); v.size(R.id.temp, big * 0.8f)
+        v.setTextViewText(R.id.label, "${x.optString("label")}  ${x.optInt("hi")}° / ${x.optInt("lo")}°")
+        v.setTextViewText(R.id.place, x.optString("place"))
+        val uv = x.optInt("uv", -1)
+        v.setTextViewText(R.id.stats, listOf("湿度 ${x.optInt("hum")}%", if (uv >= 0) "UV $uv ${x.optString("uvLabel")}" else "", if (x.optInt("pop", -1) >= 0) "雨 ${x.optInt("pop")}%" else "").filter { it.isNotEmpty() }.joinToString("  ・  "))
+        val tip = x.optString("tip"); v.setTextViewText(R.id.tip, tip); v.show(R.id.tip, tip.isNotEmpty() && h >= 120)
+        v.removeAllViews(R.id.hours)
+        val hrs = x.optJSONArray("hours")
+        val room = h >= 150 && hrs != null
+        v.show(R.id.hours, room)
+        if (room) {
+            val n = minOf(hrs!!.length(), (w / 48f).toInt().coerceIn(3, 6))
+            for (i in 0 until n) { val o = hrs.getJSONObject(i)
+                val r = RemoteViews(c.packageName, R.layout.widget_wx_hour)
+                r.setTextViewText(R.id.h, if (i == 0) "いま" else "${o.optInt("h")}時")
+                r.setImageViewBitmap(R.id.i, Paint2.wxIcon(c, o.optString("kind"), o.optBoolean("day", true), 22f))
+                r.setTextViewText(R.id.t, "${o.optInt("t")}°")
+                r.setTextViewText(R.id.p, if (o.optInt("p") >= 20) "${o.optInt("p")}%" else " ")
+                v.addView(R.id.hours, r) }
         }
         return v
     }

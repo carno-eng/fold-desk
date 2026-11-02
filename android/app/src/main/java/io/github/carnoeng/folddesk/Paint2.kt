@@ -127,4 +127,41 @@ object Paint2 {
         }
         return b
     }
+
+    /** Weather icon: sun / moon, partly cloudy, cloud, fog, rain, snow, thunder. */
+    fun wxIcon(c: Context, kind: String, day: Boolean, sizeDp: Float): Bitmap {
+        val s = dp(c, sizeDp); val n = s.toInt().coerceAtLeast(8)
+        val b = Bitmap.createBitmap(n, n, Bitmap.Config.ARGB_8888); val cv = Canvas(b); val k = s / 64f
+        cv.scale(k, k)
+        val p = Paint(Paint.ANTI_ALIAS_FLAG)
+        fun sun(dx: Float, dy: Float, sc: Float) {
+            cv.save(); cv.translate(dx, dy); cv.scale(sc, sc, 32f, 32f)
+            if (day) {
+                p.style = Paint.Style.STROKE; p.strokeWidth = 3f; p.strokeCap = Paint.Cap.ROUND; p.color = 0xFFFFB020.toInt()
+                for (i in 0 until 8) { val a = Math.toRadians(i * 45.0); cv.drawLine(32 + Math.cos(a).toFloat() * 17, 32 + Math.sin(a).toFloat() * 17, 32 + Math.cos(a).toFloat() * 23, 32 + Math.sin(a).toFloat() * 23, p) }
+                p.style = Paint.Style.FILL; p.color = 0xFFFFC53D.toInt(); cv.drawCircle(32f, 32f, 11f, p)
+            } else {
+                p.style = Paint.Style.FILL; p.color = 0xFFC9CCFF.toInt(); cv.drawCircle(30f, 32f, 16f, p)
+                p.xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.CLEAR); cv.drawCircle(38f, 26f, 14f, p); p.xfermode = null
+            }
+            cv.restore()
+        }
+        fun cloud(dy: Float, col: Int) {
+            p.style = Paint.Style.FILL; p.color = col
+            cv.drawCircle(26f, 33f + dy, 10f, p); cv.drawCircle(36f, 28f + dy, 12f, p); cv.drawCircle(46f, 36f + dy, 9f, p)
+            cv.drawRoundRect(RectF(16f, 34f + dy, 55f, 46f + dy), 6f, 6f, p)
+        }
+        when (kind) {
+            "sun" -> sun(0f, 0f, 1f)
+            "part" -> { sun(-6f, -6f, .8f); cloud(4f, 0xFFDCE3F2.toInt()) }
+            "cloud" -> cloud(0f, 0xFFDDE3EE.toInt())
+            "fog" -> { cloud(-6f, 0xFFD5DBE6.toInt()); p.style = Paint.Style.STROKE; p.strokeWidth = 3f; p.strokeCap = Paint.Cap.ROUND; p.color = 0xFFE6EAF2.toInt(); cv.drawLine(14f, 50f, 50f, 50f, p); cv.drawLine(18f, 57f, 46f, 57f, p) }
+            "rain" -> { cloud(-6f, 0xFFD3DBEC.toInt()); p.style = Paint.Style.STROKE; p.strokeWidth = 3f; p.strokeCap = Paint.Cap.ROUND; p.color = 0xFF8FB8FF.toInt()
+                for (i in 0 until 3) cv.drawLine(24f + i * 9, 48f, 21f + i * 9, 56f, p) }
+            "snow" -> { cloud(-6f, 0xFFDDE4F2.toInt()); p.style = Paint.Style.FILL; p.color = 0xFFFFFFFF.toInt(); for (i in 0 until 3) cv.drawCircle(24f + i * 9, 53f + (i % 2) * 3, 2.6f, p) }
+            else -> { cloud(-6f, 0xFFC4CCDD.toInt()); p.style = Paint.Style.FILL; p.color = 0xFFFFC53D.toInt()
+                val path = android.graphics.Path().apply { moveTo(33f, 42f); lineTo(27f, 51f); lineTo(33f, 51f); lineTo(30f, 60f); lineTo(39f, 49f); lineTo(33f, 49f); lineTo(36f, 42f); close() }; cv.drawPath(path, p) }
+        }
+        return b
+    }
 }

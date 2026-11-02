@@ -2,7 +2,7 @@
 <html lang="ja"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src https://script.google.com https://script.googleusercontent.com https://api.github.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src https://script.google.com https://script.googleusercontent.com https://api.github.com https://api.open-meteo.com https://geocoding-api.open-meteo.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#F3F5FA" media="(prefers-color-scheme: light)">
@@ -624,6 +624,43 @@ body[data-tod="night"]::before{background:radial-gradient(40% 35% at 12% 8%,rgba
 .setrow .main,.row .main{min-width:0}
 .setrow .main small,.row .main small{overflow-wrap:anywhere}
 .chip,.pill-btn{white-space:nowrap}
+
+/* ================= v13: weather ================= */
+.wx{display:grid;gap:12px;overflow:hidden;position:relative;isolation:isolate}
+.wx::before{content:"";position:absolute;inset:0;z-index:-1;opacity:.55;background:var(--wxbg,radial-gradient(80% 90% at 100% 0%,color-mix(in srgb,#7FC8FF 30%,transparent),transparent 70%))}
+.wx.rain{--wxbg:radial-gradient(80% 90% at 100% 0%,color-mix(in srgb,#6B8CFF 30%,transparent),transparent 70%)}
+.wx.sun{--wxbg:radial-gradient(80% 90% at 100% 0%,color-mix(in srgb,#FFC970 34%,transparent),transparent 70%)}
+.wx.night{--wxbg:radial-gradient(80% 90% at 100% 0%,color-mix(in srgb,#7B61FF 28%,transparent),transparent 70%)}
+.wx-top{display:flex;align-items:center;gap:14px}
+.wx-ic{width:58px;height:58px;flex:none}
+.wx-ic svg{width:100%;height:100%;overflow:visible}
+.wx-now{min-width:0;flex:1}
+.wx-now .t{font-family:var(--f-num);font-size:40px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.wx-now .t small{font-size:15px;font-weight:700;color:var(--muted);margin-left:6px;letter-spacing:0}
+.wx-now .l{font-size:14px;font-weight:700;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wx-place{font-size:12px;color:var(--muted);font-weight:700;align-self:flex-start;white-space:nowrap}
+.wx-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.wx-stats div{background:var(--surface-2);border-radius:14px;padding:8px 10px;min-width:0}
+.wx-stats small{display:block;font-size:11px;color:var(--muted);font-weight:700;white-space:nowrap}
+.wx-stats b{font-family:var(--f-num);font-size:17px;font-weight:800;white-space:nowrap}
+.wx-stats i{font-style:normal;font-size:11px;font-weight:800;margin-left:4px}
+.uv0{color:var(--ok)} .uv1{color:#E0A100} .uv2{color:#F07A1A} .uv3{color:var(--warn)} .uv4{color:#B04BD1}
+.wx-hours{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -4px;padding:2px 4px}
+.wx-hours::-webkit-scrollbar{display:none}
+.wx-hours div{flex:none;width:52px;text-align:center;border-radius:14px;padding:6px 0;background:color-mix(in srgb,var(--surface-2) 70%,transparent)}
+.wx-hours div.now{background:var(--accent-soft)}
+.wx-hours small{display:block;font-size:11px;color:var(--muted);font-weight:700}
+.wx-hours svg{width:24px;height:24px;margin:2px auto}
+.wx-hours b{display:block;font-family:var(--f-num);font-size:14px;font-weight:800}
+.wx-hours em{display:block;font-style:normal;font-size:10.5px;font-weight:700;color:#3B7BFF;min-height:14px}
+.wx-tip{font-size:12.5px;font-weight:700;color:var(--fg);display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+.wx-tip span{padding:3px 10px;border-radius:999px;background:var(--surface-2);white-space:nowrap}
+.wx .sun-rays{transform-origin:32px 32px;animation:spin 40s linear infinite}
+.wx .drop{animation:dropf 1.4s linear infinite}
+@keyframes dropf{0%{transform:translateY(-4px);opacity:0}30%{opacity:1}100%{transform:translateY(8px);opacity:0}}
+body:not([data-mode="cover-p"]) .wx{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:center}
+body:not([data-mode="cover-p"]) .wx .wx-hours{grid-column:1/-1}
+@media (prefers-reduced-motion: reduce){.wx .sun-rays,.wx .drop{animation:none}}
 </style>
 </head>
 <body>
@@ -975,6 +1012,87 @@ function fitText(root = document){
   }));
 }
 addEventListener("resize", () => requestAnimationFrame(() => fitText()));
+/* ================= weather (Open-Meteo, cached on this device) ================= */
+const WX_DEF = {name:"横浜", lat:35.4437, lon:139.6380};
+const wxPlace = () => ls.get("fd-wx-place", WX_DEF);
+let WX = ls.get("fd-wx", null), wxBusy = false;
+const WMO = c => c === 0 ? ["快晴", "sun"] : c === 1 ? ["晴れ", "sun"] : c === 2 ? ["晴れ時々くもり", "part"] : c === 3 ? ["くもり", "cloud"]
+  : c === 45 || c === 48 ? ["霧", "fog"] : c >= 51 && c <= 57 ? ["霧雨", "rain"] : c === 61 ? ["小雨", "rain"] : c === 63 ? ["雨", "rain"] : c === 65 ? ["強い雨", "rain"]
+  : c === 66 || c === 67 ? ["冷たい雨", "rain"] : c >= 71 && c <= 77 ? ["雪", "snow"] : c >= 80 && c <= 82 ? ["にわか雨", "rain"] : c === 85 || c === 86 ? ["にわか雪", "snow"]
+  : c >= 95 ? ["雷雨", "thunder"] : ["—", "cloud"];
+const UVL = u => u == null ? ["—", 0] : u < 3 ? ["弱い", 0] : u < 6 ? ["中程度", 1] : u < 8 ? ["強い", 2] : u < 11 ? ["非常に強い", 3] : ["極端に強い", 4];
+function wxIcon(kind, day = true, small = false){
+  const sun = `<g class="${small ? "" : "sun-rays"}" stroke="#FFB020" stroke-width="3" stroke-linecap="round">${[0,45,90,135,180,225,270,315].map(a => { const r = a * Math.PI / 180; return `<line x1="${32 + Math.cos(r) * 17}" y1="${32 + Math.sin(r) * 17}" x2="${32 + Math.cos(r) * 23}" y2="${32 + Math.sin(r) * 23}"/>`; }).join("")}</g><circle cx="32" cy="32" r="11" fill="#FFC53D"/>`;
+  const moon = `<path d="M40 14a18 18 0 1 0 10 32A15 15 0 0 1 40 14z" fill="#C9CCFF"/>`;
+  const cloud = (dx = 0, dy = 0, col = "#C9D3E8") => `<path transform="translate(${dx} ${dy})" d="M20 46h26a10 10 0 0 0 0-20 13 13 0 0 0-25 3 9 9 0 0 0-1 17z" fill="${col}"/>`;
+  const drops = [0, 1, 2].map(i => `<line class="${small ? "" : "drop"}" style="animation-delay:${i * .45}s" x1="${24 + i * 9}" y1="50" x2="${21 + i * 9}" y2="58" stroke="#4C8DFF" stroke-width="3" stroke-linecap="round"/>`).join("");
+  const flakes = [0, 1, 2].map(i => `<circle cx="${24 + i * 9}" cy="${54 + (i % 2) * 3}" r="2.4" fill="#9EC5FF"/>`).join("");
+  const body = kind === "sun" ? (day ? sun : moon) : kind === "part" ? `<g transform="translate(-6 -6) scale(.8)">${day ? sun : moon}</g>${cloud(4, 2, "#DCE3F2")}`
+    : kind === "cloud" ? cloud(0, -2, "#BFC9DE") : kind === "fog" ? `${cloud(0, -6, "#C9D0DE")}<g stroke="#B5BDCE" stroke-width="3" stroke-linecap="round"><line x1="14" y1="50" x2="50" y2="50"/><line x1="18" y1="57" x2="46" y2="57"/></g>`
+    : kind === "rain" ? `${cloud(0, -6, "#AFBCD6")}${drops}` : kind === "snow" ? `${cloud(0, -6, "#C6D0E4")}${flakes}`
+    : `${cloud(0, -6, "#9AA6C0")}<path d="M33 44l-6 9h6l-3 8 9-11h-6l3-6z" fill="#FFC53D"/>`;
+  return `<svg viewBox="0 0 64 64" aria-hidden="true">${body}</svg>`;
+}
+async function fetchWeather(force){
+  if(wxBusy) return; if(!force && WX && Date.now() - WX.at < 25 * 60e3 && WX.place === wxPlace().name) return;
+  wxBusy = true;
+  try {
+    const pl = wxPlace();
+    const u = `https://api.open-meteo.com/v1/forecast?latitude=${pl.lat}&longitude=${pl.lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,uv_index,is_day,precipitation&hourly=temperature_2m,precipitation_probability,weather_code,uv_index,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,uv_index_max&timezone=Asia%2FTokyo&forecast_days=2`;
+    const r = await fetch(u, {cache:"no-store", credentials:"omit", referrerPolicy:"no-referrer"});
+    const j = await r.json(); if(!j.current) throw 0;
+    WX = {at:Date.now(), place:pl.name, j}; ls.set("fd-wx", WX); schedule();
+  } catch(e){} finally { wxBusy = false; }
+}
+function wxNow(){
+  if(!WX || !WX.j) return null;
+  const j = WX.j, c = j.current, d = j.daily, h = j.hourly;
+  const nowIso = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 13);
+  let i0 = h.time.findIndex(t => t.slice(0, 13) >= nowIso); if(i0 < 0) i0 = 0;
+  const hours = h.time.slice(i0, i0 + 12).map((t, k) => ({h:+t.slice(11, 13), t:Math.round(h.temperature_2m[i0 + k]), p:h.precipitation_probability[i0 + k], code:h.weather_code[i0 + k], day:!!h.is_day[i0 + k]}));
+  const restRain = Math.max(0, ...h.precipitation_probability.slice(i0, i0 + 12).filter(x => x != null));
+  const rainAt = hours.find(x => x.p >= 50);
+  return {t:Math.round(c.temperature_2m), feels:Math.round(c.apparent_temperature), hum:c.relative_humidity_2m, uv:c.uv_index, uvMax:d.uv_index_max[0], code:c.weather_code, day:!!c.is_day,
+    hi:Math.round(d.temperature_2m_max[0]), lo:Math.round(d.temperature_2m_min[0]), pop:d.precipitation_probability_max[0], restRain, rainAt, hours,
+    tm:{code:d.weather_code[1], hi:Math.round(d.temperature_2m_max[1]), lo:Math.round(d.temperature_2m_min[1]), pop:d.precipitation_probability_max[1]}, place:WX.place, at:WX.at};
+}
+function wxTip(w){
+  const t = [];
+  if(w.rainAt) t.push(`${w.rainAt.h}時ごろ雨・傘を`);
+  if(w.uvMax >= 6) t.push("紫外線 強い・日焼け止めを");
+  else if(w.uvMax >= 3) t.push("日焼け止めがあると安心");
+  if(w.hi - w.lo >= 9) t.push(`寒暖差 ${w.hi - w.lo}℃・羽織りを`);
+  if(w.hum >= 80 && w.t >= 25) t.push("蒸し暑い・水分を");
+  if(w.hum <= 35) t.push("乾燥・保湿を");
+  return t;
+}
+function wxCard(){
+  const w = wxNow();
+  if(!w) return `<div class="card span-all wx"><div class="wx-top"><div class="wx-ic">${wxIcon("cloud")}</div><div class="wx-now"><div class="l">天気を読み込んでいます…</div></div></div></div>`;
+  const [lab, kind] = WMO(w.code), uv = UVL(w.uvMax), tips = wxTip(w), [tl, tk] = WMO(w.tm.code);
+  const tone = !w.day ? "night" : kind === "rain" || kind === "thunder" ? "rain" : kind === "sun" ? "sun" : "";
+  return `<div class="card span-all wx ${tone}" data-wx>
+    <div class="wx-top"><div class="wx-ic">${wxIcon(kind, w.day)}</div>
+      <div class="wx-now"><div class="t">${w.t}<small>℃ ・ 体感 ${w.feels}℃</small></div><div class="l">${esc(lab)} ・ ${w.hi}℃ / ${w.lo}℃</div></div>
+      <button class="wx-place chip" data-wx-place aria-label="天気の場所を変える">${esc(w.place)}</button></div>
+    <div class="wx-stats">
+      <div><small>湿度</small><b>${w.hum}%</b></div>
+      <div><small>紫外線</small><b>${w.uvMax != null ? Math.round(w.uvMax) : "—"}<i class="uv${uv[1]}">${uv[0]}</i></b></div>
+      <div><small>降水確率</small><b>${w.pop ?? "—"}%</b></div>
+      <div><small>明日 ${w.tm.hi}/${w.tm.lo}℃</small><b>${esc({sun:"晴れ", part:"晴れ曇", cloud:"くもり", fog:"霧", rain:"雨", snow:"雪", thunder:"雷雨"}[tk] || tl)}</b></div>
+    </div>
+    ${tips.length ? `<div class="wx-tip">${tips.slice(0, 2).map(x => `<span>${esc(x)}</span>`).join("")}</div>` : ""}
+    <div class="wx-hours">${w.hours.map((x, k) => `<div class="${k === 0 ? "now" : ""}"><small>${k === 0 ? "いま" : x.h + "時"}</small>${wxIcon(WMO(x.code)[1], x.day, true)}<b>${x.t}°</b><em>${x.p >= 20 ? x.p + "%" : ""}</em></div>`).join("")}</div>
+  </div>`;
+}
+function wxPlacePane(){
+  openPane(`${paneHead("天気の場所")}
+    <form data-form="wxplace"><div class="field"><label for="wx-q">市区町村の名前</label><input id="wx-q" name="q" placeholder="例：横浜市青葉区" value=""></div>
+    <div class="btns"><button class="btn primary" type="submit">さがす</button></div></form><div id="wx-res"></div>
+    <p class="hint" style="margin-top:10px">天気は Open-Meteo（無料の天気サービス）から取得します。送るのは選んだ場所の位置だけです。いまの場所：${esc(wxPlace().name)}</p>`);
+}
+fetchWeather(); setInterval(() => { if(!document.hidden) fetchWeather(); }, 10 * 60e3);
+document.addEventListener("visibilitychange", () => { if(!document.hidden) fetchWeather(); });
 function heroMood(){
   const st = currentState(), d = new Date(), m = d.getHours() * 60 + d.getMinutes(), sec = m * 60 + d.getSeconds();
   const t = todayS(), dis = isWeekday(t) && OFFICIAL[dayMode(t)] ? mins(OFFICIAL[dayMode(t)].dismiss) : 15 * 60;
@@ -1225,9 +1343,9 @@ function vToday(){
     ? `<div class="card span-all tip"><span class="ic">${ico("home")}</span><span class="main"><b>ホーム画面に置く</b><small>アプリのようにワンタップで開けます</small></span><button class="pill-btn accent" data-act="homeguide">方法</button><button class="icon-btn sm" data-act="tipoff" aria-label="閉じる">${ico("close")}</button></div>` : "";
   const m = document.body.dataset.mode;
   if(m === "main-l" && document.body.classList.contains("wide") && !document.body.classList.contains("pane-open"))
-    return `${head}<div class="grid today">${hero}${briefCard()}<div class="stack">${periodsCard}</div><div class="stack">${prepCard}${tasksCard}${followCard()}${memoCard}</div><div class="stack">${evCard}${peopleCard}</div></div>`;
-  if(m === "cover-p") return `${head}<div class="grid today">${hero}${tip}${briefCard()}${periodsCard}${prepCard}${tasksCard}${followCard()}${evCard}${memoCard}${peopleCard}</div>`;
-  return `${head}<div class="grid today">${hero}${briefCard()}<div class="stack">${periodsCard}${memoCard}</div><div class="stack">${prepCard}${tasksCard}${followCard()}${evCard}${peopleCard}</div></div>`;
+    return `${head}<div class="grid today">${hero}${wxCard()}${briefCard()}<div class="stack">${periodsCard}</div><div class="stack">${prepCard}${tasksCard}${followCard()}${memoCard}</div><div class="stack">${evCard}${peopleCard}</div></div>`;
+  if(m === "cover-p") return `${head}<div class="grid today">${hero}${wxCard()}${tip}${briefCard()}${periodsCard}${prepCard}${tasksCard}${followCard()}${evCard}${memoCard}${peopleCard}</div>`;
+  return `${head}<div class="grid today">${hero}${wxCard()}${briefCard()}<div class="stack">${periodsCard}${memoCard}</div><div class="stack">${prepCard}${tasksCard}${followCard()}${evCard}${peopleCard}</div></div>`;
 }
 
 /* ================= TIMETABLE ================= */
@@ -1956,6 +2074,8 @@ document.addEventListener("click", async (ev) => {
     catch(e){ b.disabled = false; toast("保存できませんでした"); } return; }
   if(b.matches("[data-gcal-pick]")){ calendarsPane(); return; }
   if(b.matches("[data-school-guide]")){ schoolGuide(); return; }
+  if(d.wxPick){ try { const pl = JSON.parse(d.wxPick); ls.set("fd-wx-place", pl); toast(`天気の場所を「${pl.name}」にしました`); closePane(); fetchWeather(true); } catch(e){} return; }
+  if(b.matches("[data-wx-place]")){ wxPlacePane(); return; }
   if(b.matches("[data-devcal-on]")){ const n = FDN(); if(n) n.requestCalendar(); return; }
   if(b.matches("[data-devcal-pick]")){ devCalPane(); return; }
   if(d.devOpen){ const n = FDN(); if(n) n.openCalEvent(d.devOpen); return; }
@@ -2089,6 +2209,14 @@ document.addEventListener("submit", async (ev) => {
         const tid = await put("tasks", id, rec);
         if(rec.phone || old.gcalId){ const g = await gcalSyncTask({...rec, id:tid}); if(g !== (old.gcalId||"")) await put("tasks", tid, {...rec, gcalId:g}); }
         break; }
+      case "wxplace": {
+        const q = (v.q || "").trim(); if(!q) return;
+        const box = $("#wx-res"); box.innerHTML = `<p class="thinking">さがしています…</p>`;
+        try { const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=ja&countryCode=JP`, {credentials:"omit", referrerPolicy:"no-referrer"});
+          const j = await r.json(); const list = (j.results || []);
+          box.innerHTML = list.length ? `<div class="group">${list.map(x => `<button class="setrow" type="button" data-wx-pick="${esc(JSON.stringify({name:x.name, lat:x.latitude, lon:x.longitude}))}" style="width:100%;text-align:left"><span class="main"><b>${esc(x.name)}</b><small>${esc([x.admin1, x.admin2].filter(Boolean).join(" "))}</small></span></button>`).join("")}</div>` : `<p class="empty">見つかりませんでした。別の書き方で試してください。</p>`;
+        } catch(e){ box.innerHTML = `<p class="empty">さがせませんでした（オフラインかもしれません）。</p>`; }
+        if(btn) btn.disabled = false; return; }
       case "event": {
         if(String(v.dest || "").indexOf("dev:") === 0 && !id){
           const ok = FDN() && FDN().calAdd(v.dest.slice(4), JSON.stringify({title:v.title.trim(), date:v.date, time:v.time, endTime:v.endTime || "", place:v.place || "", note:v.note || "", remindMin:v.remindMin > 0 ? +v.remindMin : (pref("eventBefore") || 10)}));
@@ -2378,6 +2506,10 @@ const concierge = (() => {
       if(dueT.length) bits.push(`期限のタスク${dueT.length}件`);
       if(bits.length) out.push({key:"tomorrow", pose:"wave", text:pick([`明日は ${bits.join("・")} だよ！`, `明日のこと、ちょっとだけ。${bits.join("・")} です。`]), acts:[["明日を見る", () => { ui.day = tm; go("today"); }]]});
     }
+    { const w = wxNow();
+      if(w && n < 9 * 60 && (w.rainAt || w.uvMax >= 6 || w.hi - w.lo >= 9)) out.push({key:"wx:am", pose:w.rainAt ? "surprise" : "wave",
+        text:w.rainAt ? pickOf([`今日は${w.rainAt.h}時ごろから雨みたい。傘わすれずに！`, `あとで雨が降るよ（${w.rainAt.p}%）。折りたたみ傘ある？`]) : w.uvMax >= 6 ? pickOf(["今日は紫外線が強いよ。日焼け止め塗った？", "日差しが強い日だよ〜。日焼け止めを忘れずに！"]) : `今日は寒暖差${w.hi - w.lo}℃！羽織るもの持っていこ`});
+      if(w && n >= 15 * 60 && n < 19 * 60 && w.rainAt) out.push({key:"wx:pm", pose:"surprise", text:`帰りは雨かも（${w.rainAt.h}時ごろ ${w.rainAt.p}%）。傘を持ってね`}); }
     // 8) greetings and check-ins (lowest priority, at most once a day each)
     const wd = new Date().getDay(), dis = isWeekday(t) ? mins(OFFICIAL[dayMode(t)].dismiss) : 15*60;
     if(n < 8*60 + 30) out.push({key:"hi:am", pose:"bow", text:pick(["おはようございます！今日もいっしょにがんばろうね", "おはよう！今日の予定、見ておく？", "おはようございます！いい1日になりますように"])});
@@ -2718,8 +2850,12 @@ function buildSnapshot(){
       const bits = [isWeekday(tm) && m0 !== "normal" ? `${m0 === "off" ? "お休み" : OFFICIAL[m0].label + "時程"}` : "", ev.length ? `「${ev[0].title}」${ev.length > 1 ? `ほか${ev.length - 1}件` : ""}` : ""].filter(Boolean);
       if(bits.length) out.push({key:`tomorrow:${t}`, text:`明日は ${bits.join("・")} だよ！`}); }
     return out.slice(0, 8); })();
+  const wxs = (() => { const w = wxNow(); if(!w) return null; const [lab, kind] = WMO(w.code), uv = UVL(w.uvMax);
+    return {t:w.t, feels:w.feels, hum:w.hum, uv:w.uvMax != null ? Math.round(w.uvMax) : -1, uvLabel:uv[0], label:lab, kind, day:w.day, hi:w.hi, lo:w.lo, pop:w.pop ?? -1, place:w.place, at:w.at,
+      tip:wxTip(w)[0] || "", hours:w.hours.slice(0, 6).map(x => ({h:x.h, t:x.t, p:x.p ?? 0, kind:WMO(x.code)[1], day:x.day}))}; })();
+  { const w = wxNow(); if(w && w.rainAt) topics.unshift({key:`wx:${t}`, text:`${w.rainAt.h}時ごろから雨みたい。傘わすれずに！`}); else if(w && w.uvMax >= 6) topics.unshift({key:`wx:${t}`, text:"今日は紫外線が強いよ。日焼け止め塗った？"}); }
   const talkLevel = concierge && concierge.cfg && concierge.cfg.on === false ? "off" : ((concierge && concierge.cfg && concierge.cfg.talk) || "normal");
-  return {v:4, at:now, days, tasks, prep, reminders, week, events, follow, brief, hero, talk, modes, topics, talkLevel};
+  return {v:5, at:now, days, tasks, prep, reminders, week, events, follow, brief, hero, talk, modes, topics, talkLevel, weather:wxs};
 }
 let snapT = 0;
 function pushSnapshot(now){
@@ -2752,7 +2888,7 @@ function widgetGuide(){
       <li><span>一覧から <b>Fold Desk</b> を選び、置きたいものを長押しして配置します。</span></li>
     </ol>
     <div class="group" style="margin-top:14px">
-      ${[["今日（情報シート）","アプリの「今日」の青いシート。大きさに合わせて中身が変わり、縦に広げると時程の切り替えボタンと残りのコマも出ます"],["いま・次","小さなサイズ。いまの授業の残り時間か、次の予定まで"],["今日の日程","コマの一覧。‹ › で明日以降の日程も見られます"],["週の時間割","月〜金の時間割。今日の列と、その日だけの変更が分かる"],["タスク","期限の近いタスク。左の丸を押すと完了"],["授業準備","次の授業日の準備物。丸を押すとチェック"],["これからの予定","2週間先までの予定"],["お知らせ予定","これから出る通知の一覧"],["返信待ち","返信が必要なメール。「済み」で消えます"],["今朝のまとめ","毎朝の自動まとめ"],["ひとことで追加","押すとすぐ入力できる小さなボタン"]]
+      ${[["今日（情報シート）","アプリの「今日」の青いシート。大きさに合わせて中身が変わり、縦に広げると時程の切り替えボタンと残りのコマも出ます"],["いま・次","小さなサイズ。いまの授業の残り時間か、次の予定まで"],["今日の日程","コマの一覧。‹ › で明日以降の日程も見られます"],["週の時間割","月〜金の時間割。今日の列と、その日だけの変更が分かる"],["タスク","期限の近いタスク。左の丸を押すと完了"],["授業準備","次の授業日の準備物。丸を押すとチェック"],["これからの予定","2週間先までの予定"],["お知らせ予定","これから出る通知の一覧"],["返信待ち","返信が必要なメール。「済み」で消えます"],["今朝のまとめ","毎朝の自動まとめ"],["天気","いまの天気・気温・湿度・紫外線と、この先の雨"],["ひとことで追加","押すとすぐ入力できる小さなボタン"]]
         .map(([a, b2]) => `<div class="setrow"><span class="main"><b>${a}</b><small>${b2}</small></span></div>`).join("")}
     </div>
     <p class="hint" style="margin-top:10px">ウィジェットは授業の区切りで自動で切り替わり、アプリを開かなくても2時間ごとに最新のデータへ更新されます。</p>
@@ -3130,7 +3266,7 @@ if(NATIVE && location.hash === "#act"){
 }
 if(NATIVE && location.hash === "#snapshot"){
   const finish = () => { pushSnapshot(true); try { NATIVE.done(); } catch(e){} };
-  if(paired()) store.pull().then(finish, finish); else finish();
+  if(paired()) Promise.all([store.pull(), fetchWeather(true)]).then(finish, finish); else finish();
 }
 document.addEventListener("visibilitychange", () => { if(document.hidden) pushSnapshot(true); });
 function openRoute(h){

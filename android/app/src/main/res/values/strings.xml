@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="widget_today_info_desc">今日のコマの一覧と、いまの授業の残り時間</string>
+    <string name="widget_weather_info_desc">いまの天気・気温・湿度・紫外線・この先の雨</string>
     <string name="widget_next_info_desc">いまの授業の残り時間と次の予定</string>
     <string name="widget_tasks_info_desc">期限の近いタスク</string>
     <string name="widget_hero_info_desc">アプリの「今日」の青いシート。残り時間のリングと1日の流れ</string>
