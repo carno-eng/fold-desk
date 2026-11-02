@@ -813,6 +813,18 @@ body:not([data-mode="cover-p"]) .wx .wx-hours{grid-column:1/-1}
 body:not([data-mode="cover-p"]) .selbar{bottom:28px}
 .selbar button{border-radius:999px;padding:8px 14px;font-weight:800;background:color-mix(in srgb,var(--bg) 18%,transparent);color:inherit}
 .selbar button.pri{background:var(--accent);color:#fff}
+.doc-cats .chip{flex:none;white-space:nowrap}
+.doc-tools .doc-search{min-width:120px}
+[data-cat-add]{display:flex;align-items:center;justify-content:center;gap:6px}
+[data-cat-add] svg,.catpick .chip svg{width:18px;height:18px;flex:none}
+.catrow2{display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center;padding:8px 0;border-top:.5px solid var(--line)}
+.catrow2:first-child{border-top:0}
+.catrow2 .cr-main{display:flex;align-items:center;gap:10px;min-width:0;text-align:left;padding:6px 0;background:none;color:inherit;font:inherit}
+.catrow2 .cr-main i{width:14px;height:14px;border-radius:50%;flex:none}
+.catrow2 .cr-main b{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.catrow2 .cr-main small{color:var(--muted);font-weight:700;flex:none}
+.catrow2 .cols{grid-column:1/-1;padding:4px 0 6px 24px}
+.catrow2 .chip.danger{color:var(--warn)}
 .catrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:.5px solid var(--line)}
 .catrow:first-child{border-top:0}
 .catrow input{min-width:0}
@@ -1387,7 +1399,6 @@ document.addEventListener("pointerdown", e => { const c = e.target.closest && e.
   const inp = c.parentNode.previousElementSibling; inp.value = c.dataset.dl; inp.dispatchEvent(new Event("input", {bubbles:true})); inp.dispatchEvent(new Event("change", {bubbles:true})); c.parentNode.remove(); buzz(6); });
 document.addEventListener("change", e => {
   if(e.target.matches && e.target.matches("[data-doc-sort]")){ ls.set("fd-docsort", e.target.value); schedule(); }
-  if(e.target.matches && e.target.matches("[data-cat-name]")){ renameCat(e.target.dataset.catName, e.target.value).then(() => catPane()); }
 });
 document.addEventListener("input", e => { if(!e.target.matches || !e.target.matches("[data-doc-q]")) return;
   const q = e.target.value.trim().toLowerCase(); document.querySelectorAll(".docs .doc").forEach(c => { c.hidden = !!q && !c.textContent.toLowerCase().includes(q); }); });
@@ -2420,15 +2431,23 @@ function sortDocs(list, k){
   if(k === "cat") return L.sort((a, b) => ((a.cat || "未分類") === "未分類") - ((b.cat || "未分類") === "未分類") || (a.cat || "").localeCompare(b.cat || "", "ja") || byName(a, b));
   return L.sort((a, b) => (b.added || "").localeCompare(a.added || ""));
 }
-function catPane(){
-  const cats = docCats().filter(c => c !== "未分類"), g = catCfg();
-  openPane(`${paneHead("分類を編集")}
-    <p class="hint" style="margin-top:0">名前を変えると、その分類の資料がまとめて変わります。削除すると資料は「未分類」になります（資料は消えません）。</p>
-    <div class="group" id="catlist">${cats.length ? cats.map(c => `<div class="catrow" data-cat-row="${esc(c)}"><i style="width:14px;height:14px;border-radius:50%;background:${catColor(c)}"></i>
-        <div style="min-width:0"><input class="input" value="${esc(c)}" data-cat-name="${esc(c)}" aria-label="分類の名前"><div class="cols" style="margin-top:8px">${CATCOLS.map(x => `<button type="button" style="background:${x}" data-cat-col="${esc(c)}|${x}" aria-pressed="${catColor(c) === x}" aria-label="色"></button>`).join("")}</div></div>
-        <button class="btn danger" type="button" data-cat-del="${esc(c)}" style="padding:8px 12px">削除</button></div>`).join("") : `<p class="empty" style="margin:6px 0">まだ分類がありません。</p>`}</div>
-    <form data-form="newcat" style="margin-top:12px;display:flex;gap:8px"><input class="input" name="name" placeholder="新しい分類（例：漢検、研修、保護者会）" required style="flex:1"><button class="btn primary" type="submit">追加</button></form>
-    <div class="btns"><button class="btn primary" data-act="close">完了</button></div>`);
+function catPane(open){
+  const cats = docCats().filter(c => c !== "未分類");
+  openPane(`${paneHead("分類")}
+    <button class="btn primary" data-cat-add style="width:100%;margin-bottom:12px">${ico("plus")} 分類を追加</button>
+    <div class="group">${cats.length ? cats.map(c => { const n = (docsList || []).filter(d => d.cat === c).length; return `<div class="catrow2">
+        <button class="cr-main" data-doc-cat="${esc(c)}" data-close-after><i style="background:${catColor(c)}"></i><b>${esc(c)}</b><small>${n}件</small></button>
+        <button class="chip" data-cat-ren="${esc(c)}">名前</button><button class="chip" data-cat-colopen="${esc(c)}" aria-pressed="${open === c}">色</button><button class="chip danger" data-cat-del="${esc(c)}">削除</button>
+        ${open === c ? `<div class="cols">${CATCOLS.map(x => `<button type="button" style="background:${x}" data-cat-col="${esc(c)}|${x}" aria-pressed="${catColor(c) === x}" aria-label="色"></button>`).join("")}</div>` : ""}</div>`; }).join("")
+      : `<p class="empty" style="margin:6px 0">まだ分類がありません。「分類を追加」から作れます。</p>`}</div>
+    <p class="hint">分類の名前をタップすると、その分類の資料だけを表示します。削除しても資料は消えず「未分類」に移ります。</p>
+    <div class="btns"><button class="btn" data-act="close">閉じる</button></div>`);
+}
+function catNamePane(from){
+  openPane(`${paneHead(from ? "分類の名前を変える" : "分類を追加")}
+    <form data-form="catname" data-id="${esc(from || "")}"><div class="field"><label for="cn-n">名前</label><input id="cn-n" class="input" name="name" value="${esc(from || "")}" placeholder="例：漢検、研修、保護者会" required maxlength="30" autofocus></div>
+    ${from ? `<p class="hint">「${esc(from)}」の資料はすべて新しい名前になります。</p>` : ""}
+    <div class="btns"><button class="btn" type="button" data-act="catpane">もどる</button><button class="btn primary" type="submit">${from ? "変える" : "追加"}</button></div></form>`);
 }
 async function renameCat(from, to){
   to = to.trim().slice(0, 30); if(!to || to === from) return;
@@ -2489,7 +2508,7 @@ function vDocs(){
     ${docsList.length ? `<div class="doc-tools"><input class="doc-search" type="search" placeholder="資料の名前でさがす" data-doc-q aria-label="資料をさがす">
       <select class="input" data-doc-sort aria-label="並べ替え">${DOCSORT.map(([k, l]) => `<option value="${k}" ${k === sortK ? "selected" : ""}>${l}</option>`).join("")}</select></div>
     <div class="doc-cats" role="group" aria-label="分類">${["all", ...cats].map(c => `<button class="chip" data-doc-cat="${esc(c)}" aria-pressed="${cat === c}">${c === "all" ? "" : `<i class="cd" style="background:${catColor(c)}"></i>`}${c === "all" ? "すべて" : esc(c)} <span class="num" style="opacity:.6">${c === "all" ? docsList.length : docsList.filter(d => (d.cat || "未分類") === c).length}</span></button>`).join("")}
-      <button class="chip" data-act="catpane">${ico("gear")} 分類を編集</button><button class="chip" data-act="docselect" aria-pressed="${!!ui.docSel}">${ui.docSel ? "選択をやめる" : "えらぶ"}</button></div>
+      <button class="chip" data-act="catpane">${ico("gear")} 分類</button><button class="chip" data-act="docselect" aria-pressed="${!!ui.docSel}">${ui.docSel ? "選択をやめる" : "えらぶ"}</button></div>
     ${soon.length && cat === "all" ? `<div class="card" style="margin-bottom:14px"><h3>近いうちに使う資料</h3>${soon.map(d => `<button class="docrow" data-doc-open="${esc(d.id)}">${d.thumb ? `<img src="${d.thumb}" alt="">` : ""}<b>${esc(d.title)}</b><span class="chip mini ${d.date === t ? "accent" : ""}">${esc(d.date === t ? "今日" : md(d.date))}</span></button>`).join("")}</div>` : ""}
     ${sortK === "cat" && cat === "all" ? [...new Set(list.map(d => d.cat || "未分類"))].map(c => `<div class="doc-grp"><i style="background:${catColor(c)}"></i>${esc(c)}<small>${list.filter(d => (d.cat || "未分類") === c).length}件</small></div><div class="docs ${ui.docSel ? "selecting" : ""}">${list.filter(d => (d.cat || "未分類") === c).map(card).join("")}</div>`).join("")
       : `<div class="docs ${ui.docSel ? "selecting" : ""}">${list.map(card).join("")}</div>`}
@@ -3485,15 +3504,18 @@ document.addEventListener("click", async (ev) => {
   if(b.matches("[data-doc-add]")){ const inp = document.createElement("input"); inp.type = "file"; inp.accept = "application/pdf,.pdf"; inp.multiple = true; inp.onchange = () => inp.files.length && importDocs(inp.files); inp.click(); return; }
   if(d.docOpen){ openDoc(d.docOpen); return; }
   if(d.docEdit){ docEditPane(d.docEdit); return; }
-  if(d.docCat){ ui.docCat = d.docCat; schedule(); return; }
+  if(d.docCat){ ui.docCat = d.docCat; if(b.hasAttribute("data-close-after")) closePane(); schedule(); return; }
   if(d.act === "catpane"){ catPane(); return; }
   if(d.act === "docselect"){ ui.docSel = ui.docSel ? null : []; schedule(); return; }
   if(d.docSel){ const i = ui.docSel.indexOf(d.docSel); if(i >= 0) ui.docSel.splice(i, 1); else ui.docSel.push(d.docSel); b.setAttribute("aria-pressed", i < 0); const sb = document.querySelector(".selbar"); if(sb){ sb.firstElementChild.textContent = ui.docSel.length + "件"; sb.querySelector(".pri").disabled = !ui.docSel.length; } return; }
   if(d.act === "docmove"){ if(ui.docSel && ui.docSel.length) moveCatPane(ui.docSel.slice()); return; }
   if(d.moveCat){ await setDocsCat(ui.moveIds || [], d.moveCat); closePane(); toast(`「${d.moveCat}」にしました`); ui.docSel = null; schedule(); return; }
-  if(d.catCol){ const [c, col] = d.catCol.split("|"); const g = catCfg(); g.cols[c] = col; saveCat(g); b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); b.closest(".catrow").firstElementChild.style.background = col; schedule(); return; }
+  if(d.catAdd !== undefined){ catNamePane(""); return; }
+  if(d.catRen){ catNamePane(d.catRen); return; }
+  if(d.catColopen){ catPane(b.getAttribute("aria-pressed") === "true" ? null : d.catColopen); return; }
+  if(d.catCol){ const [c, col] = d.catCol.split("|"); const g = catCfg(); g.cols[c] = col; saveCat(g); b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); schedule(); catPane(c); return; }
   if(d.catDel){ if(!b.dataset.sure){ b.dataset.sure = "1"; b.textContent = "もう一度"; return; } const c = d.catDel; const g = catCfg(); delete g.cols[c]; g.extra = (g.extra || []).filter(x => x !== c); saveCat(g);
-    await setDocsCat((docsList || []).filter(x => x.cat === c).map(x => x.id), "未分類"); if(ui.docCat === c) ui.docCat = "all"; catPane(); return; }
+    await setDocsCat((docsList || []).filter(x => x.cat === c).map(x => x.id), "未分類"); if(ui.docCat === c) ui.docCat = "all"; catPane(); toast(`「${c}」を削除しました`); return; }
   if(d.catpick !== undefined){ const f = $("#dc-c"); f.type = "hidden"; f.value = d.catpick === "未分類" ? "" : d.catpick; b.parentNode.querySelectorAll("[data-catpick]").forEach(x => x.setAttribute("aria-pressed", x === b)); buzz(6); return; }
   if(d.catnew !== undefined){ const f = $("#dc-c"); f.type = "text"; f.value = ""; b.parentNode.querySelectorAll("[data-catpick]").forEach(x => x.setAttribute("aria-pressed", "false")); f.focus(); return; }
   if(d.pickEv){ evPickPane(d.pickEv); return; }
@@ -3646,6 +3668,10 @@ document.addEventListener("submit", async (ev) => {
         const tid = await put("tasks", id, rec);
         if(rec.phone || old.gcalId){ const g = await gcalSyncTask({...rec, id:tid}); if(g !== (old.gcalId||"")) await put("tasks", tid, {...rec, gcalId:g}); }
         break; }
+      case "catname": { const nm = (v.name || "").trim().slice(0, 30); if(!nm) return;
+        if(id){ await renameCat(id, nm); }
+        else { const g = catCfg(); if(!docCats().includes(nm)){ g.extra = [...(g.extra || []), nm]; saveCat(g); toast(`「${nm}」を追加しました`); } else toast("同じ名前の分類があります"); }
+        catPane(); schedule(); return; }
       case "newcat": { const nm = (v.name || "").trim().slice(0, 30); if(!nm) return; const g = catCfg(); if(!docCats().includes(nm)){ g.extra = [...(g.extra || []), nm]; saveCat(g); } catPane(); toast(`「${nm}」を追加しました`); schedule(); return; }
       case "movecat": { const nm = (v.name || "").trim().slice(0, 30); if(!nm) return; await setDocsCat(ui.moveIds || [], nm); closePane(); toast(`「${nm}」にしました`); ui.docSel = null; schedule(); return; }
       case "doc": {
