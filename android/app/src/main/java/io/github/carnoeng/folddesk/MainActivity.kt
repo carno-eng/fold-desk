@@ -135,6 +135,6 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         @Volatile var foreground = false
-        val ROUTES = setOf("today", "timetable", "tasks", "events", "people", "memo", "ask", "prep", "settings", "follow")
+        val ROUTES = setOf("today", "timetable", "tasks", "events", "people", "memo", "ask", "prep", "settings", "follow", "docs")
     }
 }

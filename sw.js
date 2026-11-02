@@ -1,5 +1,5 @@
 /* Fold Desk service worker: caches only the public app shell. Personal data never passes through here. */
-const VERSION = "fd-shell-v19";
+const VERSION = "fd-shell-v20";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "icons/badge-96.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {
@@ -10,6 +10,10 @@ self.addEventListener("fetch", e => {
   if(e.request.method !== "GET" || u.origin !== location.origin) return;          // API calls and fonts go straight to the network
   if(e.request.mode === "navigate" || u.pathname.endsWith("/index.html")){       // network first so updates arrive
     e.respondWith(fetch(e.request).then(r => { const c = r.clone(); caches.open(VERSION).then(x => x.put("index.html", c)); return r; }).catch(() => caches.match("index.html")));
+    return;
+  }
+  if(u.pathname.includes("/vendor/")){                                           // the PDF viewer library: keep a copy for offline use
+    e.respondWith(caches.open("fd-vendor-1").then(c => c.match(e.request).then(r => r || fetch(e.request).then(n => { if(n.ok) c.put(e.request, n.clone()); return n; }))));
     return;
   }
   e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
