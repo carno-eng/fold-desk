@@ -4719,7 +4719,7 @@ function buildSnapshot(){
   const docsSoon = docsList ? (() => { const lim = addDays(t, 14);
     return docsList.map(d => ({d, u:nextUse(d)})).filter(x => x.u && x.u <= lim).sort((a, b) => a.u.localeCompare(b.u) || a.d.title.localeCompare(b.d.title, "ja", {numeric:true})).slice(0, 12)
       .map(({d, u}) => { const e = (d.ev || []).map(x => liveEvent(x) || x).filter(x => x.date === u).sort((a, b) => (a.time || "").localeCompare(b.time || ""))[0];
-        return {id:d.id, title:d.title, date:u, label:u === t ? "今日" : u === addDays(t, 1) ? "明日" : md(u), ev:e ? [e.time, e.title].filter(Boolean).join(" ") : "", cat:d.cat && d.cat !== "未分類" ? d.cat : "", pages:d.pages || 0, inked:!!d.inked}; }); })() : null;
+        return {id:d.id, title:d.title, date:u, label:u === t ? "今日" : u === addDays(t, 1) ? "明日" : `${+u.slice(5, 7)}/${+u.slice(8, 10)}`, ev:e ? [e.time, e.title].filter(Boolean).join(" ") : "", cat:d.cat && d.cat !== "未分類" ? d.cat : "", pages:d.pages || 0, inked:!!d.inked}; }); })() : null;
   const snapOut = {v:5, at:now, days, tasks, prep, reminders, week, events, follow, brief, hero, talk, modes, topics, talkLevel, weather:wxs};
   if(docsSoon) snapOut.docs = docsSoon;
   return snapOut;

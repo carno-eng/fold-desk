@@ -561,7 +561,7 @@ object Widgets {
             d.map { val id = it.optString("id")
                 Row(it.optString("label"), it.optString("title"),
                     listOf(it.optString("ev"), it.optString("cat")).filter { x -> x.isNotEmpty() }.joinToString("　").ifEmpty { if (it.optInt("pages") > 0) "${it.optInt("pages")}ページ" else "" },
-                    right = if (it.optBoolean("inked")) "書き込み" else "", warn = it.optString("label") == "今日",
+                    right = if (it.optBoolean("inked")) "書き込み" else "",
                     rowPi = if (Regex("^[A-Za-z0-9_-]{1,40}$").matches(id)) open(c, "doc:$id") else null) },
             if (s?.has("docs") == true) "2週間以内に使う資料はありません\n資料を予定とひもづけるか「使う日」を入れると出ます" else "アプリを一度開くと資料が出ます", "docs")
     }

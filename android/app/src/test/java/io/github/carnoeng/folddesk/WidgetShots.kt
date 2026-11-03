@@ -126,7 +126,7 @@ class WidgetShots {
         val dsnap = JSONObject(wx.toString()).put("docs", JSONArray()
             .put(JSONObject("""{"id":"d1","title":"漢検 実施計画","date":"x","label":"今日","ev":"15:35 漢字検定","cat":"漢検","pages":3,"inked":true}"""))
             .put(JSONObject("""{"id":"d2","title":"保護者会 しおり（配布用）","date":"x","label":"明日","ev":"14:00 保護者会","cat":"","pages":4}"""))
-            .put(JSONObject("""{"id":"d3","title":"研修資料 ICT活用","date":"x","label":"11/10(火)","ev":"","cat":"研修","pages":12}""")))
+            .put(JSONObject("""{"id":"d3","title":"研修資料 ICT活用","date":"x","label":"11/10","ev":"","cat":"研修","pages":12}""")))
         shot("docs-340x220", Widgets.docs(c, dsnap, 220f), 340, 220)
         shot("docs-empty-340x160", Widgets.docs(c, JSONObject(wx.toString()).put("docs", JSONArray()), 160f), 340, 160)
         // visitor sprites, all kinds, day and night
