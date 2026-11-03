@@ -1136,6 +1136,38 @@ svg[viewBox="0 -960 960 960"]{flex:none}
 .seg button{border-radius:10px}
 .hero .seg.mini{border-radius:12px;padding:3px}
 .hero .seg.mini button{border-radius:9px}
+
+/* ================= v33: named motions ================= */
+/* Count / roll: a number that changes rolls to its new value (the board's minutes, today's focus count) */
+.roll{display:inline-block;animation:rollIn .34s var(--ease-out) both}
+@keyframes rollIn{from{transform:translateY(42%);opacity:0}to{transform:none;opacity:1}}
+/* Stagger: a list that opens because you asked for it arrives row by row (short, capped) */
+body.pane-fresh #pane :is(.group,.card,.wgal,.navedit,#picklist,.evdocs) > :is(.row,.setrow,.pickrow,.wg,.nr,.catrow2,.docrow){animation:stgIn .26s var(--ease-out) both}
+body.pane-fresh #pane :is(.group,.card,.wgal,.navedit,#picklist,.evdocs) > :is(.row,.setrow,.pickrow,.wg,.nr,.catrow2,.docrow):nth-child(1){animation-delay:0ms}
+body.pane-fresh #pane :is(.group,.card,.wgal,.navedit,#picklist,.evdocs) > :is(.row,.setrow,.pickrow,.wg,.nr,.catrow2,.docrow):nth-child(2){animation-delay:28ms}
+body.pane-fresh #pane :is(.group,.card,.wgal,.navedit,#picklist,.evdocs) > :is(.row,.setrow,.pickrow,.wg,.nr,.catrow2,.docrow):nth-child(3){animation-delay:56ms}
+body.pane-fresh #pane :is(.group,.card,.wgal,.navedit,#picklist,.evdocs) > :is(.row,.setrow,.pickrow,.wg,.nr,.catrow2,.docrow):nth-child(4){animation-delay:84ms}
+body.pane-fresh #pane :is(.group,.card,.wgal,.navedit,#picklist,.evdocs) > :is(.row,.setrow,.pickrow,.wg,.nr,.catrow2,.docrow):nth-child(5){animation-delay:112ms}
+body.pane-fresh #pane :is(.group,.card,.wgal,.navedit,#picklist,.evdocs) > :is(.row,.setrow,.pickrow,.wg,.nr,.catrow2,.docrow):nth-child(6){animation-delay:140ms}
+body.pane-fresh #pane :is(.group,.card,.wgal,.navedit,#picklist,.evdocs) > :is(.row,.setrow,.pickrow,.wg,.nr,.catrow2,.docrow):nth-child(7){animation-delay:168ms}
+body.pane-fresh #pane :is(.group,.card,.wgal,.navedit,#picklist,.evdocs) > :is(.row,.setrow,.pickrow,.wg,.nr,.catrow2,.docrow):nth-child(8){animation-delay:196ms}
+body.pane-fresh #pane :is(.group,.card,.wgal,.navedit,#picklist,.evdocs) > :is(.row,.setrow,.pickrow,.wg,.nr,.catrow2,.docrow):nth-child(9){animation-delay:224ms}
+body.pane-fresh #pane :is(.group,.card,.wgal,.navedit,#picklist,.evdocs) > :is(.row,.setrow,.pickrow,.wg,.nr,.catrow2,.docrow):nth-child(10){animation-delay:252ms}
+@keyframes stgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* Hover lift: with a mouse or pen hovering, cards you can open lift a little */
+@media (hover:hover) and (pointer:fine){
+  .doc,.ph-grid button,.wg,.docrow,.pcard{transition:transform .2s var(--ease-out),box-shadow .2s var(--ease-out)!important}
+  .doc:hover,.ph-grid button:hover,.wg:hover,.pcard:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(20,30,25,.12)!important}
+}
+/* Ripple: the Android press, from the finger, clipped to the control */
+.tapfx{display:block!important;position:fixed;z-index:999;pointer-events:none;overflow:hidden;contain:strict}
+.tapfx i{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--fx,currentColor);opacity:.14;
+  animation:ripple .42s var(--ease-out) forwards}
+@keyframes ripple{to{transform:scale(var(--k,20));opacity:0}}
+/* Morph: a document or photo grows out of the tile you tapped */
+#pdfv,#phv{transform:none!important;transition:opacity .2s!important}
+#pdfv.morph,#phv.morph{opacity:1!important}
+@media (prefers-reduced-motion: reduce){.roll,body.pane-fresh #pane *{animation:none}.tapfx{display:none!important}}
 </style>
 </head>
 <body>
@@ -1304,17 +1336,24 @@ addEventListener("hashchange", () => {
 });
 function buzz(ms){ try { if(!REDUCE && navigator.vibrate) navigator.vibrate(ms); } catch(e){} }
 /* touch glow, clipped to the control under the finger */
+let lastTile = null;
+addEventListener("pointerdown", e => { const t = e.target.closest && e.target.closest("[data-doc-open],[data-photo-open],[data-photo-slot]"); if(t) lastTile = {el:t, at:Date.now()}; }, {capture:true, passive:true});
+function tileInset(){ if(!lastTile || Date.now() - lastTile.at > 1500 || !lastTile.el.isConnected) return null;
+  const r = lastTile.el.getBoundingClientRect(); if(!r.width) return null; return `inset(${Math.max(0, r.top)}px ${Math.max(0, innerWidth - r.right)}px ${Math.max(0, innerHeight - r.bottom)}px ${Math.max(0, r.left)}px round 12px)`; }
+function morphOpen(el){ const from = tileInset(); if(!from || REDUCE || !el.animate) return; el.classList.add("morph"); el.dataset.from = from;
+  el.animate([{clipPath:from}, {clipPath:"inset(0 0 0 0 round 0px)"}], {duration:380, easing:"cubic-bezier(.2,.8,.2,1)"}).finished.then(() => el.classList.remove("morph")).catch(() => {}); }
+function morphClose(el){ const to = el.dataset.from; if(!to || REDUCE || !el.animate) return false;
+  el.classList.add("morph"); el.animate([{clipPath:"inset(0 0 0 0 round 0px)"}, {clipPath:to}], {duration:300, easing:"cubic-bezier(.4,0,.2,1)", fill:"forwards"}); return true; }
 const TAPSEL = ".row,.pcard,.cell,.chip,.pill-btn,.btn,.icon-btn,.tab,.cal button,.fab,.rail .add,.seg button,.check,.card button,.setrow button,#cc";
 addEventListener("pointerdown", e => {
   if(REDUCE || e.button > 0) return;
   const el = e.target.closest && e.target.closest(TAPSEL); if(!el || el.id === "cc") return;
   const r = el.getBoundingClientRect(); if(r.width < 8 || r.width > innerWidth * 1.05) return;
-  if(true) return;
   const cs = getComputedStyle(el), fx = document.createElement("div"); fx.className = "tapfx";
   fx.style.cssText = `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;border-radius:${cs.borderRadius}`;
   const dot = document.createElement("i"); dot.style.left = (e.clientX - r.left) + "px"; dot.style.top = (e.clientY - r.top) + "px";
   dot.style.setProperty("--k", Math.ceil(Math.hypot(r.width, r.height) / 6 + 2));
-  if(el.closest(".hero")) dot.style.setProperty("--fx", "#fff");
+  dot.style.setProperty("--fx", el.closest(".hero") || /^rgb\(\s*(\d+)/.test(cs.backgroundColor) && cs.color === "rgb(255, 255, 255)" ? "#fff" : "var(--fg)");
   fx.appendChild(dot); document.body.appendChild(fx); setTimeout(() => fx.remove(), 600);
 }, {passive:true, capture:true});
 /* small haptics for toggles */
@@ -2212,7 +2251,7 @@ const pomo = (() => {
     const arc = document.getElementById("pomo-arc"); if(arc) arc.style.strokeDashoffset = st.mode === "idle" ? 0 : C * (1 - r / tot);
     const tm = document.getElementById("pomo-time"), t2 = st.mode === "idle" ? fmt(dur("focus")) : fmt(r); if(tm && tm.textContent !== t2) tm.textContent = t2;
     const lb = document.getElementById("pomo-mode"), l2 = label(); if(lb && lb.textContent !== l2) lb.textContent = l2;
-    if(full){ const b = document.getElementById("pomo-btns"); if(b) b.innerHTML = buttons(); const d = document.getElementById("pomo-dots"); if(d) d.innerHTML = dots(); const lg = document.getElementById("pomo-log"); if(lg) lg.textContent = logText(); const tk = document.getElementById("pomo-task"); if(tk) tk.innerHTML = taskLine(); }
+    if(full){ const b = document.getElementById("pomo-btns"); if(b) b.innerHTML = buttons(); const d = document.getElementById("pomo-dots"); if(d) d.innerHTML = dots(); const lg = document.getElementById("pomo-log"); if(lg && lg.textContent !== logText()){ lg.textContent = logText(); if(!REDUCE){ lg.classList.remove("roll"); void lg.offsetWidth; lg.classList.add("roll"); } } const tk = document.getElementById("pomo-task"); if(tk) tk.innerHTML = taskLine(); }
   }
   function freeLeft(){
     const c = currentState(); if(!c.cur || c.cur.type === "block") return 0;
@@ -2302,6 +2341,7 @@ function applyMood(){
 function skyNow(){ const d = new Date(), m = d.getHours() * 60 + d.getMinutes(); return m >= 18 * 60 + 30 || m < 5 * 60 ? "night" : m >= 16 * 60 + 30 ? "evening" : m < 9 * 60 + 30 ? "morning" : "day"; }
 function applySky(){ const k = skyNow(); if(document.body.dataset.tod !== k) document.body.dataset.tod = k; }
 applySky(); setInterval(applySky, 60e3);
+function rollText(el, v){ v = String(v); if(!el || el.textContent === v) return; el.textContent = v; if(REDUCE) return; el.classList.remove("roll"); void el.offsetWidth; el.classList.add("roll"); }
 function tick(){
   applyMood();
   const arc = document.getElementById("ring-arc"); if(!arc) return;
@@ -2311,7 +2351,7 @@ function tick(){
   else if(st.before){ const b = mins(st.before.start)*60, l = b - sec; frac = 1 - Math.min(1, l / 600); num = l >= 600 ? Math.ceil(l/60) : `${Math.floor(l/60)}:${pad(l%60)}`; sub = l >= 600 ? "分 まで" : "まで"; }
   else { num = `${d.getHours()}:${pad(d.getMinutes())}`; sub = "いま"; frac = 1; }
   arc.style.strokeDashoffset = (276.5 * (1 - Math.max(0, Math.min(1, frac)))).toFixed(1);
-  const n = document.getElementById("ring-num"); if(n && n.textContent !== String(num)) n.textContent = num;
+  const n = document.getElementById("ring-num"); if(n && n.textContent !== String(num)){ if(typeof num === "number") rollText(n, num); else n.textContent = num; }
   const s = document.getElementById("ring-sub"); if(s && s.textContent !== sub) s.textContent = sub;
   const nl = document.getElementById("nowline"); if(nl){ nl.style.left = ((sec/60 - +nl.dataset.s0) / +nl.dataset.span * 100) + "%"; }
 }
@@ -2780,7 +2820,7 @@ async function openPhoto(id, ids){
   const list = ids || (photoList || []).map(p => p.id); let i = Math.max(0, list.indexOf(id));
   const el = document.createElement("div"); el.id = "phv"; el.setAttribute("role", "dialog");
   el.innerHTML = `<div class="bar"><button data-pz="close" aria-label="閉じる">${ico("left")}</button><b></b><button data-pz="edit" aria-label="編集">${ico("pen")}</button></div><div class="stage"><img alt=""><span class="cnt"></span><div class="note"></div></div>`;
-  document.body.appendChild(el); document.body.classList.add("phv-on"); requestAnimationFrame(() => el.classList.add("on"));
+  document.body.appendChild(el); document.body.classList.add("phv-on"); morphOpen(el); requestAnimationFrame(() => el.classList.add("on"));
   const st = phv = {el, list, i, k:1, x:0, y:0, url:null};
   const img = el.querySelector("img"), stage = el.querySelector(".stage");
   const apply = () => { img.style.transform = `translate(calc(-50% + ${st.x}px), calc(-50% + ${st.y}px)) scale(${st.k})`; };
@@ -2807,7 +2847,7 @@ async function openPhoto(id, ids){
   el.addEventListener("keydown", e => { if(e.key === "ArrowRight"){ st.i = (st.i + 1) % st.list.length; show(); } else if(e.key === "ArrowLeft"){ st.i = (st.i - 1 + st.list.length) % st.list.length; show(); } else if(e.key === "Escape") closePhoto(); });
   el.tabIndex = -1; el.focus();
 }
-function closePhoto(){ const st = phv; if(!st) return; phv = null; if(st.url) URL.revokeObjectURL(st.url); document.body.classList.remove("phv-on"); st.el.classList.remove("on"); setTimeout(() => st.el.remove(), 250); }
+function closePhoto(){ const st = phv; if(!st) return; phv = null; if(st.url) URL.revokeObjectURL(st.url); document.body.classList.remove("phv-on"); if(!morphClose(st.el)) st.el.classList.remove("on"); setTimeout(() => st.el.remove(), 250); }
 /* 分類（色つき）と並べ替え、予定とのひもづけ */
 const CATCOLS = ["#3B5BFF", "#12A594", "#E5484D", "#F59E0B", "#8B5CF6", "#EC4899", "#0EA5E9", "#64748B"];
 const catCfg = () => { try { return JSON.parse(localStorage.getItem("fd-doccats") || "null") || {cols:{}, extra:[]}; } catch(e){ return {cols:{}, extra:[]}; } };
@@ -3012,7 +3052,7 @@ async function openDoc(id){
       <button data-pv="clear" class="danger">${ico("eraser")} 書き込みをすべて消す</button></div>
     <div class="memo" aria-label="メモ"><div class="mh"><b>メモ</b><button class="icon-btn" data-pv="memo" aria-label="閉じる">${ico("close")}</button></div>
       <textarea class="input" placeholder="例：当日の流れ、気づいたこと、確認したいこと">${esc(d.note || "")}</textarea><small>自動で保存されます（このスマホの中だけ）</small></div>`;
-  document.body.appendChild(el); document.body.classList.add("pdfv-on"); try { NATIVE && NATIVE.overlayHide && NATIVE.overlayHide(true); } catch(e){} requestAnimationFrame(() => el.classList.add("on"));
+  document.body.appendChild(el); document.body.classList.add("pdfv-on"); try { NATIVE && NATIVE.overlayHide && NATIVE.overlayHide(true); } catch(e){} morphOpen(el); requestAnimationFrame(() => el.classList.add("on"));
   d.opened = new Date().toISOString(); DOCS.put(d).catch(() => {});
   const st = pdfv = {el, zoom:1, pdf:null, io:null, id, d, ink:JSON.parse(JSON.stringify(d.ink || {})), tool:null, col:{pen:INKCOL[0][0], hl:HLCOL[0][0]}, hist:[], saveT:0};
   const sc = el.querySelector(".sc");
@@ -3242,7 +3282,7 @@ async function exportInk(how){
 }
 function closeDoc(){ const st = pdfv; if(!st) return; commitText(); if(st.saveT){ clearTimeout(st.saveT); st.d.ink = JSON.parse(JSON.stringify(st.ink)); st.d.inked = Object.keys(st.ink).length > 0; DOCS.put(st.d).catch(() => {}); }
   if(st.memoT){ clearTimeout(st.memoT); st.d.note = st.el.querySelector(".memo textarea").value.slice(0, 4000); DOCS.put(st.d).catch(() => {}); }
-  pdfv = null; if(st.io) st.io.disconnect(); try { st.pdf && st.pdf.destroy(); } catch(e){} document.body.classList.remove("pdfv-on"); try { NATIVE && NATIVE.overlayHide && NATIVE.overlayHide(false); } catch(e){} st.el.classList.remove("on"); setTimeout(() => st.el.remove(), 300); loadDocs(); }
+  pdfv = null; if(st.io) st.io.disconnect(); try { st.pdf && st.pdf.destroy(); } catch(e){} document.body.classList.remove("pdfv-on"); try { NATIVE && NATIVE.overlayHide && NATIVE.overlayHide(false); } catch(e){} if(!morphClose(st.el)) st.el.classList.remove("on"); setTimeout(() => st.el.remove(), 300); loadDocs(); }
 
 /* ================= things shared from other apps (Android "共有") ================= */
 let shared = null;
@@ -3298,6 +3338,7 @@ function openPane(html, live){
   ui.pane = true; ui.paneLive = live || null;
   $("#pane").innerHTML = html;
   document.body.classList.add("pane-open");
+  if(!REDUCE){ document.body.classList.add("pane-fresh"); clearTimeout(openPane.t); openPane.t = setTimeout(() => document.body.classList.remove("pane-fresh"), 700); }
   schedule();
   setTimeout(() => { const f = $("#pane [autofocus]"); if(f && document.body.dataset.mode !== "cover-p") f.focus(); }, 60);
 }

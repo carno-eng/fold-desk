@@ -10,7 +10,9 @@
             <TextView android:id="@+id/date" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp"
                 android:textColor="#FFFFFF" android:textSize="40sp" android:textStyle="bold" android:letterSpacing="-0.03" android:maxLines="1" android:includeFontPadding="false" />
             <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="7dp"
-                android:textColor="#FFFFFF" android:textSize="17sp" android:textStyle="bold" android:maxLines="1" android:ellipsize="end" android:includeFontPadding="false" />
+                android:textColor="#FFFFFF" android:textSize="17sp" android:textStyle="bold" android:singleLine="true" android:ellipsize="marquee" android:marqueeRepeatLimit="marquee_forever" android:focusable="true" android:focusableInTouchMode="true" android:includeFontPadding="false" >
+        <requestFocus />
+    </TextView>
             <TextView android:id="@+id/sub" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp"
                 android:textColor="#D9FFFFFF" android:textSize="14sp" android:maxLines="1" android:ellipsize="end" android:includeFontPadding="false" />
             <TextView android:id="@+id/sub2" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="3dp"
