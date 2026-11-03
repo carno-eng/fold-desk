@@ -1624,6 +1624,47 @@ html.zoomed table.tt th,html.zoomed table.tt td{padding-left:2px;padding-right:2
 .win-wrap.night .win{box-shadow:0 0 0 10px var(--wood),0 0 0 12px color-mix(in srgb,var(--wood) 70%,#000),inset 0 0 40px rgba(0,0,0,.45)}
 @media (prefers-reduced-motion: reduce){.cb-paper,.cb-note,.cb-empty{animation:none;opacity:1}}
 body.eco .cb-paper,body.eco .cb-note,body.eco .cb-empty{animation:none;opacity:1}
+
+/* ================= v44: window & board, finished ================= */
+.win-info{display:none}
+.win-plate{position:relative;display:flex;align-items:center;gap:14px;margin:10px 26px 0;padding:10px 16px 12px;border-radius:10px;background:var(--board);color:var(--chalk);box-shadow:0 6px 12px -6px rgba(0,0,0,.35)}
+.win-plate::before,.win-plate::after{content:"";position:absolute;top:-12px;width:2px;height:14px;background:color-mix(in srgb,var(--wood) 70%,#000)}
+.win-plate::before{left:22%}.win-plate::after{right:22%}
+.win-plate b{font-family:var(--f-num);font-size:34px;font-weight:700;letter-spacing:-.02em;line-height:1;flex:none}
+.wp-t{display:grid;gap:1px;min-width:0}
+.wp-t .win-ph{font-size:13px;font-weight:800;color:var(--chalk-y)}
+.wp-t .win-wx{font-size:14.5px;font-weight:800}
+.wp-t small{font-size:12px;font-weight:700;color:rgba(245,243,236,.78)}
+.win{cursor:pointer}
+.daysky{position:relative;margin:30px 6px 0;padding-top:4px}
+.ds-bar{height:16px;margin-top:0}
+.ds-school{position:absolute;top:1px;height:22px;z-index:1;border-radius:6px;box-shadow:0 0 0 2px var(--accent),inset 0 0 0 1px rgba(255,255,255,.5);pointer-events:none}
+.ds-school span{position:absolute;left:50%;bottom:calc(100% + 4px);transform:translateX(-50%);white-space:nowrap;font-size:11px;font-weight:800;color:var(--accent)}
+.ds-lab{position:relative;height:34px;display:block;margin-top:4px}
+.ds-lab .edge{position:absolute;top:0;font-size:11px;font-weight:700;color:var(--muted)}
+.ds-lab .edge.l{left:0}.ds-lab .edge.r{right:0}
+.ds-lab .sun{position:absolute;top:0;transform:translateX(-50%);display:grid;justify-items:center;color:#D9921A;font-size:11px;font-weight:800;white-space:nowrap}
+.ds-lab .sun.dn{color:#C2577A}
+.ds-lab .sun svg{width:18px;height:18px}
+.ds-lab .sun b{font-weight:800;color:var(--muted)}
+.ds-sun{display:none}
+.cb-grid{grid-template-columns:repeat(auto-fill,minmax(min(132px,calc(50% - 8px)),1fr))}
+.cb-grid.soon{grid-template-columns:repeat(auto-fill,minmax(min(104px,calc(33% - 10px)),1fr))}
+.cb-h{flex-wrap:wrap}.cb-h span{white-space:nowrap}
+.cb-more{align-content:center;justify-items:center;text-align:center;min-height:120px;background:#F3EBDD}
+.cb-more b{font-size:16px}
+.cb-tip{margin:14px 0 0;font-size:11.5px;font-weight:700;color:#3B2A18;opacity:.8;text-align:center}
+.cb-paper{-webkit-touch-callout:none;user-select:none}
+#cc.off-sill{opacity:0!important;pointer-events:none}
+.face-peek{position:fixed;right:0;top:46%;z-index:6;width:16px;height:76px;border-radius:10px 0 0 10px;background:var(--wood);box-shadow:-2px 2px 8px rgba(0,0,0,.2);display:grid;place-items:center;animation:peek 2.8s 1.2s ease-in-out 2}
+.face-peek::before{content:"";position:absolute;inset:-10px -4px -10px -24px}
+.face-peek i{width:8px;height:58px;border-radius:5px 0 0 5px;background:linear-gradient(180deg,#9CC6EE,#D7E9F8)}
+@keyframes peek{0%,100%{transform:none}35%{transform:translateX(-8px)}55%{transform:translateX(0)}}
+body:not([data-mode="cover-p"]) .face-peek{top:40%}
+@media (min-width:760px){
+  body:not([data-mode="cover-p"]) .wf-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:22px;align-items:start}
+  body:not([data-mode="cover-p"]) .wf-grid .corkboard{margin-top:12px}
+}
 </style>
 </head>
 <body>
@@ -1784,6 +1825,7 @@ function readHash(){ const k = location.hash.slice(1); if(VIEWS.some(v => v.k ==
 const REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
 addEventListener("hashchange", () => {
   const prev = view, k = location.hash.slice(1), next = VIEWS.some(v => v.k === k) ? k : prev;
+  if(next !== "today") ui.todayFace = "main";
   const i0 = VIEWS.findIndex(v => v.k === prev), i1 = VIEWS.findIndex(v => v.k === next);
   if(next !== prev && document.startViewTransition && !REDUCE && !document.hidden && paired()){
     document.documentElement.dataset.dir = i1 < i0 ? "back" : "fwd"; skyPauseUntil = performance.now() + 450;
@@ -2198,6 +2240,7 @@ function wxPlacePane(){
 }
 fetchWeather(); setInterval(() => { if(!document.hidden) fetchWeather(); }, 10 * 60e3);
 document.addEventListener("visibilitychange", () => { if(!document.hidden) fetchWeather(); });
+let hiddenAt = 0; document.addEventListener("visibilitychange", () => { if(document.hidden) hiddenAt = Date.now(); else if(hiddenAt && Date.now() - hiddenAt > 5 * 60e3 && ui.todayFace === "window"){ ui.todayFace = "main"; schedule(); } });
 /* ================= sky scene: time of day × weather, drawn on a canvas behind 今日 =================
    phases: 深夜 late, 夜明け dawn, 朝 morning, 昼 day, 午後 afternoon, 夕焼け sunset, 薄暮 dusk, 夜 night */
 const SKY = {
@@ -2472,7 +2515,9 @@ function makeSky(opt = {}){
   }
   function sync(){
     if(opt.sel){
-      const on2 = view === "today" && ui.todayFace === "window" && !REDUCE && !ECO();
+      const want = view === "today" && ui.todayFace === "window";
+      if(want && (REDUCE || ECO())){ if(raf){ cancelAnimationFrame(raf); raf = 0; } setTimeout(still, 60); return; }
+      const on2 = want && !REDUCE && !ECO();
       if(on2 && !raf){ last = 0; raf = requestAnimationFrame(frame); } else if(!on2 && raf){ cancelAnimationFrame(raf); raf = 0; cv = null; }
       return;
     }
@@ -2488,7 +2533,8 @@ function makeSky(opt = {}){
     if(e.target.closest("button,a,input,textarea,select,label,.card,.hero,.flipcard,nav,.tabbar,#pane,.row,.sheet,.concierge,[data-act]")) return;
     if(vis.length >= 4) return; spawn(null, {x:e.clientX, y:Math.min(e.clientY, H * .5)});
   });
-  return {sync, state:() => st, spawn:(k, at) => { if(st) spawn(k, at); }, get visitors(){ return vis.map(v => v.kind); }};
+  function still(){ ensure(); if(!cv || !cv.clientWidth) return; const sp = skyPauseUntil; skyPauseUntil = 0; key = ""; last = 0; frame(performance.now() + 5000); cancelAnimationFrame(raf); raf = 0; skyPauseUntil = sp; }
+  return {sync, still, state:() => st, spawn:(k, at) => { if(st) spawn(k, at); }, get visitors(){ return vis.map(v => v.kind); }};
 }
 const wxfx = makeSky(), wxmini = makeSky({sel:".win canvas.winsky"});
 /* ================= タイマー（ポモドーロ／タイマー／ストップウォッチ） ================= */
@@ -3116,10 +3162,10 @@ function vToday(){
     ? `<div class="card span-all tip"><span class="ic">${ico("home")}</span><span class="main"><b>ホーム画面に置く</b><small>アプリのようにワンタップで開けます</small></span><button class="pill-btn accent" data-act="homeguide">方法</button><button class="icon-btn sm" data-act="tipoff" aria-label="閉じる">${ico("close")}</button></div>` : "";
   const m = document.body.dataset.mode;
   if(m === "main-l" && document.body.classList.contains("wide") && !document.body.classList.contains("pane-open"))
-    return `${head}<div class="grid today">${hero}${briefCard()}<div class="stack">${todayDocsCard()}${periodsCard}</div><div class="stack">${prepCard}${tasksCard}${followCard()}${memoCard}</div><div class="stack">${evCard}${peopleCard}</div></div>`;
+    return `${head}<button class="face-peek" data-face="window" aria-label="窓と掲示板を見る"><i></i></button><div class="grid today">${hero}${briefCard()}<div class="stack">${todayDocsCard()}${periodsCard}</div><div class="stack">${prepCard}${tasksCard}${followCard()}${memoCard}</div><div class="stack">${evCard}${peopleCard}</div></div>`;
   if(m === "cover-p" && (ui.todayFull === false || (ui.todayFull == null && ls.get("fd-glance-first", false) === true))) return glanceView();
-  if(m === "cover-p") return `${head.replace('<h1>今日</h1>', '<h1>今日</h1><button class="pill-btn" data-glance="on">ひと目</button>')}<div class="grid today">${hero}${todayDocsCard()}${tip}${briefCard()}${periodsCard}${prepCard}${tasksCard}${followCard()}${evCard}${memoCard}${peopleCard}</div>`;
-  return `${head}<div class="grid today">${hero}${briefCard()}<div class="stack">${todayDocsCard()}${periodsCard}${memoCard}</div><div class="stack">${prepCard}${tasksCard}${followCard()}${evCard}${peopleCard}</div></div>`;
+  if(m === "cover-p") return `${head.replace('<h1>今日</h1>', '<h1>今日</h1><button class="pill-btn" data-glance="on">ひと目</button>')}<button class="face-peek" data-face="window" aria-label="窓と掲示板を見る"><i></i></button><div class="grid today">${hero}${todayDocsCard()}${tip}${briefCard()}${periodsCard}${prepCard}${tasksCard}${followCard()}${evCard}${memoCard}${peopleCard}</div>`;
+  return `${head}<button class="face-peek" data-face="window" aria-label="窓と掲示板を見る"><i></i></button><div class="grid today">${hero}${briefCard()}<div class="stack">${todayDocsCard()}${periodsCard}${memoCard}</div><div class="stack">${prepCard}${tasksCard}${followCard()}${evCard}${peopleCard}</div></div>`;
 }
 
 /* ================= TIMETABLE ================= */
@@ -3329,7 +3375,8 @@ const MB = n => n >= 1e9 ? (n / 1e9).toFixed(2) + " GB" : n >= 1e6 ? (n / 1e6).t
 /* ================= 更新履歴 (newest at the top) ================= */
 const CHANGELOG = [
  {day:"11月4日", sub:"水曜日・だれでも使える日", list:[
-  {v:"アプリ内", t:"深夜", big:1, newest:1, h:"窓と掲示板", lead:"「今日」を左になぞると、サイコロが転がるように面が変わります。", it:[["n","窓：いまの空（天気・時間帯）と、日の出から日の入りまでの1日の様子"],["n","掲示板：今日使う資料がピンで貼られ、期限のタスクは付箋に。これから1週間の資料も小さく"],["i","天気の面を黒板とチョークの見た目に。ポモドーロの輪は赤をやめてテーマ色に"],["i","背景の空を落ち着いた色に。「新しくなりました」は上に出すように"],["i","タスクと予定の入力は、大事なところだけを先に。残りは「くわしく」に"],["i","設定に目次。ボタンの見た目をそろえ、資料の検索欄を広く"],["f","開いた直後の「朝のまとめ」が見出しに重なっていた問題"]]},
+  {v:"アプリ内", t:"昼", big:1, newest:1, h:"窓と掲示板を仕上げ", it:[["n","1日の帯に学校の時間（朝から下校まで）。日の出・日の入りは太陽の印で、正しい位置に"],["n","掲示板の紙を長押しで「明日にまわす」「はがす」"],["n","窓の空をタップすると、鳥や飛行機が通ることも"],["i","時刻と天気は窓の下の小さな黒板に。窓は景色だけ"],["i","広い画面では窓と掲示板を横に並べる。キャラクターは窓辺に座る"],["i","掲示板は今日の分を6枚まで、残りは「ほか○件」。黒板の右はしに窓の目印"],["i","ほかのタブから「今日」にもどると、いつも黒板から"],["f","窓の面で戻るボタンを押すとアプリが閉じていた問題"],["f","省エネ中に窓が青い四角になっていた問題、文字「特大」で掲示板がくずれる問題"]]},
+  {v:"アプリ内", t:"深夜", big:1, h:"窓と掲示板", lead:"「今日」を左になぞると、サイコロが転がるように面が変わります。", it:[["n","窓：いまの空（天気・時間帯）と、日の出から日の入りまでの1日の様子"],["n","掲示板：今日使う資料がピンで貼られ、期限のタスクは付箋に。これから1週間の資料も小さく"],["i","天気の面を黒板とチョークの見た目に。ポモドーロの輪は赤をやめてテーマ色に"],["i","背景の空を落ち着いた色に。「新しくなりました」は上に出すように"],["i","タスクと予定の入力は、大事なところだけを先に。残りは「くわしく」に"],["i","設定に目次。ボタンの見た目をそろえ、資料の検索欄を広く"],["f","開いた直後の「朝のまとめ」が見出しに重なっていた問題"]]},
   {v:"アプリ内", t:"夜", big:1, h:"AI なしで、ぜんぶ無料に", lead:"別の申し込みや料金がいる機能をやめて、スマホの中だけで動くようにしました。", it:[["i","「ひとことで入れる」は、日付・時刻・「〜まで」・「○時間目」をスマホの中で読み取る方式に。「明日16時 学年会」「金曜までに見積もり確認」「3時間目 補教 2-1」など"],["i","メモの「振り分け」も同じ方式で、だれでも使える"],["i","名刺は、スマホの中で読んだ文字を決まりにそって整理"],["i","AI の鍵が必要だった「時間割を写真から読む」と「Gmail を AI で読む」はやめました"]]},
   {v:"1.0.44", t:"夜", big:1, h:"だれでも使いやすく", lead:"スマホにくわしくない人の目で、入り口から見直しました。", it:[["n","はじめての案内。使う機能を「シンプル」「ぜんぶ」から選べる"],["n","時間割の「ひな形」（45分・50分・40分授業）"],["n","文字の大きさ（小・標準・大・特大）と、省エネモード"],["n","自動バックアップ（週1回、スマホの「ダウンロード」に最新の1つ）"],["n","パソコン・タブレットでも同じデータを開ける「ほかの端末でも使う」"],["n","「新しくなりました」のお知らせ、「プライバシーと利用のきまり」"],["i","通知やカレンダーの許可は、理由を説明してから"],["i","お試しで入れたものを、つないだあとに引き継げる"],["i","「閉じた画面」などの Fold だけの言葉を、どのスマホでもわかる言葉に"],["i","キャラクターの絵を登録していないときは、キャラクターを出さない"]]}]},
  {day:"11月3日", sub:"火曜日・文化の日", list:[
@@ -4021,50 +4068,81 @@ function vDocsInner(tabs){
 
 /* ================= 今日のもう1面：窓（いまの空と1日の様子）と掲示板（今日使う資料） ================= */
 const hashN = s0 => { let h = 0; for(const c of String(s0)) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); };
+const SUN_UP = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 18a5 5 0 0 1 10 0" fill="currentColor"/><path d="M12 6v3M5.6 9.6l1.8 1.8M18.4 9.6l-1.8 1.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+const SUN_DN = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 18a4 4 0 0 1 8 0" fill="currentColor"/><path d="M12 7v4M9.5 9l2.5 2.5L14.5 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
 function daySkyBar(st){
-  const sr = st.sr, ss = st.ss, P = x => (Math.max(0, Math.min(1440, x)) / 1440 * 100).toFixed(1) + "%";
+  const sr = st.sr, ss = st.ss, pc = x => Math.max(0, Math.min(100, x / 1440 * 100)), P = x => pc(x).toFixed(1) + "%";
   const stops = [[0, SKY.late[1]], [sr - 60, SKY.night[1]], [sr, SKY.dawn[2]], [sr + 60, SKY.morning[1]], [12 * 60, SKY.day[1]], [ss - 90, SKY.afternoon[2]], [ss, SKY.sunset[2]], [ss + 50, SKY.dusk[1]], [ss + 120, SKY.night[1]], [1440, SKY.late[1]]];
   const g = stops.map(([m, c]) => `${c} ${P(m)}`).join(",");
   const hm = m => `${Math.floor(m / 60)}:${pad(m % 60)}`;
-  return `<div class="daysky"><div class="ds-bar" style="background:linear-gradient(90deg,${g})"><i class="ds-now" id="ds-now" style="left:${P(st.m)}"></i>
-    <span class="ds-sun" style="left:${P(sr)}">${ico("up")}</span><span class="ds-sun set" style="left:${P(ss)}">${ico("down")}</span></div>
-    <div class="ds-lab"><span>0時</span><span>日の出 ${hm(sr)}</span><span>正午</span><span>日の入り ${hm(ss)}</span><span>24時</span></div></div>`;
+  const t = todayS(), its = isWeekday(t) ? (dayItems(t) || []).filter(x => !x.cancelled) : [];
+  const md0 = dayMode(t), sch = its.length && OFFICIAL[md0] ? [mins(its[0].start), mins(OFFICIAL[md0].dismiss || its[its.length - 1].end)] : null;
+  return `<div class="daysky">
+    ${sch ? `<div class="ds-school" style="left:${P(sch[0])};width:${(pc(sch[1]) - pc(sch[0])).toFixed(1)}%"><span>学校 ${hm(sch[0])}–${hm(sch[1])}</span></div>` : ""}
+    <div class="ds-bar" style="background:linear-gradient(90deg,${g})"><i class="ds-now" id="ds-now" style="left:${P(st.m)}"></i></div>
+    <div class="ds-lab"><span class="edge l">0時</span><span class="sun" style="left:${P(sr)}">${SUN_UP}<b>日の出 ${hm(sr)}</b></span><span class="sun dn" style="left:${P(ss)}">${SUN_DN}<b>日の入り ${hm(ss)}</b></span><span class="edge r">24時</span></div></div>`;
 }
 function boardDocs(){
   const t = todayS(); if(!docsList) return {today:[], soon:[]};
+  const hide = new Set((ls.get("fd-board-hide", {})[t]) || []);
   const todayL = [], seen = new Set();
-  S.events.filter(e => e.date === t).sort((a, b) => (a.time || "").localeCompare(b.time || "")).forEach(e => docsForEvent(e).forEach(d => { if(!seen.has(d.id)){ seen.add(d.id); todayL.push({d, why:[e.time, e.title].filter(Boolean).join(" ")}); } }));
-  docsList.filter(d => d.date === t && !seen.has(d.id)).forEach(d => { seen.add(d.id); todayL.push({d, why:"今日使う"}); });
+  S.events.filter(e => e.date === t).sort((a, b) => (a.time || "").localeCompare(b.time || "")).forEach(e => docsForEvent(e).forEach(d => { if(!seen.has(d.id) && !hide.has(d.id)){ seen.add(d.id); todayL.push({d, why:[e.time, e.title].filter(Boolean).join(" "), linked:true}); } }));
+  docsList.filter(d => d.date === t && !seen.has(d.id) && !hide.has(d.id)).forEach(d => { seen.add(d.id); todayL.push({d, why:""}); });
   const soon = docsList.filter(d => !seen.has(d.id)).map(d => ({d, n:nextUse(d)})).filter(x => x.n && x.n > t && x.n <= addDays(t, 7)).sort((a, b) => a.n.localeCompare(b.n)).slice(0, 6);
   return {today:todayL, soon};
 }
 function windowFace(head){
   const st = sceneState(), w = wxNow(), now = new Date(), hhmm = `${now.getHours()}:${pad(now.getMinutes())}`;
   const light = {late:"まっくら", night:"暗い", dawn:"うす明るい", morning:"明るくなってきた", day:"いちばん明るい", afternoon:"日がかたむく", sunset:"西の空が赤い", dusk:"うす暗い"}[st.phase];
-  const wl = w ? `${WMO(w.code)[0]}　${w.t}℃` : "天気を読み込み中";
+  const wl = w ? `${WMO(w.code)[0]}　${w.t}℃` : (navigator.onLine === false ? "天気は電波のあるときに表示します" : "天気を読み込んでいます");
   const sub = w ? [w.rainAt ? `${w.rainAt.h}時ごろ雨（${w.rainAt.p}%）` : `降水 ${w.pop ?? 0}%`, `${w.hi}° / ${w.lo}°`].join("　") : "";
   const {today, soon} = boardDocs(), due = openTasks().filter(k => k.due && k.due <= todayS()).slice(0, 4);
+  const MAX = 6, shown = today.slice(0, MAX), more = today.length - shown.length;
   const PINS = ["#D9473B", "#2C6A55", "#2D5B8C", "#E0A11B", "#8E3B46"];
-  const paper = (x, i, small) => { const d = x.d, r = (hashN(d.id) % 7) - 3;
-    return `<button class="cb-paper ${small ? "sm" : ""}" data-doc-open="${esc(d.id)}" style="--r:${r}deg;--pin:${PINS[hashN(d.id) % PINS.length]};--i:${i}">
+  const paper = (x, i, small) => { const d = x.d, r = (hashN(d.id) % 7) - 3, cap = small ? md(x.n) : x.why;
+    return `<button class="cb-paper ${small ? "sm" : ""}" data-doc-open="${esc(d.id)}" data-board-doc="${esc(d.id)}" style="--r:${r}deg;--pin:${PINS[hashN(d.id) % PINS.length]};--i:${i}">
       <i class="pin" aria-hidden="true"></i>${d.thumb ? `<img src="${d.thumb}" alt="" draggable="false">` : `<span class="cb-ph">${ico("docs")}</span>`}
-      <b>${esc(d.title)}</b><small>${esc(small ? md(x.n) : x.why)}</small></button>`; };
-  const note = (k, i) => `<button class="cb-note" data-open-task="${k.id}" style="--r:${(hashN(k.id) % 9) - 4}deg;--i:${i + today.length}"><b>${esc(k.title)}</b><small>${k.due < todayS() ? "期限すぎ" : "今日まで"}</small></button>`;
-  return `${head}
-  <section class="win-wrap ${st.night ? "night" : ""}" aria-label="窓の外">
-    <div class="win"><canvas class="winsky" aria-hidden="true"></canvas><i class="win-glass" aria-hidden="true"></i><i class="win-bar v" aria-hidden="true"></i><i class="win-bar h" aria-hidden="true"></i>
-      <div class="win-info"><b class="num" id="win-time">${hhmm}</b><span class="win-ph">${esc(PHASE_JA[st.phase])}・${esc(light)}</span><span class="win-wx">${esc(wl)}</span>${sub ? `<small>${esc(sub)}</small>` : ""}</div></div>
+      <b>${esc(d.title)}</b>${cap ? `<small>${esc(cap)}</small>` : ""}</button>`; };
+  const note = (k, i) => `<button class="cb-note" data-open-task="${k.id}" style="--r:${(hashN(k.id) % 9) - 4}deg;--i:${i + shown.length}"><b>${esc(k.title)}</b><small>${k.due < todayS() ? "期限すぎ" : "今日まで"}</small></button>`;
+  const winSec = `<section class="win-wrap ${st.night ? "night" : ""}" aria-label="窓の外">
+    <div class="win" data-win title="空をタップすると、だれかが通るかも"><canvas class="winsky" aria-hidden="true"></canvas><i class="win-glass" aria-hidden="true"></i><i class="win-bar v" aria-hidden="true"></i><i class="win-bar h" aria-hidden="true"></i></div>
     <div class="win-sill" aria-hidden="true"></div>
+    <div class="win-plate"><b class="num" id="win-time">${hhmm}</b><span class="wp-t"><span class="win-ph">${esc(PHASE_JA[st.phase])}・${esc(light)}</span><span class="win-wx">${esc(wl)}</span>${sub ? `<small>${esc(sub)}</small>` : ""}</span></div>
     ${daySkyBar(st)}
-  </section>
-  <section class="corkboard" aria-label="掲示板">
+  </section>`;
+  const boardSec = `<section class="corkboard" aria-label="掲示板">
     <h2 class="cb-h"><span>今日の掲示板</span><small>${today.length ? `資料 ${today.length}件` : ""}${due.length ? `${today.length ? "・" : ""}期限のタスク ${due.length}件` : ""}</small></h2>
-    <div class="cb-grid">${today.map((x, i) => paper(x, i)).join("")}${due.map(note).join("")}
+    <div class="cb-grid">${shown.map((x, i) => paper(x, i)).join("")}${more > 0 ? `<button class="cb-paper cb-more" data-go="docs" style="--r:2deg;--pin:#7A5636;--i:${shown.length}"><i class="pin" aria-hidden="true"></i><b>ほか ${more}件</b><small>資料の一覧へ</small></button>` : ""}${due.map(note).join("")}
       ${!today.length && !due.length ? `<div class="cb-empty" style="--r:-2deg"><i class="pin" aria-hidden="true" style="--pin:#2C6A55"></i><b>今日使う資料はありません</b><small>資料に「使う日」を入れたり、予定とひもづけたりすると、ここに貼られます</small></div>` : ""}</div>
-    ${soon.length ? `<div class="cb-sub">これから1週間</div><div class="cb-grid soon">${soon.map((x, i) => paper(x, i + today.length + due.length, true)).join("")}</div>` : ""}
-  </section>
-  <p class="face-hint">右になぞると黒板にもどります</p>`;
+    ${soon.length ? `<div class="cb-sub">これから1週間</div><div class="cb-grid soon">${soon.map((x, i) => paper(x, i + shown.length + due.length, true)).join("")}</div>` : ""}
+    <p class="cb-tip">紙を長押しすると、明日にまわしたり、はがしたりできます</p>
+  </section>`;
+  return `${head}<div class="wf-grid">${winSec}${boardSec}</div><p class="face-hint">右になぞると黒板にもどります</p>`;
 }
+/* long-press a paper on the board */
+(() => { let t = 0, sx = 0, sy = 0, fired = false;
+  document.addEventListener("pointerdown", e => { const b = e.target.closest && e.target.closest("[data-board-doc]"); if(!b) return; fired = false; sx = e.clientX; sy = e.clientY; clearTimeout(t);
+    t = setTimeout(() => { fired = true; buzz(14); boardMenu(b.dataset.boardDoc); }, 550); });
+  document.addEventListener("pointermove", e => { if(t && Math.hypot(e.clientX - sx, e.clientY - sy) > 10){ clearTimeout(t); t = 0; } });
+  ["pointerup", "pointercancel"].forEach(ev => document.addEventListener(ev, () => { clearTimeout(t); t = 0; }));
+  document.addEventListener("click", e => { if(fired && e.target.closest && e.target.closest("[data-board-doc]")){ e.preventDefault(); e.stopPropagation(); fired = false; } }, true);
+  document.addEventListener("contextmenu", e => { if(e.target.closest && e.target.closest("[data-board-doc]")) e.preventDefault(); });
+})();
+function boardMenu(id){
+  const d = (docsList || []).find(x => x.id === id); if(!d) return; const t = todayS(), mine = d.date === t;
+  openPane(`${paneHead("掲示板の紙")}<div class="group"><div class="setrow"><span class="main"><b>${esc(d.title)}</b><small>${d.date ? "使う日：" + esc(md(d.date)) : "予定とひもづいた資料"}</small></span></div></div>
+    <div class="btns" style="flex-direction:column"><button class="btn primary" data-doc-open="${esc(id)}">開く</button>
+      ${mine ? `<button class="btn" data-board-act="tomorrow:${esc(id)}">明日にまわす</button>` : ""}
+      <button class="btn" data-board-act="hide:${esc(id)}">今日の掲示板からはがす</button></div>
+    <p class="hint">はがしても資料は消えません。「資料」の一覧に残ります。</p>`);
+}
+async function boardAct(v){
+  const [k, id] = v.split(":"), d = (docsList || []).find(x => x.id === id); if(!d) return; const t = todayS();
+  if(k === "tomorrow"){ await DOCS.put({...d, date:addDays(t, 1)}); toast("明日の掲示板にまわしました"); }
+  else { const h = ls.get("fd-board-hide", {}), keep = {}; Object.keys(h).forEach(x => { if(x >= t) keep[x] = h[x]; }); keep[t] = [...new Set([...(keep[t] || []), id])]; ls.set("fd-board-hide", keep); toast("今日の掲示板からはがしました"); }
+  closePane(); await loadDocs();
+}
+document.addEventListener("click", e => { const wv = e.target.closest && e.target.closest("[data-win]"); if(!wv) return; const r = wv.getBoundingClientRect(); try { wxmini.spawn(null, {x:e.clientX - r.left, y:Math.min(e.clientY - r.top, r.height * .6)}); } catch(_){} });
 function faceDots(){ return `<div class="face-dots" role="tablist" aria-label="今日の面">${[["main", "黒板"], ["window", "窓と掲示板"]].map(([k, l]) => `<button role="tab" data-face="${k}" aria-selected="${(ui.todayFace || "main") === k}" aria-label="${l}"><i></i></button>`).join("")}${(ui.todayFace || "main") === "main" && ls.get("fd-face-hint", 0) < 3 ? `<span>左になぞると窓が見えます</span>` : ""}</div>`; }
 let rolling = false;
 function rollFace(to){
@@ -5259,6 +5337,7 @@ document.addEventListener("click", async (ev) => {
   if(d.stor){ storageAct(b); return; }
   if(d.demo){ demoAct(d.demo); return; }
   if(d.face){ rollFace(d.face); return; }
+  if(d.boardAct){ boardAct(d.boardAct); return; }
   if(d.carry){ carryAct(d.carry, b); return; }
   if(d.act === "privacy"){ privacyPane(); return; }
   if(d.act === "otherdev"){ otherDevPane(); return; }
@@ -5548,7 +5627,9 @@ const concierge = (() => {
   let pos = ls.get("fd-cc-pos", null) || {x: innerWidth - W - 24, y: innerHeight - H - 110};
   let tgt = null, clip = "greet", fi = 0, acc = 0, last = 0, nextMove = performance.now() + 2500, thinking = false, drag = null, bubOpen = false, sayTimer = 0, raf = 0, quietUntil = 0;
   const speed = () => cfg.level === "active" ? 210 : 160;
+  const sillEl = () => view === "today" && ui.todayFace === "window" && !cfg.roam ? document.querySelector(".win-sill") : null;
   function bounds(){
+    const sl = sillEl(); if(sl){ const r = sl.getBoundingClientRect(); const y = r.top - H + 12; return {left:r.left + 6, right:Math.max(r.left + 6, r.right - W - 6), top:y, bottom:y}; }
     const m = document.body.dataset.mode, rail = $("#rail"), pane = $("#pane");
     const left = (m !== "cover-p" && rail.offsetWidth ? rail.offsetWidth : 0) + 6;
     let right = innerWidth - W - 6;
@@ -5623,6 +5704,9 @@ const concierge = (() => {
     } else if(!drag && !bubOpen && !thinking && cfg.level !== "calm" && !document.body.classList.contains("eco") && !reduce && now > nextMove && now > quietUntil && !(document.body.classList.contains("pane-open") && document.body.dataset.mode !== "main-l")){
       tgt = pickTarget(); tgt.dash = Math.hypot(tgt.x - pos.x, tgt.y - pos.y) > 260 && Math.random() < .6;
     }
+    { const sl = sillEl(); if(sl && !drag){ const r = sl.getBoundingClientRect(), ok = r.top > 50 && r.top < innerHeight - 70; el.classList.toggle("off-sill", !ok);
+        if(ok){ const y = r.top - H + 12; pos.y = y; if(tgt) tgt.y = y; pos.x = Math.min(Math.max(pos.x, r.left + 6), r.right - W - 6); if(tgt) tgt.x = Math.min(Math.max(tgt.x, r.left + 6), r.right - W - 6); } }
+      else el.classList.remove("off-sill"); }
     draw();
   }
   const savePos = () => ls.set("fd-cc-pos", {x: Math.round(pos.x), y: Math.round(pos.y)});
@@ -6108,6 +6192,7 @@ function pushSnapshot(now){
 }
 window.__fdBack = () => {
   if(clv){ changelogClose(); return true; }
+  if(view === "today" && ui.todayFace === "window" && !ui.pane && !pdfv && !phv){ rollFace("main"); return true; }
   if(phv){ closePhoto(); return true; }
   if(pdfv){ closeDoc(); return true; }
   const pk = $("#picker"); if(pk && pk.classList.contains("on")){ pk.classList.remove("on"); return true; }
