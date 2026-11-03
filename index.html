@@ -1299,6 +1299,8 @@ body.pdfv-on #cc,body.phv-on #cc,body.bigclock-on #cc,body.pdfv-on #ccb,body.phv
 .pal[aria-pressed="true"]{background:var(--accent-soft)}
 .pal[aria-pressed="true"] .sw{transform:scale(1.06);box-shadow:0 0 0 2.5px var(--bg),0 0 0 5px var(--accent)}
 .pal:active .sw{transform:scale(.94)}
+.pal-n{display:grid;justify-items:center;line-height:1.25;font-size:13.5px;font-weight:800;letter-spacing:.04em}
+.pal-n small{font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:0}
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.45s}
 
 /* ================= v39: 更新履歴 ================= */
@@ -3082,7 +3084,7 @@ const MB = n => n >= 1e9 ? (n / 1e9).toFixed(2) + " GB" : n >= 1e6 ? (n / 1e6).t
 /* ================= 更新履歴 (newest at the top) ================= */
 const CHANGELOG = [
  {day:"11月3日", sub:"火曜日・文化の日", list:[
-  {v:"アプリ内", t:"21:55", big:1, newest:1, h:"更新履歴とテーマカラー", lead:"あなたが今見ているこのページです。", it:[["n","設定から読める「更新履歴」。1.0.0 から今までを、新しい順に"],["n","テーマカラーを6色から。黒板・紺・墨・えんじ・藤・山吹。黒板とボタンの色がいっしょに変わります"]]},
+  {v:"アプリ内", t:"21:55", big:1, newest:1, h:"更新履歴とテーマカラー", lead:"あなたが今見ているこのページです。", it:[["n","設定から読める「更新履歴」。1.0.0 から今までを、新しい順に"],["n","テーマカラーを6色から。常磐色・藍色・墨色・臙脂色・江戸紫・山吹茶。黒板とボタンの色がいっしょに変わります"]]},
   {v:"アプリ内", t:"21:40", h:"重なりを直しました", it:[["f","空の画面のボタンのアイコンが大きくなり、説明の文章に重なっていた問題"],["f","資料の「おすすめ」の並べ替えの枠で、文字の下が切れていた問題"]]},
   {v:"1.0.43", t:"21:20", big:1, h:"使いやすさの総点検", lead:"はじめて触る人の目で、全部の画面を見直しました。", it:[["n","お試しモード。アカウントがなくても見本のデータで全部の画面をさわれる"],["n","バックアップ。資料・書き込み・写真・設定を1つのファイルに書き出して、読み込める"],["i","コンシェルジュは右下のすみっこに。話しかけは少しで閉じ、タイマーや資料を見ている間はおとなしく"],["i","閉じた画面の下のバーは5つ＋「その他」。文字も大きく"],["i","小さいボタンも、指で押せる広さに"],["i","「今日」の時間の帯に、記号の説明"],["i","何もないページに、大きな説明とすぐ追加できるボタン"],["f","「時間割」の見出しが縦に1文字ずつ並んでいた問題"],["f","会議のコマなど、薄くて読みにくかった文字"]]},
   {v:"1.0.42", t:"18:54", big:1, h:"タイマーを、もっと手元で", it:[["n","動いているタイマーに大きな［−1分］［＋1分］［＋5分］。「大きく表示」のままでも延ばせる"],["n","通知から「＋1分」"],["n","タイマー・ポモドーロ・ストップウォッチの間は、画面が消えない"],["i","開いたときはいつもの「今日」から。「ひと目」は右上から"]]},
@@ -4217,7 +4219,7 @@ function settingsPane(){
       <div class="sec">表示</div>
       <div class="seg" role="group" aria-label="外観">${[["auto","自動"],["light","ライト"],["dark","ダーク"]].map(([k,l]) => `<button type="button" data-theme-set="${k}" aria-pressed="${th===k}">${l}</button>`).join("")}</div>
       <div class="sec" style="margin:16px 0 0">テーマカラー</div>
-      <div class="pal-row" role="group" aria-label="テーマカラー">${PALETTES.map(([k, n, b, a]) => `<button type="button" class="pal" data-pal="${k}" aria-pressed="${ls.get("fd-palette", "green") === k}"><span class="sw" style="--b:${b};--a:${a}"><i></i></span>${n}</button>`).join("")}</div>
+      <div class="pal-row" role="group" aria-label="テーマカラー">${PALETTES.map(([k, n, b, a]) => `<button type="button" class="pal" data-pal="${k}" aria-pressed="${ls.get("fd-palette", "green") === k}"><span class="sw" style="--b:${b};--a:${a}"><i></i></span><span class="pal-n">${n.split("|")[0]}<small>${n.split("|")[1] || ""}</small></span></button>`).join("")}</div>
       <p class="hint" style="margin-top:2px">黒板とボタンの色がいっしょに変わります。ダークにしても同じ系統の色になります。</p>
       <div class="sec">このアプリについて</div>
       <button class="row" data-act="changelog" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico("spark")}</span><span class="main"><b>更新履歴</b><small>1.0.0 から今までに増えたこと・直したこと</small></span><span class="when">${ico("right")}</span></button>`;
@@ -4242,7 +4244,7 @@ function homeGuide(){
     </ol>
     <div class="btns"><button class="btn" data-act="close">閉じる</button></div>`);
 }
-const PALETTES = [["green","黒板","#24443A","#2C6A55"],["navy","紺","#22374F","#2D5B8C"],["ink","墨","#2F3439","#3F4B56"],["wine","えんじ","#4A2A30","#8E3B46"],["fuji","藤","#33294A","#5E4E8C"],["yamabuki","山吹","#3D3424","#80580A"]];
+const PALETTES = [["green","常磐色|ときわいろ","#24443A","#2C6A55"],["navy","藍色|あいいろ","#22374F","#2D5B8C"],["ink","墨色|すみいろ","#2F3439","#3F4B56"],["wine","臙脂色|えんじいろ","#4A2A30","#8E3B46"],["fuji","江戸紫|えどむらさき","#33294A","#5E4E8C"],["yamabuki","山吹茶|やまぶきちゃ","#3D3424","#80580A"]];
 function applyPalette(){ const k = ls.get("fd-palette", "green"); if(k === "green") document.documentElement.removeAttribute("data-palette"); else document.documentElement.dataset.palette = k; }
 applyPalette();
 function setPalette(k, btn){
