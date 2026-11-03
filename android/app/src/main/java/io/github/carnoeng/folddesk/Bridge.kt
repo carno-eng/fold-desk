@@ -83,6 +83,16 @@ class Bridge(
     @JavascriptInterface fun openDreamSettings() { main.post { try { ctx.startActivity(Intent(android.provider.Settings.ACTION_DREAM_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) { try { ctx.startActivity(Intent(android.provider.Settings.ACTION_DISPLAY_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (_: Exception) { } } } }
     @JavascriptInterface fun pomoGet(): String = Pomo.get(ctx).toString()
     @JavascriptInterface fun pomoSet(json: String) { Pomo.set(ctx, json) }
+    /** Put a widget on the home screen straight from the app (the launcher asks to confirm). */
+    @JavascriptInterface fun canPinWidget(): Boolean = try { android.appwidget.AppWidgetManager.getInstance(ctx).isRequestPinAppWidgetSupported } catch (_: Exception) { false }
+    @JavascriptInterface fun pinWidget(kind: String): Boolean {
+        val cls: Class<*> = when (kind) {
+            "hero" -> HeroWidget::class.java; "today" -> TodayWidget::class.java; "next" -> NextWidget::class.java; "tasks" -> TasksWidget::class.java
+            "prep" -> PrepWidget::class.java; "events" -> EventsWidget::class.java; "remind" -> RemindWidget::class.java; "follow" -> FollowWidget::class.java
+            "brief" -> BriefWidget::class.java; "docs" -> DocsWidget::class.java; "week" -> WeekWidget::class.java; "weather" -> WeatherWidget::class.java
+            "window" -> WindowWidget::class.java; "add" -> AddWidget::class.java; else -> return false }
+        return try { android.appwidget.AppWidgetManager.getInstance(ctx).requestPinAppWidget(android.content.ComponentName(ctx, cls), null, null) } catch (_: Exception) { false }
+    }
     @JavascriptInterface fun overlayHide(on: Boolean) { OverlayService.hidden = on }
     @JavascriptInterface fun timerGet(): String = Timer.get(ctx).toString()
     @JavascriptInterface fun timerSet(json: String) { Timer.set(ctx, json) }

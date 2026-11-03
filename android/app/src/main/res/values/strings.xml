@@ -5,7 +5,7 @@
     <string name="widget_weather_info_desc">いまの天気・気温・湿度・紫外線・この先の雨</string>
     <string name="widget_next_info_desc">いまの授業の残り時間と次の予定</string>
     <string name="widget_tasks_info_desc">期限の近いタスク</string>
-    <string name="widget_hero_info_desc">アプリの「今日」の青いシート。残り時間のリングと1日の流れ</string>
+    <string name="widget_hero_info_desc">アプリの「今日」の黒板。残り時間のリングと1日の流れ</string>
     <string name="widget_week_info_desc">月〜金の時間割。今日の列と、その日だけの変更</string>
     <string name="widget_prep_info_desc">次の授業日の準備物</string>
     <string name="widget_events_info_desc">2週間先までの予定</string>

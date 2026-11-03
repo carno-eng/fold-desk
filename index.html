@@ -875,6 +875,13 @@ body:not([data-mode="cover-p"]) .wx .wx-hours{grid-column:1/-1}
 #phv .note:empty{display:none}
 #phv .cnt{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:2;font-size:12px;font-weight:800;color:rgba(255,255,255,.8);background:rgba(0,0,0,.4);padding:2px 10px;border-radius:999px}
 body.phv-on #cc,body.phv-on #pills{display:none!important}
+.wgal{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.wg{display:grid;grid-template-columns:44% 1fr;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:14px}
+.wg-img{display:grid;place-items:center;min-height:90px;border-radius:10px;padding:8px;background:linear-gradient(0deg,#5E7A6E,#7D978B)}
+.wg-img img{max-width:100%;max-height:150px;display:block;filter:drop-shadow(0 4px 10px rgba(0,0,0,.25))}
+.wg-tx b{display:block;font-weight:800}
+.wg-tx small{display:block;color:var(--muted);margin:2px 0 8px;line-height:1.45}
+.wg-tx .chip svg{width:14px;height:14px}
 .doc-grp{margin:18px 2px 10px;display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px}
 .doc-grp i{width:10px;height:10px;border-radius:50%}
 .doc-grp small{color:var(--muted);font-weight:700}
@@ -3999,6 +4006,7 @@ document.addEventListener("click", async (ev) => {
   if(b.matches("[data-g-sync]")){ b.disabled = true; await googleSyncNow(); b.disabled = false; return; }
   if(d.act === "settings"){ document.body.classList.remove("rail-peek"); settingsPane(); return; }
   if(d.act === "navmore"){ navMorePane(); return; }
+  if(d.pin){ const ok = NATIVE && NATIVE.pinWidget && NATIVE.pinWidget(d.pin); toast(ok ? "ホーム画面に置く確認が出ます" : "このホーム画面ではアプリから置けません。長押し →「ウィジェット」から置いてください"); return; }
   if(d.act === "navedit"){ document.body.classList.remove("rail-peek"); navEditPane(); return; }
   if(d.act === "railtog"){ const r = navCfg().rail; if(document.body.classList.contains("rail-peek")){ document.body.classList.remove("rail-peek"); setRail("mini"); } else setRail(r === "full" ? "mini" : r === "mini" ? "hide" : "full"); buzz(8); toast({full:"横のバー：名前つき", mini:"横のバー：アイコンだけ", hide:"横のバー：しまいました（左上か左はしから出せます）"}[navCfg().rail]); rebuildNav(); return; }
   if(d.act === "railpeek"){ document.body.classList.add("rail-peek"); buzz(6); return; }
@@ -4819,18 +4827,22 @@ async function checkAppUpdate(){
     const j = await r.json(); const n = +((String(j.tag_name || "").match(/android-v(\d+)/) || [])[1] || 0);
     return n > NATIVE_VER.code ? {n, url:j.html_url} : null; } catch(e){ return null; }
 }
+const WIDGETS = [
+  ["hero", "今日（黒板）", "「今日」の黒板そのまま。残り時間と1日の流れ。大きくすると時程の切り替えも"],
+  ["today", "今日の日程", "コマの一覧。‹ › で明日以降も"], ["next", "いま・次", "小さく置ける残り時間"],
+  ["docs", "近日の資料", "2週間以内に使う資料。タップでその資料が開く"], ["tasks", "タスク", "期限の近いタスク。丸を押すと完了"],
+  ["prep", "授業準備", "次の授業日の準備物"], ["week", "週の時間割", "月〜金の時間割と今日の列"],
+  ["events", "これからの予定", "2週間先までの予定"], ["remind", "お知らせ予定", "これから出る通知"],
+  ["follow", "返信待ち", "返信が必要なメール。「済み」で消える"], ["brief", "今朝のまとめ", "毎朝の自動まとめ"],
+  ["weather", "天気", "気温・湿度・紫外線・雨"], ["window", "窓（空のようす）", "いまの空が窓越しに動く"], ["add", "ひとことで追加", "押すとすぐ入力"]];
 function widgetGuide(){
+  const pin = NATIVE && NATIVE.canPinWidget && NATIVE.canPinWidget();
   openPane(`${paneHead("ホーム画面のウィジェット")}
-    <ol class="steps">
-      <li><span>ホーム画面（表紙画面でもメイン画面でも）の何もないところを<b>長押し</b>して、<b>「ウィジェット」</b>をタップします。</span></li>
-      <li><span>一覧から <b>Fold Desk</b> を選び、置きたいものを長押しして配置します。</span></li>
-    </ol>
-    <div class="group" style="margin-top:14px">
-      ${[["今日（情報シート）","アプリの「今日」の青いシート。大きさに合わせて中身が変わり、縦に広げると時程の切り替えボタンと残りのコマも出ます"],["いま・次","小さなサイズ。いまの授業の残り時間か、次の予定まで"],["今日の日程","コマの一覧。‹ › で明日以降の日程も見られます"],["週の時間割","月〜金の時間割。今日の列と、その日だけの変更が分かる"],["タスク","期限の近いタスク。左の丸を押すと完了"],["授業準備","次の授業日の準備物。丸を押すとチェック"],["これからの予定","2週間先までの予定"],["お知らせ予定","これから出る通知の一覧"],["返信待ち","返信が必要なメール。「済み」で消えます"],["今朝のまとめ","毎朝の自動まとめ"],["近日の資料","2週間以内の予定で使う資料。タップでその資料が開きます"],["天気","いまの天気・気温・湿度・紫外線と、この先の雨"],["窓（空のようす）","窓から外をのぞくように、いまの空が動きます。雨の強さ・雪・霧・雷と、朝・昼・夕焼け・夜の光"],["ひとことで追加","押すとすぐ入力できる小さなボタン"]]
-        .map(([a, b2]) => `<div class="setrow"><span class="main"><b>${a}</b><small>${b2}</small></span></div>`).join("")}
-    </div>
-    <p class="hint" style="margin-top:10px">ウィジェットは授業の区切りで自動で切り替わり、アプリを開かなくても2時間ごとに最新のデータへ更新されます。</p>
-    <div class="btns"><button class="btn primary" data-act="close">わかりました</button></div>`);
+    <p class="hint" style="margin-top:0">${pin ? "置きたいものの「ホーム画面に置く」を押すと、そのままホーム画面に追加できます。" : "ホーム画面の何もないところを長押し →「ウィジェット」→「Fold Desk」から置けます。"}見た目は置いたときとほぼ同じです。</p>
+    <div class="wgal">${WIDGETS.map(([k, n, d]) => `<div class="wg"><div class="wg-img"><img src="widgets/preview_${k}.webp" alt="${esc(n)}のウィジェットの見本" loading="lazy"></div>
+      <div class="wg-tx"><b>${esc(n)}</b><small>${esc(d)}</small>${pin ? `<button class="chip accent" data-pin="${k}">${ico("plus")} ホーム画面に置く</button>` : ""}</div></div>`).join("")}</div>
+    <p class="hint" style="margin-top:10px">ウィジェットは授業の区切りで自動で切り替わり、アプリを開かなくても2時間ごとに新しくなります。</p>
+    <div class="btns"><button class="btn primary" data-act="close">閉じる</button></div>`);
 }
 
 /* ================= Google integrations ================= */
