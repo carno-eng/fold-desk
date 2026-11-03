@@ -3109,10 +3109,10 @@ function vPeople(){
       <b>${esc(p.name)}</b><span class="org">${esc([orgName(p.orgId), p.role].filter(Boolean).join("　"))}</span>
       ${p.about?`<p>${esc(p.about)}</p>`:''}<span style="display:flex;gap:6px;flex-wrap:wrap">${(p.ties||[]).map(x=>`<span class="chip muted">${esc(x)}</span>`).join("")}
       ${ds!==null?`<span class="chip ${ds>60?'warn':''}">${ds===0?'今日':ds+'日前'}</span>`:''}</span></span></button>`; }).join("");
-  return `<div class="page-h"><h1>人</h1><button class="pill-btn" data-act="card" ${sample&&sampleImages?'':'hidden'}>${ico("card")}名刺から</button><button class="pill-btn accent" data-new="person">${ico("plus")}新規</button></div>
+  return `<div class="page-h"><h1>人</h1><button class="pill-btn" data-act="card" ${NATIVE && NATIVE.scanCard ? '' : 'hidden'}>${ico("card")}名刺から</button><button class="pill-btn accent" data-new="person">${ico("plus")}新規</button></div>
     <div class="toolbar"><input class="input" id="pq" placeholder="名前・学校・会社で探す" value="${esc(ui.peopleQ)}" autocomplete="off">
       <button class="chip" data-tie="" aria-pressed="${!tie}">すべて</button>${ties.map(x=>`<button class="chip" data-tie="${esc(x)}" aria-pressed="${tie===x}">${esc(x)}</button>`).join("")}</div>
-    ${list.length ? `<div class="pgrid">${cards}</div>` : (S.people.length ? `<div class="card"><p class="empty">該当する人がいません。</p></div>` : emptyBig("people", "まだだれもいません", "研修で会った先生や業者さんを登録しておくと、次に会う前に話したことを見返せます。", `${sample && sampleImages ? `<button class="btn" data-act="card">${ico("card")} 名刺から</button>` : ""}<button class="btn primary" data-new="person">${ico("plus")} 新しく登録</button>`))}`;
+    ${list.length ? `<div class="pgrid">${cards}</div>` : (S.people.length ? `<div class="card"><p class="empty">該当する人がいません。</p></div>` : emptyBig("people", "まだだれもいません", "研修で会った先生や業者さんを登録しておくと、次に会う前に話したことを見返せます。", `${NATIVE && NATIVE.scanCard ? `<button class="btn" data-act="card">${ico("card")} 名刺から</button>` : ""}<button class="btn primary" data-new="person">${ico("plus")} 新しく登録</button>`))}`;
 }
 
 /* ================= MEMO ================= */
@@ -3121,7 +3121,7 @@ function vMemo(){
   const open = ms.filter(m => !m.done), done = ms.filter(m => m.done);
   const card = m => `<div class="card"><div class="memo">${esc(m.text)}</div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span class="status" style="flex:1">${m.createdAt?esc(md(m.createdAt.slice(0,10))):''}</span></div>
-    <div class="memo-actions">${!m.done?`<button data-memo-task="${m.id}">タスクにする</button>${sample?`<button class="ai" data-memo-ai="${m.id}">${'振り分け'}</button>`:''}<button data-memo-done="${m.id}">済み</button>`:`<button data-memo-undo="${m.id}">戻す</button>`}<button data-memo-del="${m.id}">削除</button></div></div>`;
+    <div class="memo-actions">${!m.done?`<button data-memo-task="${m.id}">タスクにする</button><button class="ai" data-memo-ai="${m.id}">振り分け</button><button data-memo-done="${m.id}">済み</button>`:`<button data-memo-undo="${m.id}">戻す</button>`}<button data-memo-del="${m.id}">削除</button></div></div>`;
   return `<div class="page-h"><h1>メモ</h1></div>
     <form class="card" data-form="memo" style="margin-bottom:14px"><div class="field" style="margin:0"><textarea name="text" id="memotext" placeholder="走り書きでOK。あとでタスク・予定・人に振り分けます"></textarea></div><div class="btns"><button class="btn primary" type="submit">メモを追加</button></div></form>
     <div class="grid two">${open.map(card).join("") || (S.memos.length ? '<div class="card"><p class="empty">未整理のメモはありません。</p></div>' : emptyBig("memo", "メモはまだありません", "思いついたことを上に走り書きしておけば、あとでタスク・予定・人に振り分けられます。", ""))}</div>
@@ -3222,7 +3222,8 @@ const MB = n => n >= 1e9 ? (n / 1e9).toFixed(2) + " GB" : n >= 1e6 ? (n / 1e6).t
 /* ================= 更新履歴 (newest at the top) ================= */
 const CHANGELOG = [
  {day:"11月4日", sub:"水曜日・だれでも使える日", list:[
-  {v:"1.0.44", t:"夜", big:1, newest:1, h:"だれでも使いやすく", lead:"スマホにくわしくない人の目で、入り口から見直しました。", it:[["n","はじめての案内。使う機能を「シンプル」「ぜんぶ」から選べる"],["n","時間割の「ひな形」（45分・50分・40分授業）と、写真からの読み取り"],["n","文字の大きさ（小・標準・大・特大）と、省エネモード"],["n","自動バックアップ（週1回、スマホの「ダウンロード」に最新の1つ）"],["n","パソコン・タブレットでも同じデータを開ける「ほかの端末でも使う」"],["n","「新しくなりました」のお知らせ、「プライバシーと利用のきまり」"],["i","通知やカレンダーの許可は、理由を説明してから"],["i","お試しで入れたものを、つないだあとに引き継げる"],["i","「閉じた画面」などの Fold だけの言葉を、どのスマホでもわかる言葉に"],["i","キャラクターの絵を登録していないときは、キャラクターを出さない"]]}]},
+  {v:"アプリ内", t:"夜", big:1, newest:1, h:"AI なしで、ぜんぶ無料に", lead:"別の申し込みや料金がいる機能をやめて、スマホの中だけで動くようにしました。", it:[["i","「ひとことで入れる」は、日付・時刻・「〜まで」・「○時間目」をスマホの中で読み取る方式に。「明日16時 学年会」「金曜までに見積もり確認」「3時間目 補教 2-1」など"],["i","メモの「振り分け」も同じ方式で、だれでも使える"],["i","名刺は、スマホの中で読んだ文字を決まりにそって整理"],["i","AI の鍵が必要だった「時間割を写真から読む」と「Gmail を AI で読む」はやめました"]]},
+  {v:"1.0.44", t:"夜", big:1, h:"だれでも使いやすく", lead:"スマホにくわしくない人の目で、入り口から見直しました。", it:[["n","はじめての案内。使う機能を「シンプル」「ぜんぶ」から選べる"],["n","時間割の「ひな形」（45分・50分・40分授業）"],["n","文字の大きさ（小・標準・大・特大）と、省エネモード"],["n","自動バックアップ（週1回、スマホの「ダウンロード」に最新の1つ）"],["n","パソコン・タブレットでも同じデータを開ける「ほかの端末でも使う」"],["n","「新しくなりました」のお知らせ、「プライバシーと利用のきまり」"],["i","通知やカレンダーの許可は、理由を説明してから"],["i","お試しで入れたものを、つないだあとに引き継げる"],["i","「閉じた画面」などの Fold だけの言葉を、どのスマホでもわかる言葉に"],["i","キャラクターの絵を登録していないときは、キャラクターを出さない"]]}]},
  {day:"11月3日", sub:"火曜日・文化の日", list:[
   {v:"アプリ内", t:"22:40", big:1, h:"個人の予定と、学校の予定", lead:"Google カレンダーから持ってきて、ひと目で分けられるように。", it:[["n","Google カレンダーの書き出しファイル（.ics・.zip）を「予定」の「読み込む」から。くり返しの予定や連休もそのまま入る"],["n","予定に「個人」「学校（仕事）」の区分。色と札で見分けられる"],["n","「予定」の上のボタンで、個人・学校の予定をそれぞれ表示／非表示。「今日」とウィジェットにも反映"],["i","学校のカレンダーとして読み込んだ予定は、このスマホの中だけに保存"],["i","テーマカラーの名前を日本の伝統色に。常磐色・藍色・墨色・臙脂色・江戸紫・山吹茶"]]},
   {v:"アプリ内", t:"21:55", big:1, h:"更新履歴とテーマカラー", lead:"あなたが今見ているこのページです。", it:[["n","設定から読める「更新履歴」。1.0.0 から今までを、新しい順に"],["n","テーマカラーを6色から。常磐色・藍色・墨色・臙脂色・江戸紫・山吹茶。黒板とボタンの色がいっしょに変わります"]]},
@@ -3490,7 +3491,7 @@ function privacyPane(){
       <li><b>学校のカレンダー</b>（学校のアカウント・読み込んだ学校のカレンダー）：このスマホの中にだけ置き、個人の Google には入れません。</li></ul>
     <h4>外に送るもの</h4>
     <ul><li><b>天気</b>：選んだ場所の緯度・経度だけを天気サービス（Open-Meteo）に送ります。名前やアカウントは送りません。</li>
-      <li><b>AI の機能</b>（メモの振り分け・名刺・時間割の読み取り）：あなたの Apps Script から、あなたが設定した Gemini の鍵で送ります。使わなければ送りません。</li>
+      <li><b>AI は使いません。</b>文からの読み取り・メモの振り分け・名刺の読み取りは、すべてこのスマホの中で行います。追加の料金がかかるサービスも使いません。</li>
       <li>広告・利用状況の集計・追跡は、いっさいしません。</li></ul>
     <h4>学校で使うときのお願い</h4>
     <ul><li>児童・生徒や保護者の個人情報（名前・成績・家庭の事情など）は、入れないでください。</li>
@@ -4604,7 +4605,7 @@ function settingsPane(){
         <div class="setrow"><span class="main"><b>カレンダー</b><small>取り込むカレンダーを選ぶ（共有された学校のカレンダーも）</small></span><button class="chip accent" data-gcal-pick>選ぶ</button></div>
         <div class="setrow"><span class="main"><b>Google ToDo リストと同期</b><small>「Fold Desk」リストと双方向。ToDo のウィジェットでホーム画面にも出せます</small></span><button class="switch" role="switch" aria-checked="${G().tasks}" data-g-toggle="tasks" aria-label="Google ToDo リストと同期"></button></div>
         <div class="setrow"><span class="main"><b>スター付きメールをタスクに</b><small>タスクを完了すると Gmail のスターも外します</small></span><button class="switch" role="switch" aria-checked="${G().starred}" data-g-toggle="starred" aria-label="スター付きメールをタスクに"></button></div>
-        <div class="setrow"><span class="main"><b>Gmail を AI で読む</b><small id="g-ai">やること・予定・返信待ちを1時間ごとに取り出します</small></span><button class="switch" role="switch" aria-checked="${G().gmailAi}" data-g-toggle="gmailAi" aria-label="Gmail を AI で読む"></button></div>
+        <div class="setrow" hidden><span class="main"><b>Gmail を AI で読む</b><small id="g-ai">やること・予定・返信待ちを1時間ごとに取り出します</small></span><button class="switch" role="switch" aria-checked="${G().gmailAi}" data-g-toggle="gmailAi" aria-label="Gmail を AI で読む"></button></div>
         <div class="setrow"><span class="main"><b>予定から時程を自動で切り替える</b><small>「短縮」「朝会」などの名前の終日予定がある日は、その時程にします（手で選んだ日はそのまま）</small></span><button class="switch" role="switch" aria-checked="${pref("autoMode") !== false}" data-pref-switch="autoMode" aria-label="予定から時程を自動で切り替える"></button></div>
         <div class="setrow"><span class="main"><b>縦長の画面は「ひと目」から始める</b><small>スマホ（Fold を閉じたとき）で開くと、いまの授業と残り時間だけを大きく表示（オフでも「今日」の右上から切り替えられます）</small></span><button class="switch" role="switch" aria-checked="${ls.get("fd-glance-first", false) === true}" data-glance-first aria-label="ひと目から始める"></button></div>
         <div class="setrow"><span class="main"><b>「今日」の背景を天気と時間で変える</b><small>雨・雪・雲・朝焼け・夕焼け・星空などを動きで表示。鳥や飛行機、流れ星もときどき（オフで電池を節約）</small></span><button class="switch" role="switch" aria-checked="${ls.get("fd-wxfx", true) !== false}" data-wxfx-toggle aria-label="天気の背景"></button></div>
@@ -4718,7 +4719,54 @@ function askSummary(x){
     default: return ["メモ", x.text || "", ""];
   }
 }
+
+/* ================= 文から予定・タスクを読み取る（AI を使わず、このスマホの中だけで） ================= */
+const WDJ = "日月火水木金土";
+function lpDate(s){
+  const t = todayS(); let m;
+  const R = [
+    [/(今日|きょう)/, () => t], [/(明後日|あさって)/, () => addDays(t, 2)], [/(明日|あした|あす)/, () => addDays(t, 1)],
+    [/(\d+)日後/, m => addDays(t, +m[1])],
+    [/(再来週|来週|今週)の?([日月火水木金土])(?:曜日?)?/, m => { const mon = addDays(t, -((parse(t).getDay() + 6) % 7)); return addDays(mon, (m[1] === "今週" ? 0 : m[1] === "来週" ? 7 : 14) + (WDJ.indexOf(m[2]) + 6) % 7); }],
+    [/(\d{1,2})\s*[\/月]\s*(\d{1,2})日?/, m => { const y = +t.slice(0, 4); let d = `${y}-${pad(+m[1])}-${pad(+m[2])}`; if(d < addDays(t, -60)) d = `${y + 1}-${pad(+m[1])}-${pad(+m[2])}`; return d; }],
+    [/([日月火水木金土])曜日?/, m => addDays(t, ((WDJ.indexOf(m[1]) - parse(t).getDay() + 7) % 7) || 7)]];
+  for(const [re, f] of R){ m = s.match(re); if(m) return {date:f(m), rest:s.replace(m[0], " ")}; }
+  return {date:"", rest:s};
+}
+function lpTime(s){
+  const T = "(午前|午後)?\\s*(\\d{1,2})(?:[:：](\\d{2})|時(?!間)(半|(\\d{1,2})分)?)";
+  const cv = (ap, h, mm, half, mm2) => { h = +h; if(ap === "午後" && h < 12) h += 12; else if(!ap && h >= 1 && h <= 6) h += 12; const mi = mm ? +mm : half === "半" ? 30 : mm2 ? +mm2 : 0; return h < 24 && mi < 60 ? `${pad(h)}:${pad(mi)}` : ""; };
+  let m = s.match(new RegExp(T + "\\s*(?:[〜~\\-－ー]|から)\\s*" + T));
+  if(m) return {start:cv(m[1], m[2], m[3], m[4], m[5]), end:cv(m[6] || m[1], m[7], m[8], m[9], m[10]), rest:s.replace(m[0], " ")};
+  m = s.match(new RegExp(T)); if(m) return {start:cv(m[1], m[2], m[3], m[4], m[5]), end:"", rest:s.replace(m[0], " ").replace(/^\s*から/, " ")};
+  return {start:"", end:"", rest:s};
+}
+const lpClean = s => s.replace(/(までに|まで|が締め?切り?|締め?切り?|〆切|期限)/g, " ").replace(/\s+/g, " ").replace(/^[\s、,にのはをで]+|[\s、,にのをでからへ]+$/g, "").trim();
+function localParse(text){
+  return String(text || "").split(/\n|。/).map(x => x.trim()).filter(Boolean).slice(0, 5).map(seg => {
+    const due = /(まで|締め?切|〆切|提出|期限)/.test(seg);
+    let {date, rest} = lpDate(seg);
+    const pm = rest.match(/(\d)\s*(?:時間目|限目?|校時)/); let period = null; if(pm){ period = +pm[1]; rest = rest.replace(pm[0], " "); }
+    const tm = lpTime(rest); rest = tm.rest;
+    const cm = rest.match(/(\d)\s*[-ー－]\s*(\d)(?!\d)/), cls = cm ? `${cm[1]}-${cm[2]}` : "";
+    const title = lpClean(cm ? rest.replace(cm[0], " ") : rest) || seg;
+    if(period && /(補教|自習|なし|中止|カット|変更|入れ替え|代わり|かわり)/.test(seg)){
+      const cancel = /(なし|中止|カット)/.test(seg);
+      return {type:"change", date:date || todayS(), period, subject:cancel ? "" : ((title.match(/補教|自習/) || [title])[0]), cls, cancel, note:""};
+    }
+    if(due || (!tm.start && !period && /(する|やる|作る|つくる|送る|書く|確認|返信|提出|準備|印刷|出す|連絡|買う|予約|申し込|まとめる|調べる|探す|さがす|考える|決める|頼む|直す|片付ける|返す|読む|急ぎ|至急)/.test(seg)))
+      return {type:"task", title, due:date || "", priority:/(急ぎ|至急|大事|重要)/.test(seg) ? "high" : "mid", area:"", note:""};
+    if(date || tm.start)
+      return {type:"event", title, date:date || todayS(), time:tm.start, endTime:tm.end, place:"", kind:/研修|出張/.test(seg) ? "研修・出張" : /(会議|打ち合わせ|部会|学年会)/.test(seg) ? "会議" : ""};
+    return {type:"memo", text:seg};
+  });
+}
 async function runAsk(text){
+  askItems = localParse(text); if(!askItems.length) askItems = [{type:"memo", text}];
+  askItems.forEach(x => { x._on = true; });
+  drawAsk("読み取った内容です。ちがうところは「直す」で直せます");
+}
+async function runAskAI_unused(text){
   if(!sample){ await put("memos", null, {text, done:false, createdAt:new Date().toISOString()}); toast("メモに入れました（振り分けは接続後に使えます）"); closePane(); return; }
   openPane(`${paneHead("振り分け中")}<p class="thinking">内容を読んでいます…</p>`); concierge.think(true);
   const t = todayS(), N = OFFICIAL.normal.low.map((p, i) => `${i+1}時間目 ${p.start}-${p.end}`).join("、");
@@ -4774,6 +4822,14 @@ async function saveAsk(){
 
 /* ================= AI ================= */
 async function aiSort(memo){
+  const x = localParse(memo.text)[0] || {type:"memo"};
+  if(x.type === "task") taskForm({title:x.title, due:x.due, priority:x.priority, _memo:memo.id});
+  else if(x.type === "event") eventForm({title:x.title, date:x.date, time:x.time, endTime:x.endTime, kind:x.kind, _memo:memo.id});
+  else { toast("日付や「〜まで」が見つからなかったので、メモのままにしておきます"); return; }
+  $("#pane form").dataset.memo = memo.id;
+  $("#pane .pane-h h2").textContent += "（確認して保存）";
+}
+async function aiSortAI_unused(memo){
   openPane(`${paneHead("振り分け中")}<p class="thinking">メモの内容を読んでいます…</p>`); concierge.think(true);
   const prompt = `あなたは小学校教員の個人用整理アシスタントです。今日は${todayS()}（${WD[new Date().getDay()]}曜日）。
 次のメモを、タスク・予定・人物・メモのどれか1つに振り分けてください。
@@ -4834,7 +4890,7 @@ window.__fdCard = async str => {
   if(!r.ok || !String(r.text || "").trim()){ concierge.think(false);
     openPane(`${paneHead("名刺を読み取る")}<p class="empty" style="margin-top:0">文字を読み取れませんでした。明るい場所で、名刺が画面いっぱいになるように撮ってみてください。</p><div class="btns"><button class="btn primary" data-card-src="camera">もう一度撮る</button><button class="btn" data-act="close">やめる</button></div>`); return; }
   let p = parseCard(r);
-  if(paired()) try {
+  if(false) try {
     const ai = await sample.json(`次の文字は名刺の写真から読み取ったものです（読み取りの誤りを含むことがあります）。書かれている情報を整理し、次の形のJSONのみで返してください。読めない項目は空文字。
 {"name":"","kana":"","org":"","role":"","email":"","phone":"","about":"名刺から分かる仕事内容を1文で"}
 
@@ -5112,7 +5168,7 @@ document.addEventListener("click", async (ev) => {
   if(d.cell){ const [dk, pi] = d.cell.split(":"); cellForm(dk, +pi); return; }
   if(d.kind){ const f = b.closest("form"); f.kind.value = d.kind; f.querySelectorAll("[data-kind]").forEach(x => x.setAttribute("aria-pressed", x === b)); if(d.kind === "free"){ f.subject.value = ""; f.cls.value = ""; } return; }
   if(d.memoTask){ const m = S.memos.find(x => x.id === d.memoTask); if(m){ taskForm({title: m.text.split("\n")[0].slice(0,80), note: m.text}); $("#pane form").dataset.memo = m.id; } return; }
-  if(d.memoAi){ const m = S.memos.find(x => x.id === d.memoAi); if(m && sample) aiSort(m); return; }
+  if(d.memoAi){ const m = S.memos.find(x => x.id === d.memoAi); if(m) aiSort(m); return; }
   if(d.memoDone){ const m = S.memos.find(x => x.id === d.memoDone); if(m) await put("memos", m.id, {...m, done:true}); return; }
   if(d.memoUndo){ const m = S.memos.find(x => x.id === d.memoUndo); if(m) await put("memos", m.id, {...m, done:false}); return; }
   if(d.memoDel){ if(b.dataset.armed){ await del("memos", d.memoDel); } else { b.dataset.armed = "1"; b.textContent = "もう一度押す"; } return; }
@@ -5594,7 +5650,7 @@ function ttDraw(){
   if(e.tab === "grid"){
     const rows = e.grid[e.day];
     const subs = [...new Set(["国語","算数","生活","音楽","図画工作","体育","道徳","学級活動","特別活動","英語","情報探究","総合", ...DAYKEYS.flatMap(dk => e.grid[dk].map(c => c && c.subject).filter(Boolean))])];
-    body = (sample && !DEMO() ? `<div class="tt-tpl"><b>写真から読み取る</b><small>紙やホワイトボードの時間割を撮ると、AI が表にします。読み取ったあとに確認して直せます</small><div class="acts"><button type="button" class="chip accent" data-tt-photo>${ico("camera")} 写真を選ぶ</button></div></div>` : "") + `<div class="seg mini" role="group" aria-label="曜日" style="margin-bottom:12px;display:flex">${DAYKEYS.map((dk, i) => `<button type="button" data-tt-day="${dk}" aria-pressed="${e.day===dk}" style="flex:1">${DAYJP[i]}</button>`).join("")}</div>
+    body = (false ? `<div class="tt-tpl"><b>写真から読み取る</b><small>紙やホワイトボードの時間割を撮ると、AI が表にします。読み取ったあとに確認して直せます</small><div class="acts"><button type="button" class="chip accent" data-tt-photo>${ico("camera")} 写真を選ぶ</button></div></div>` : "") + `<div class="seg mini" role="group" aria-label="曜日" style="margin-bottom:12px;display:flex">${DAYKEYS.map((dk, i) => `<button type="button" data-tt-day="${dk}" aria-pressed="${e.day===dk}" style="flex:1">${DAYJP[i]}</button>`).join("")}</div>
       <datalist id="ttsubs">${subs.map(x => `<option value="${esc(x)}">`).join("")}</datalist>
       ${rows.map((c, i) => { c = c || {}; const k = c.subject ? (c.kind || "class") : "free";
         return `<div class="ttrow"><span class="pno num">${i+1}</span>
@@ -6338,7 +6394,7 @@ function schoolHandoffPane(){
     <div class="btns"><a class="btn primary" href="${esc(link)}">アプリで接続する</a><button class="btn" data-act="close">このままでよい</button></div>`);
 }
 setTimeout(schoolHandoffPane, 900);
-if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, concierge, dayMode, eventForm, closePane, wxfx, wxmini, pomo, cdown, swatch, storagePane, glanceCalc, get pdfv(){ return pdfv; }, openDoc, savePhotos, get photoList(){ return photoList; }, autoSlot, get phv(){ return phv; }};
+if(location.port === "8765") window.__fdT = {localParse, get S(){ return S; }, get evDups(){ return evDups; }, concierge, dayMode, eventForm, closePane, wxfx, wxmini, pomo, cdown, swatch, storagePane, glanceCalc, get pdfv(){ return pdfv; }, openDoc, savePhotos, get photoList(){ return photoList; }, autoSlot, get phv(){ return phv; }};
 })();
 </script>
 </body>
