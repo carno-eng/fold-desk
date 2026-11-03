@@ -6,3 +6,8 @@ A personal dashboard PWA (timetable, tasks, events, people, memos) designed for 
 
 - `index.html`, `sw.js`, `manifest.webmanifest`, `icons/` — the installable app
 - `gas/` — Apps Script backend (copy into a new Apps Script project; see comments at the top of `Code.gs`)
+
+## Third-party
+
+- Icons: [Material Symbols](https://github.com/google/material-design-icons) (Apache License 2.0), inlined in `index.html`.
+- PDF: pdf.js (Apache 2.0) and pdf-lib (MIT) in `vendor/`.
