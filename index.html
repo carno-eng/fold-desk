@@ -2,7 +2,7 @@
 <html lang="ja"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src https://script.google.com https://script.googleusercontent.com https://api.github.com https://api.open-meteo.com https://geocoding-api.open-meteo.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://api.github.com https://api.open-meteo.com https://geocoding-api.open-meteo.com; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="robots" content="noindex,nofollow,noarchive,nosnippet">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#EDEFEA" media="(prefers-color-scheme: light)">
@@ -1988,6 +1988,24 @@ let tabDownAt = 0;
 document.addEventListener("pointerdown", e => { if(e.button !== 0) return; const t = e.target.closest && e.target.closest(".tab[data-go]"); if(!t || t.closest("#pane")) return;
   tabDownAt = performance.now(); if(t.dataset.go !== view) go(t.dataset.go); }, true);
 document.addEventListener("click", e => { const t = e.target.closest && e.target.closest(".tab[data-go]"); if(t && performance.now() - tabDownAt < 700){ e.stopPropagation(); e.preventDefault(); } }, true);
+const BUILD = "fd-shell-v53";
+let updWaiting = false;
+async function checkBuild(){
+  if(!/^fd-shell-v\d+$/.test(BUILD)) return;
+  try { const t = await (await fetch("sw.js", {cache:"no-store"})).text(); const m = t.match(/VERSION = "(fd-shell-v\d+)"/);
+    if(m && m[1] !== BUILD){ updWaiting = true; safeReload(); } } catch(e){}
+}
+function safeReload(){
+  if(!updWaiting) return;
+  const ae = document.activeElement, typing = ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName);
+  if(typing || ui.pane || document.getElementById("pdfv") || document.getElementById("phv") || document.getElementById("onb") || (window.__fdBusy && window.__fdBusy())) return;
+  try { const last = +localStorage.getItem("fd-upd-at") || 0; if(Date.now() - last < 10 * 60e3) return; localStorage.setItem("fd-upd-at", String(Date.now())); sessionStorage.setItem("fd-updated", "1"); } catch(e){}
+  location.reload();
+}
+document.addEventListener("visibilitychange", () => { if(!document.hidden) setTimeout(checkBuild, 400); else if(updWaiting) safeReload(); });
+setInterval(checkBuild, 20 * 60e3); setTimeout(checkBuild, 8000);
+addEventListener("hashchange", () => setTimeout(safeReload, 50));
+try { if(sessionStorage.getItem("fd-updated")){ sessionStorage.removeItem("fd-updated"); setTimeout(() => toast("新しい版になりました"), 900); } } catch(e){}
 function buzz(ms){ try { if(!REDUCE && navigator.vibrate) navigator.vibrate(ms); } catch(e){} }
 /* touch glow, clipped to the control under the finger */
 let lastTile = null;
@@ -2619,6 +2637,7 @@ function makeSky(opt = {}){
     if(opt.sel){ ensure(); if(document.hidden || !cv || !cv.clientWidth) return; }
     else if(document.hidden || !document.body.classList.contains("wxfx-on")) return;
     if(t < skyPauseUntil) return;
+    if(opt.sel && cv.width !== Math.round(cv.clientWidth * Math.min(3, devicePixelRatio || 1))) key = "";
     if(t - last < 33) return; const dt = Math.min(.06, (t - last) / 1000); last = t;
     const s2 = sceneState(), k2 = JSON.stringify([s2.phase, s2.kind, s2.lvl, s2.cover > .4, opt.sel ? cv.clientWidth : innerWidth, opt.sel ? cv.clientHeight : innerHeight, s2.cols, cv.width]);
     if(k2 !== key){ st = s2; key = k2; build(); }
@@ -5079,6 +5098,7 @@ function settingsPane(){
       <div class="group" style="margin-top:12px"><div class="setrow"><span class="main"><b>省エネモード</b><small>空の動き・キャラクターの歩き・くり返しの動きを止めて、電池を長持ちさせます</small></span><button class="switch" role="switch" aria-checked="${ls.get("fd-eco", false) === true}" data-eco aria-label="省エネモード"></button></div></div>
       <div class="sec">このアプリについて</div>
       <button class="row" data-act="changelog" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico("spark")}</span><span class="main"><b>更新履歴</b><small>1.0.0 から今までに増えたこと・直したこと</small></span><span class="when">${ico("right")}</span></button>
+      <div class="setrow"><span class="main"><b>画面の版</b><small>${esc(BUILD.replace("fd-shell-", ""))}　開き直すと自動で新しい版になります</small></span><button class="chip" data-act="checkbuild">確認</button></div>
       <button class="row" data-act="privacy" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico("card")}</span><span class="main"><b>プライバシーと利用のきまり</b><small>データの置き場所・外に送るもの・やめ方</small></span><span class="when">${ico("right")}</span></button>
       <button class="row" data-act="onboard" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico("play")}</span><span class="main"><b>はじめての案内をもう一度見る</b></span><span class="when">${ico("right")}</span></button>`;
   };
@@ -5485,6 +5505,7 @@ document.addEventListener("click", async (ev) => {
   if(d.stor){ storageAct(b); return; }
   if(d.demo){ demoAct(d.demo); return; }
   if(d.face){ rollFace(d.face); return; }
+  if(d.act === "checkbuild"){ toast("確認しています…"); checkBuild().then(() => { if(!updWaiting) toast("最新の版です"); }); return; }
   if(d.boardAct){ boardAct(d.boardAct); return; }
   if(d.carry){ carryAct(d.carry, b); return; }
   if(d.act === "privacy"){ privacyPane(); return; }
