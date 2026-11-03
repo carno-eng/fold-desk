@@ -1519,6 +1519,111 @@ html.zoomed table.tt th,html.zoomed table.tt td{padding-left:2px;padding-right:2
 @media (min-width:1280px){
   body:not([data-mode="cover-p"]) #view > .page-h,body:not([data-mode="cover-p"]) #view > :not(.navbar){max-width:1180px;margin-left:auto;margin-right:auto}
 }
+
+/* ================= v43: design pass ================= */
+/* 1) weather face = the same blackboard */
+.hero.back,.hero.back.sun,.hero.back.rain,.hero.back.cloud,.hero.back.night{background:var(--board)!important;color:var(--chalk)!important;text-shadow:none!important;box-shadow:none!important}
+.hero.back::before,.hero.back .blob,.hero.back canvas.wxsky,.hero.back .wxscrim{display:none!important}
+.hero.back .wxb-stats > div,.hero.back .wxb-hours div{background:transparent!important;box-shadow:inset 0 0 0 1.5px rgba(245,243,236,.22)!important;border-radius:12px}
+.hero.back .wxb-hours div.now{box-shadow:inset 0 0 0 2px var(--chalk-y)!important}
+.hero.back .wxb-hours em{color:var(--chalk-y)!important}
+.hero.back .wxb-tip span{background:transparent!important;box-shadow:inset 0 0 0 1.5px var(--chalk-y);color:var(--chalk-y)}
+.hero.back .wxb-t{color:var(--chalk)}
+.hero.back .wxb-l,.hero.back .wxb-stats small,.hero.back .wxb-hours small,.hero.back .wxb-foot{color:rgba(245,243,236,.75)!important}
+.hero.back .chip{background:rgba(245,243,236,.12)!important;color:var(--chalk)!important}
+.hero.back::after{content:"";position:absolute;left:16px;right:16px;bottom:0;height:9px;border-radius:4px 4px 0 0;background:var(--wood)}
+/* 2) pomodoro: theme colour while focusing, chalk yellow on breaks */
+.pomo-ring .arc{stroke:var(--accent)!important}
+.pomo.brk .pomo-ring .arc{stroke:color-mix(in srgb,var(--chalk-y) 75%,#7A5A00)!important}
+/* 3) a calmer sky behind 今日 */
+#wxfx{filter:saturate(.68) brightness(.97) contrast(.96)}
+/* 4) the "new" card at the top, away from the buttons */
+#news{top:calc(10px + env(safe-area-inset-top,0px));bottom:auto!important;transform:translate(-50%,-24px)}
+#news.on{transform:translate(-50%,0)}
+/* 5) docs search gets the row */
+.doc-tools .doc-search{flex:1 1 auto;min-width:0}
+.doc-tools select{flex:none;max-width:42%;padding-right:28px}
+/* 8) one set of buttons: green = main, white with a line = sub */
+.page-h .icon-btn,.cal-h .icon-btn,.daynav .icon-btn{background:var(--surface);color:var(--fg);box-shadow:inset 0 0 0 1px var(--line)}
+.pill-btn:not(.accent):not(.danger){background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)!important}
+.btn:not(.primary):not(.danger){background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+/* 9) folded form fields */
+.more-f{margin:6px 0 4px;border-radius:14px;background:var(--surface-2);padding:0 12px}
+.more-f > summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:8px;padding:12px 2px;font-weight:800;font-size:14.5px}
+.more-f > summary::-webkit-details-marker{display:none}
+.more-f > summary::before{content:"";width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);margin-right:4px;transition:transform .2s;align-self:center}
+.more-f[open] > summary::before{transform:rotate(45deg)}
+.more-f > summary small{font-weight:600;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.more-f[open]{padding-bottom:8px}
+/* 10) settings contents */
+.set-toc{position:sticky;top:-1px;z-index:3;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -4px 10px;padding:8px 4px;background:var(--surface)}
+.set-toc::-webkit-scrollbar{display:none}
+.set-toc .chip{flex:none}
+/* 11) a clearer middle step in the type scale */
+.row .main b{font-size:15px}
+.card h3{font-size:17.5px}
+/* ===== 窓と掲示板 ===== */
+.face-dots{display:flex;align-items:center;justify-content:center;gap:8px;margin:-10px 0 10px;min-height:20px}
+.face-dots button{position:relative;width:24px;height:20px;display:grid;place-items:center}
+.face-dots button::before{content:"";position:absolute;inset:-12px -6px}
+.face-dots i{width:7px;height:7px;border-radius:4px;background:var(--line);transition:width .3s var(--spring),background .3s}
+.face-dots button[aria-selected="true"] i{width:20px;background:var(--accent)}
+.face-dots span{font-size:12px;color:var(--muted);animation:hintNudge 2.4s 1s ease-in-out 2}
+@keyframes hintNudge{0%,100%{transform:none}40%{transform:translateX(-8px)}60%{transform:translateX(0)}}
+
+#view.roll-out-l{animation:rollOutL .3s cubic-bezier(.5,0,.75,0) forwards}
+#view.roll-out-r{animation:rollOutR .3s cubic-bezier(.5,0,.75,0) forwards}
+#view.roll-in-l{animation:rollInL .62s cubic-bezier(.2,.9,.3,1.25) both}
+#view.roll-in-r{animation:rollInR .62s cubic-bezier(.2,.9,.3,1.25) both}
+@keyframes rollOutL{to{transform:perspective(1100px) translateX(-18%) rotateY(-80deg) rotateZ(-3deg) scale(.9);opacity:.45}}
+@keyframes rollOutR{to{transform:perspective(1100px) translateX(18%) rotateY(80deg) rotateZ(3deg) scale(.9);opacity:.45}}
+@keyframes rollInL{0%{transform:perspective(1100px) translateX(18%) rotateY(80deg) rotateZ(3deg) scale(.9);opacity:.2}70%{transform:perspective(1100px) rotateY(-5deg) translateY(-6px);opacity:1}85%{transform:perspective(1100px) rotateY(2deg) translateY(2px)}100%{transform:none}}
+@keyframes rollInR{0%{transform:perspective(1100px) translateX(-18%) rotateY(-80deg) rotateZ(-3deg) scale(.9);opacity:.2}70%{transform:perspective(1100px) rotateY(5deg) translateY(-6px);opacity:1}85%{transform:perspective(1100px) rotateY(-2deg) translateY(2px)}100%{transform:none}}
+.win-wrap{position:relative;margin:0 0 18px}
+.win{position:relative;height:clamp(220px,46vw,340px);border-radius:16px;overflow:hidden;background:#6E8FB8;box-shadow:0 0 0 10px var(--wood),0 0 0 12px color-mix(in srgb,var(--wood) 70%,#000),inset 0 0 30px rgba(0,0,0,.25);margin:12px 12px 0}
+.win canvas.winsky{position:absolute;inset:0;width:100%;height:100%}
+.win-glass{position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.16),rgba(255,255,255,0) 35%,rgba(255,255,255,.07) 60%,rgba(255,255,255,0) 75%);pointer-events:none}
+.win-bar{position:absolute;background:var(--wood);box-shadow:0 0 0 1px rgba(0,0,0,.12)}
+.win-bar.v{top:0;bottom:0;left:50%;width:9px;margin-left:-4.5px}
+.win-bar.h{left:0;right:0;top:44%;height:9px;margin-top:-4.5px}
+.win-info{position:absolute;left:18px;bottom:16px;display:grid;gap:2px;color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.45);z-index:1}
+.win-info b{font-family:var(--f-num);font-size:44px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.win-info .win-ph{font-size:14px;font-weight:800}
+.win-info .win-wx{font-size:15px;font-weight:800}
+.win-info small{font-size:12.5px;font-weight:700;opacity:.9}
+.win-sill{height:14px;margin:0 0 0;border-radius:0 0 6px 6px;background:linear-gradient(var(--wood),color-mix(in srgb,var(--wood) 75%,#000));box-shadow:0 6px 12px -6px rgba(0,0,0,.35)}
+.daysky{margin:14px 4px 0}
+.ds-bar{position:relative;height:16px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.ds-now{position:absolute;top:-5px;bottom:-5px;width:4px;margin-left:-2px;border-radius:2px;background:var(--chalk-y);box-shadow:0 0 0 2px var(--bg),0 0 10px var(--chalk-y)}
+.ds-sun{position:absolute;top:-18px;margin-left:-8px;width:16px;height:16px;color:#E0A11B}
+.ds-sun svg{width:16px;height:16px}
+.ds-sun.set{color:#C2577A}
+.ds-lab{position:relative;display:flex;justify-content:space-between;margin-top:6px;font-size:11.5px;font-weight:700;color:var(--muted)}
+.corkboard{position:relative;padding:16px 14px 18px;border-radius:14px;background-color:#B98A5A;background-image:radial-gradient(rgba(90,55,25,.28) 1px,transparent 1.6px),radial-gradient(rgba(255,235,200,.22) 1px,transparent 1.6px);background-size:7px 7px,11px 11px;background-position:0 0,3px 5px;box-shadow:0 0 0 8px #7A5636,0 0 0 9px rgba(0,0,0,.15),inset 0 2px 14px rgba(0,0,0,.25);margin:8px 9px 14px}
+.cb-h{display:flex;align-items:baseline;gap:10px;margin:0 0 12px;font-size:17px;font-weight:900;color:#2B1D10}
+.cb-h span{background:#F7F1E3;padding:3px 10px;border-radius:4px;box-shadow:0 2px 4px rgba(0,0,0,.25);transform:rotate(-1.5deg)}
+.cb-h small{font-size:12.5px;font-weight:800;color:#3B2A18}
+.cb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:18px 14px}
+.cb-grid.soon{grid-template-columns:repeat(auto-fill,minmax(104px,1fr))}
+.cb-paper,.cb-note,.cb-empty{position:relative;display:grid;align-content:start;gap:4px;text-align:left;padding:10px 10px 12px;border-radius:3px;background:#FDFCF8;color:#1E2420;transform:rotate(var(--r));box-shadow:0 6px 12px -4px rgba(40,20,0,.45),0 1px 2px rgba(0,0,0,.2);font:inherit;opacity:0;animation:pinIn .45s calc(.25s + var(--i,0) * 70ms) cubic-bezier(.2,.9,.3,1.3) forwards}
+@keyframes pinIn{from{opacity:0;transform:translateY(-16px) rotate(calc(var(--r) * 3)) scale(.92)}to{opacity:1;transform:rotate(var(--r))}}
+.cb-paper:active,.cb-note:active{transform:rotate(0) scale(.97)}
+.cb-paper img{pointer-events:none;-webkit-user-drag:none;user-select:none;width:100%;aspect-ratio:1.414/1;object-fit:cover;object-position:top;border-radius:2px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.cb-paper .cb-ph{display:grid;place-items:center;aspect-ratio:1.414/1;background:#EEF1EC;color:#2C6A55}
+.cb-paper .cb-ph svg{width:30px;height:30px}
+.cb-paper b,.cb-note b,.cb-empty b{font-size:13.5px;font-weight:800;line-height:1.4;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cb-paper small,.cb-note small,.cb-empty small{font-size:11.5px;font-weight:700;color:#5D6862}
+.cb-paper.sm{padding:7px 7px 9px}.cb-paper.sm b{font-size:12px}
+.pin{position:absolute;top:-7px;left:50%;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.75),rgba(255,255,255,0) 38%),var(--pin,#D9473B);box-shadow:0 3px 4px rgba(0,0,0,.35);z-index:1}
+.cb-note{background:#FFE98A;border-radius:2px;min-height:96px;box-shadow:0 8px 12px -6px rgba(60,40,0,.5);clip-path:polygon(0 0,100% 0,100% 88%,90% 100%,0 100%)}
+.cb-note::before{content:"";position:absolute;top:-6px;left:30%;width:40%;height:14px;background:rgba(255,255,255,.55);transform:rotate(-3deg);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.cb-note small{color:#8A5A00}
+.cb-empty{grid-column:1/-1;max-width:360px;justify-self:center;padding:16px 16px 14px;text-align:center}
+.cb-sub{margin:18px 0 10px;font-size:13px;font-weight:900;color:#2B1D10;background:#F7F1E3;display:inline-block;padding:2px 8px;border-radius:3px;transform:rotate(1deg);box-shadow:0 2px 3px rgba(0,0,0,.2)}
+.face-hint{text-align:center;font-size:12px;color:var(--muted);margin:0 0 10px}
+.win-wrap.night .win{box-shadow:0 0 0 10px var(--wood),0 0 0 12px color-mix(in srgb,var(--wood) 70%,#000),inset 0 0 40px rgba(0,0,0,.45)}
+@media (prefers-reduced-motion: reduce){.cb-paper,.cb-note,.cb-empty{animation:none;opacity:1}}
+body.eco .cb-paper,body.eco .cb-note,body.eco .cb-empty{animation:none;opacity:1}
 </style>
 </head>
 <body>
@@ -1675,7 +1780,7 @@ addEventListener("resize", () => { setMode(); if(navBuilt) renderNav(); });
     if(sx < 24 && dx > 60 && dy < 60 && !document.body.classList.contains("rail-peek")){ document.body.classList.add("rail-peek"); buzz(6); }
     else if(document.body.classList.contains("rail-peek") && dx < -60 && dy < 60) document.body.classList.remove("rail-peek"); sx = -1; }, {passive:true}); })();
 
-function readHash(){ const k = location.hash.slice(1); if(VIEWS.some(v => v.k === k)) view = k; }
+function readHash(){ const k = location.hash.slice(1); if(VIEWS.some(v => v.k === k)){ if(k !== view) ui.todayFace = "main"; view = k; } }
 const REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
 addEventListener("hashchange", () => {
   const prev = view, k = location.hash.slice(1), next = VIEWS.some(v => v.k === k) ? k : prev;
@@ -2367,11 +2472,11 @@ function makeSky(opt = {}){
   }
   function sync(){
     if(opt.sel){
-      const on2 = view === "today" && ui.heroFlip && ls.get("fd-wxfx", true) !== false && !REDUCE && !ECO();
+      const on2 = view === "today" && ui.todayFace === "window" && !REDUCE && !ECO();
       if(on2 && !raf){ last = 0; raf = requestAnimationFrame(frame); } else if(!on2 && raf){ cancelAnimationFrame(raf); raf = 0; cv = null; }
       return;
     }
-    const on = view === "today" && paired() && ls.get("fd-wxfx", true) !== false && !ECO() && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const on = view === "today" && ui.todayFace !== "window" && paired() && ls.get("fd-wxfx", true) !== false && !ECO() && !matchMedia("(prefers-reduced-motion: reduce)").matches;
     if(on){ ensure(); if(!raf){ last = 0; raf = requestAnimationFrame(frame); } }
     else if(raf){ cancelAnimationFrame(raf); raf = 0; }
     document.body.classList.toggle("wxfx-on", on);
@@ -2385,7 +2490,7 @@ function makeSky(opt = {}){
   });
   return {sync, state:() => st, spawn:(k, at) => { if(st) spawn(k, at); }, get visitors(){ return vis.map(v => v.kind); }};
 }
-const wxfx = makeSky(), wxmini = makeSky({sel:".flipcard.flipped .hero.back canvas.wxsky"});
+const wxfx = makeSky(), wxmini = makeSky({sel:".win canvas.winsky"});
 /* ================= タイマー（ポモドーロ／タイマー／ストップウォッチ） ================= */
 function pillHost(){ let h = document.getElementById("pills"); if(!h){ h = document.createElement("div"); h.id = "pills"; document.body.appendChild(h); } return h; }
 const tfmt = ms => { const t = Math.ceil(Math.max(0, ms) / 1000), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), x = t % 60; return h ? `${h}:${String(m).padStart(2, "0")}:${String(x).padStart(2, "0")}` : `${m}:${String(x).padStart(2, "0")}`; };
@@ -2774,6 +2879,7 @@ document.addEventListener("visibilitychange", () => { awakeOn = null; syncAwake(
 function rollText(el, v){ v = String(v); if(!el || el.textContent === v) return; el.textContent = v; if(REDUCE) return; el.classList.remove("roll"); void el.offsetWidth; el.classList.add("roll"); }
 function tick(){
   applyMood(); glanceTick();
+  { const wt = document.getElementById("win-time"); if(wt){ const n = new Date(); rollText(wt, `${n.getHours()}:${pad(n.getMinutes())}`); const dn = document.getElementById("ds-now"); if(dn) dn.style.left = ((n.getHours() * 60 + n.getMinutes()) / 1440 * 100).toFixed(2) + "%"; } }
   const arc = document.getElementById("ring-arc"); if(!arc) return;
   const st = currentState(), d = new Date(), sec = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
   let frac = 0, num = null, sub = null;
@@ -2956,6 +3062,7 @@ function weekDates(off){ const t = parse(todayS()); const w = (t.getDay()+6) % 7
 
 /* ================= TODAY ================= */
 function vToday(){
+  if(ui.todayFace === "window") return windowFace(`<div class="page-h"><h1>今日</h1><button class="icon-btn" data-act="pomo" aria-label="ポモドーロ">${ico("timer")}</button><button class="icon-btn" data-act="settings" aria-label="通知と設定">${ico("bell")}</button></div>${faceDots()}`);
   const t = todayS(), d = new Date(), mode = dayMode(t);
   const items = (dayItems(t) || []).filter(x => !x.cancelled), st = currentState();
   let nowLine = "", nowSub = "";
@@ -3004,7 +3111,7 @@ function vToday(){
       <div class="hero-top"><div style="min-width:0"><div class="eyebrow">${d.getFullYear()}年 ${WD[d.getDay()]}曜日${wxMini()}</div>
       <div class="date"><b class="num">${d.getMonth()+1}月${d.getDate()}日</b></div>
       <div class="now">${esc(nowLine)}<small>${esc(nowSub)}</small></div>${moodBadge}</div>${ring}</div>${modeSeg}${dayBar}</div>${heroBack()}</div></section>`;
-  const head = `<div class="page-h"><h1>今日</h1><button class="icon-btn" data-act="pomo" aria-label="ポモドーロ">${ico("timer")}</button><button class="icon-btn" data-act="settings" aria-label="通知と設定">${ico("bell")}</button></div>`;
+  const head = `<div class="page-h"><h1>今日</h1><button class="icon-btn" data-act="pomo" aria-label="ポモドーロ">${ico("timer")}</button><button class="icon-btn" data-act="settings" aria-label="通知と設定">${ico("bell")}</button></div>${faceDots()}`;
   const tip = !NATIVE && !ls.get("fd-home-tip-off", false) && document.body.dataset.mode === "cover-p"
     ? `<div class="card span-all tip"><span class="ic">${ico("home")}</span><span class="main"><b>ホーム画面に置く</b><small>アプリのようにワンタップで開けます</small></span><button class="pill-btn accent" data-act="homeguide">方法</button><button class="icon-btn sm" data-act="tipoff" aria-label="閉じる">${ico("close")}</button></div>` : "";
   const m = document.body.dataset.mode;
@@ -3089,7 +3196,7 @@ function vEvents(){
   const day = `<div class="card"><h3>${md(ui.calSel)}<button class="more" data-new="event" data-date="${ui.calSel}">この日に追加</button></h3>${sel.length ? sel.map(eventRow).join("") : '<p class="empty">予定はありません。</p>'}</div>`;
   const list = `<div class="card"><h3>これからの予定</h3>${up.length ? up.map(eventRow).join("") : '<p class="empty">まだ予定がありません。Google カレンダーの「エクスポート」で保存したファイルを、上の「読み込む」から入れられます。</p>'}</div>`;
   const cfg = evShowCfg(), all = evAll().filter(e => e.date >= t), hidN = k => all.filter(e => evScope(e) === k).length;
-  const show = `<div class="sc-filter" role="group" aria-label="表示する予定">${[["personal", "個人"], ["work", "学校（仕事）"]].map(([k, l]) => `<button class="sc-tg ${k}" data-sc-tg="${k}" aria-pressed="${cfg[k] !== false}"><i></i>${l}<span class="num">${hidN(k)}</span></button>`).join("")}
+  const show = `<div class="sc-filter" role="group" aria-label="表示する予定">${[["personal", "個人"], ["work", "学校（仕事）"]].map(([k, l]) => `<button class="sc-tg ${k}" data-sc-tg="${k}" aria-pressed="${cfg[k] !== false}"><i></i>${l}${hidN(k) ? `<span class="num">これから${hidN(k)}件</span>` : ""}</button>`).join("")}
     ${cfg.personal === false || cfg.work === false ? `<span class="sc-note">${cfg.personal === false && cfg.work === false ? "どちらも非表示です（休みだけ出ています）" : `${cfg.personal === false ? "個人" : "学校"}の予定を隠しています。「今日」とウィジェットでも隠れます`}</span>` : ""}</div>`;
   const imps = ls.get("fd-ics-imports", []);
   const impCard = imps.length ? `<div class="card"><h3>読み込んだカレンダー</h3>${imps.map(x => `<div class="setrow"><span class="main"><b><span class="sc-chip ${x.scope}">${SCOPE_L[x.scope]}</span>${esc(x.name)}</b><small>${x.count}件　${esc(new Date(x.at).toLocaleDateString("ja-JP"))}に読み込み${x.scope === "work" ? "・このスマホの中だけ" : ""}</small></span><button class="chip danger" data-ics-del="${esc(x.id)}">取り消す</button></div>`).join("")}</div>` : "";
@@ -3222,7 +3329,8 @@ const MB = n => n >= 1e9 ? (n / 1e9).toFixed(2) + " GB" : n >= 1e6 ? (n / 1e6).t
 /* ================= 更新履歴 (newest at the top) ================= */
 const CHANGELOG = [
  {day:"11月4日", sub:"水曜日・だれでも使える日", list:[
-  {v:"アプリ内", t:"夜", big:1, newest:1, h:"AI なしで、ぜんぶ無料に", lead:"別の申し込みや料金がいる機能をやめて、スマホの中だけで動くようにしました。", it:[["i","「ひとことで入れる」は、日付・時刻・「〜まで」・「○時間目」をスマホの中で読み取る方式に。「明日16時 学年会」「金曜までに見積もり確認」「3時間目 補教 2-1」など"],["i","メモの「振り分け」も同じ方式で、だれでも使える"],["i","名刺は、スマホの中で読んだ文字を決まりにそって整理"],["i","AI の鍵が必要だった「時間割を写真から読む」と「Gmail を AI で読む」はやめました"]]},
+  {v:"アプリ内", t:"深夜", big:1, newest:1, h:"窓と掲示板", lead:"「今日」を左になぞると、サイコロが転がるように面が変わります。", it:[["n","窓：いまの空（天気・時間帯）と、日の出から日の入りまでの1日の様子"],["n","掲示板：今日使う資料がピンで貼られ、期限のタスクは付箋に。これから1週間の資料も小さく"],["i","天気の面を黒板とチョークの見た目に。ポモドーロの輪は赤をやめてテーマ色に"],["i","背景の空を落ち着いた色に。「新しくなりました」は上に出すように"],["i","タスクと予定の入力は、大事なところだけを先に。残りは「くわしく」に"],["i","設定に目次。ボタンの見た目をそろえ、資料の検索欄を広く"],["f","開いた直後の「朝のまとめ」が見出しに重なっていた問題"]]},
+  {v:"アプリ内", t:"夜", big:1, h:"AI なしで、ぜんぶ無料に", lead:"別の申し込みや料金がいる機能をやめて、スマホの中だけで動くようにしました。", it:[["i","「ひとことで入れる」は、日付・時刻・「〜まで」・「○時間目」をスマホの中で読み取る方式に。「明日16時 学年会」「金曜までに見積もり確認」「3時間目 補教 2-1」など"],["i","メモの「振り分け」も同じ方式で、だれでも使える"],["i","名刺は、スマホの中で読んだ文字を決まりにそって整理"],["i","AI の鍵が必要だった「時間割を写真から読む」と「Gmail を AI で読む」はやめました"]]},
   {v:"1.0.44", t:"夜", big:1, h:"だれでも使いやすく", lead:"スマホにくわしくない人の目で、入り口から見直しました。", it:[["n","はじめての案内。使う機能を「シンプル」「ぜんぶ」から選べる"],["n","時間割の「ひな形」（45分・50分・40分授業）"],["n","文字の大きさ（小・標準・大・特大）と、省エネモード"],["n","自動バックアップ（週1回、スマホの「ダウンロード」に最新の1つ）"],["n","パソコン・タブレットでも同じデータを開ける「ほかの端末でも使う」"],["n","「新しくなりました」のお知らせ、「プライバシーと利用のきまり」"],["i","通知やカレンダーの許可は、理由を説明してから"],["i","お試しで入れたものを、つないだあとに引き継げる"],["i","「閉じた画面」などの Fold だけの言葉を、どのスマホでもわかる言葉に"],["i","キャラクターの絵を登録していないときは、キャラクターを出さない"]]}]},
  {day:"11月3日", sub:"火曜日・文化の日", list:[
   {v:"アプリ内", t:"22:40", big:1, h:"個人の予定と、学校の予定", lead:"Google カレンダーから持ってきて、ひと目で分けられるように。", it:[["n","Google カレンダーの書き出しファイル（.ics・.zip）を「予定」の「読み込む」から。くり返しの予定や連休もそのまま入る"],["n","予定に「個人」「学校（仕事）」の区分。色と札で見分けられる"],["n","「予定」の上のボタンで、個人・学校の予定をそれぞれ表示／非表示。「今日」とウィジェットにも反映"],["i","学校のカレンダーとして読み込んだ予定は、このスマホの中だけに保存"],["i","テーマカラーの名前を日本の伝統色に。常磐色・藍色・墨色・臙脂色・江戸紫・山吹茶"]]},
@@ -3806,7 +3914,7 @@ function nextUse(d){
   const t = todayS(), ds = [...(d.ev || []).map(x => (liveEvent(x) || x).date), d.date].filter(x => x && x >= t).sort();
   return ds[0] || "";
 }
-const DOCSORT = [["smart", "おすすめ（予定が近い順→名前順）"], ["new", "追加が新しい順"], ["opened", "最近開いた順"], ["date", "使う日が近い順"], ["name", "名前順"], ["cat", "分類ごと"], ["old", "追加が古い順"]];
+const DOCSORT = [["smart", "おすすめ順"], ["new", "追加が新しい順"], ["opened", "最近開いた順"], ["date", "使う日が近い順"], ["name", "名前順"], ["cat", "分類ごと"], ["old", "追加が古い順"]];
 function sortDocs(list, k){
   const t = todayS(), L = list.slice(), byName = (a, b) => a.title.localeCompare(b.title, "ja", {numeric:true});
   if(k === "name") return L.sort(byName);
@@ -3897,7 +4005,7 @@ function vDocsInner(tabs){
       ${nextUse(d) ? `<span class="tag">${esc(nextUse(d) === t ? "今日" : nextUse(d) === addDays(t, 1) ? "明日" : md(nextUse(d)))}</span>` : ""}
       <button class="more" data-doc-edit="${esc(d.id)}" aria-label="編集">${ico("dots")}</button></div>`;
   return `<div class="page-h"><h1>資料</h1><button class="icon-btn" data-act="storage" aria-label="データと容量">${ico("gear")}</button><button class="pill-btn accent" data-doc-add>${ico("plus")}PDF を追加</button></div>${tabs}
-    ${docsList.length ? `<div class="doc-tools"><input class="doc-search" type="search" placeholder="資料の名前でさがす" data-doc-q aria-label="資料をさがす">
+    ${docsList.length ? `<div class="doc-tools"><input class="doc-search" type="search" placeholder="資料をさがす" data-doc-q aria-label="資料をさがす">
       <select class="input" data-doc-sort aria-label="並べ替え">${DOCSORT.map(([k, l]) => `<option value="${k}" ${k === sortK ? "selected" : ""}>${l}</option>`).join("")}</select></div>
     <div class="doc-cats" role="group" aria-label="分類">${["all", ...cats].map(c => `<button class="chip" data-doc-cat="${esc(c)}" aria-pressed="${cat === c}">${c === "all" ? "" : `<i class="cd" style="background:${catColor(c)}"></i>`}${c === "all" ? "すべて" : esc(c)} <span class="num" style="opacity:.6">${c === "all" ? docsList.length : docsList.filter(d => (d.cat || "未分類") === c).length}</span></button>`).join("")}
       <button class="chip" data-act="catpane">${ico("gear")} 分類</button><button class="chip" data-act="docselect" aria-pressed="${!!ui.docSel}">${ui.docSel ? "選択をやめる" : "えらぶ"}</button></div>
@@ -3910,6 +4018,81 @@ function vDocsInner(tabs){
     ${ui.docSel ? `<div class="selbar"><span>${ui.docSel.length}件</span><button class="pri" data-act="docmove" ${ui.docSel.length ? "" : "disabled"}>分類を変える</button><button data-act="docselect">やめる</button></div>` : ""}`
     : emptyBig("docs", "資料はまだありません", "説明会・研修・会議の PDF をまとめておけます。このスマホの中にだけ保存され、電波がなくても開けます。", `<button class="btn primary" data-doc-add>${ico("plus")} PDF を追加</button>`)}`;
 }
+
+/* ================= 今日のもう1面：窓（いまの空と1日の様子）と掲示板（今日使う資料） ================= */
+const hashN = s0 => { let h = 0; for(const c of String(s0)) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); };
+function daySkyBar(st){
+  const sr = st.sr, ss = st.ss, P = x => (Math.max(0, Math.min(1440, x)) / 1440 * 100).toFixed(1) + "%";
+  const stops = [[0, SKY.late[1]], [sr - 60, SKY.night[1]], [sr, SKY.dawn[2]], [sr + 60, SKY.morning[1]], [12 * 60, SKY.day[1]], [ss - 90, SKY.afternoon[2]], [ss, SKY.sunset[2]], [ss + 50, SKY.dusk[1]], [ss + 120, SKY.night[1]], [1440, SKY.late[1]]];
+  const g = stops.map(([m, c]) => `${c} ${P(m)}`).join(",");
+  const hm = m => `${Math.floor(m / 60)}:${pad(m % 60)}`;
+  return `<div class="daysky"><div class="ds-bar" style="background:linear-gradient(90deg,${g})"><i class="ds-now" id="ds-now" style="left:${P(st.m)}"></i>
+    <span class="ds-sun" style="left:${P(sr)}">${ico("up")}</span><span class="ds-sun set" style="left:${P(ss)}">${ico("down")}</span></div>
+    <div class="ds-lab"><span>0時</span><span>日の出 ${hm(sr)}</span><span>正午</span><span>日の入り ${hm(ss)}</span><span>24時</span></div></div>`;
+}
+function boardDocs(){
+  const t = todayS(); if(!docsList) return {today:[], soon:[]};
+  const todayL = [], seen = new Set();
+  S.events.filter(e => e.date === t).sort((a, b) => (a.time || "").localeCompare(b.time || "")).forEach(e => docsForEvent(e).forEach(d => { if(!seen.has(d.id)){ seen.add(d.id); todayL.push({d, why:[e.time, e.title].filter(Boolean).join(" ")}); } }));
+  docsList.filter(d => d.date === t && !seen.has(d.id)).forEach(d => { seen.add(d.id); todayL.push({d, why:"今日使う"}); });
+  const soon = docsList.filter(d => !seen.has(d.id)).map(d => ({d, n:nextUse(d)})).filter(x => x.n && x.n > t && x.n <= addDays(t, 7)).sort((a, b) => a.n.localeCompare(b.n)).slice(0, 6);
+  return {today:todayL, soon};
+}
+function windowFace(head){
+  const st = sceneState(), w = wxNow(), now = new Date(), hhmm = `${now.getHours()}:${pad(now.getMinutes())}`;
+  const light = {late:"まっくら", night:"暗い", dawn:"うす明るい", morning:"明るくなってきた", day:"いちばん明るい", afternoon:"日がかたむく", sunset:"西の空が赤い", dusk:"うす暗い"}[st.phase];
+  const wl = w ? `${WMO(w.code)[0]}　${w.t}℃` : "天気を読み込み中";
+  const sub = w ? [w.rainAt ? `${w.rainAt.h}時ごろ雨（${w.rainAt.p}%）` : `降水 ${w.pop ?? 0}%`, `${w.hi}° / ${w.lo}°`].join("　") : "";
+  const {today, soon} = boardDocs(), due = openTasks().filter(k => k.due && k.due <= todayS()).slice(0, 4);
+  const PINS = ["#D9473B", "#2C6A55", "#2D5B8C", "#E0A11B", "#8E3B46"];
+  const paper = (x, i, small) => { const d = x.d, r = (hashN(d.id) % 7) - 3;
+    return `<button class="cb-paper ${small ? "sm" : ""}" data-doc-open="${esc(d.id)}" style="--r:${r}deg;--pin:${PINS[hashN(d.id) % PINS.length]};--i:${i}">
+      <i class="pin" aria-hidden="true"></i>${d.thumb ? `<img src="${d.thumb}" alt="" draggable="false">` : `<span class="cb-ph">${ico("docs")}</span>`}
+      <b>${esc(d.title)}</b><small>${esc(small ? md(x.n) : x.why)}</small></button>`; };
+  const note = (k, i) => `<button class="cb-note" data-open-task="${k.id}" style="--r:${(hashN(k.id) % 9) - 4}deg;--i:${i + today.length}"><b>${esc(k.title)}</b><small>${k.due < todayS() ? "期限すぎ" : "今日まで"}</small></button>`;
+  return `${head}
+  <section class="win-wrap ${st.night ? "night" : ""}" aria-label="窓の外">
+    <div class="win"><canvas class="winsky" aria-hidden="true"></canvas><i class="win-glass" aria-hidden="true"></i><i class="win-bar v" aria-hidden="true"></i><i class="win-bar h" aria-hidden="true"></i>
+      <div class="win-info"><b class="num" id="win-time">${hhmm}</b><span class="win-ph">${esc(PHASE_JA[st.phase])}・${esc(light)}</span><span class="win-wx">${esc(wl)}</span>${sub ? `<small>${esc(sub)}</small>` : ""}</div></div>
+    <div class="win-sill" aria-hidden="true"></div>
+    ${daySkyBar(st)}
+  </section>
+  <section class="corkboard" aria-label="掲示板">
+    <h2 class="cb-h"><span>今日の掲示板</span><small>${today.length ? `資料 ${today.length}件` : ""}${due.length ? `${today.length ? "・" : ""}期限のタスク ${due.length}件` : ""}</small></h2>
+    <div class="cb-grid">${today.map((x, i) => paper(x, i)).join("")}${due.map(note).join("")}
+      ${!today.length && !due.length ? `<div class="cb-empty" style="--r:-2deg"><i class="pin" aria-hidden="true" style="--pin:#2C6A55"></i><b>今日使う資料はありません</b><small>資料に「使う日」を入れたり、予定とひもづけたりすると、ここに貼られます</small></div>` : ""}</div>
+    ${soon.length ? `<div class="cb-sub">これから1週間</div><div class="cb-grid soon">${soon.map((x, i) => paper(x, i + today.length + due.length, true)).join("")}</div>` : ""}
+  </section>
+  <p class="face-hint">右になぞると黒板にもどります</p>`;
+}
+function faceDots(){ return `<div class="face-dots" role="tablist" aria-label="今日の面">${[["main", "黒板"], ["window", "窓と掲示板"]].map(([k, l]) => `<button role="tab" data-face="${k}" aria-selected="${(ui.todayFace || "main") === k}" aria-label="${l}"><i></i></button>`).join("")}${(ui.todayFace || "main") === "main" && ls.get("fd-face-hint", 0) < 3 ? `<span>左になぞると窓が見えます</span>` : ""}</div>`; }
+let rolling = false;
+function rollFace(to){
+  if(rolling || (ui.todayFace || "main") === to || view !== "today") return;
+  const v = $("#view"), dir = to === "window" ? "l" : "r";
+  if(to === "window") ls.set("fd-face-hint", ls.get("fd-face-hint", 0) + 1);
+  buzz(10);
+  if(REDUCE){ ui.todayFace = to; v.scrollTop = 0; schedule(); return; }
+  rolling = true; skyPauseUntil = performance.now() + 900;
+  v.classList.remove("roll-in-l", "roll-in-r"); v.classList.add("roll-out-" + dir);
+  setTimeout(() => {
+    ui.todayFace = to; v.classList.remove("roll-out-" + dir); lastView = null; render(); v.scrollTop = 0;
+    v.classList.add("roll-in-" + dir);
+    setTimeout(() => { v.classList.remove("roll-in-" + dir); rolling = false; try { wxmini.sync(); wxfx.sync(); } catch(e){} }, 620);
+  }, 300);
+}
+(() => { let sx = null, sy = 0, st0 = 0, ok = false;
+  const start = (x, y, target) => { sx = null; if(view !== "today" || rolling || document.body.classList.contains("pane-open") || document.getElementById("pdfv") || document.getElementById("phv")) return;
+    if(target.closest("input,textarea,select,.wxb-hours,.seg,.tt,[data-noswipe]")) return;
+    const w = innerWidth; if(x < w * .15 || x > w * .9) return; sx = x; sy = y; st0 = performance.now(); ok = true; };
+  const end = (x, y) => { if(sx === null) return; const dx = x - sx, dy = Math.abs(y - sy), dt = performance.now() - st0; sx = null;
+    if(Math.abs(dx) < 70 || dy > Math.abs(dx) * .6 || dt > 900) return;
+    if(dx < 0 && (ui.todayFace || "main") === "main") rollFace("window"); else if(dx > 0 && ui.todayFace === "window") rollFace("main"); };
+  document.addEventListener("touchstart", e => { if(e.touches.length === 1) start(e.touches[0].clientX, e.touches[0].clientY, e.target); else sx = null; }, {passive:true});
+  document.addEventListener("touchend", e => { const t = e.changedTouches[0]; end(t.clientX, t.clientY); }, {passive:true});
+  document.addEventListener("pointerdown", e => { if(e.pointerType === "mouse") start(e.clientX, e.clientY, e.target); });
+  document.addEventListener("pointerup", e => { if(e.pointerType === "mouse") end(e.clientX, e.clientY); });
+})();
 function todayDocsCard(){
   const t = todayS(); if(!docsList || !docsList.length) return "";
   const evs = S.events.filter(e => e.date === t).sort((a, b) => (a.time || "").localeCompare(b.time || "")), used = new Set(), groups = [];
@@ -4293,6 +4476,7 @@ function taskForm(t = {}){
       <div class="field"><label for="f-title">内容</label><input id="f-title" name="title" required value="${esc(t.title)}" autofocus></div>
       <div class="frow"><div class="field"><label for="f-due">期限</label><input id="f-due" type="date" name="due" value="${esc(t.due)}"></div>
         <div class="field"><label for="f-pri">優先度</label><select id="f-pri" name="priority">${opt("high",t.priority,"高")}${opt("mid",t.priority||"mid","中")}${opt("low",t.priority,"低")}</select></div></div>
+      <details class="more-f" ${t.id && (t.area || t.remindAt || t.note || (t.personIds || []).length || (t.files || []).length || (t.status && t.status !== "todo")) ? "open" : ""}><summary>くわしく<small>領域・状態・リマインド・メモ・添付</small></summary>
       <div class="frow"><div class="field"><label for="f-area">領域</label><select id="f-area" name="area"><option value="">なし</option>${AREAS.map(a=>opt(a,t.area)).join("")}</select></div>
         <div class="field"><label for="f-st">状態</label><select id="f-st" name="status">${opt("todo",t.status||"todo","未着手")}${opt("doing",t.status,"進行中")}${opt("done",t.status,"完了")}</select></div></div>
       <div class="field"><label for="f-rem">リマインド</label><input id="f-rem" type="datetime-local" name="remindAt" value="${esc(t.remindAt)}">
@@ -4301,6 +4485,7 @@ function taskForm(t = {}){
       <div class="field"><label for="f-who">関係する人</label><select id="f-who" name="person"><option value="">なし</option>${peopleOpts}</select></div>
       <div class="field"><label for="f-note">メモ</label><textarea id="f-note" name="note">${esc(t.note)}</textarea></div>
       ${filesField(t.files)}
+      </details>
       <div class="btns"><button class="btn primary" type="submit">保存</button>${t.id?`<button class="btn danger" type="button" data-del="tasks:${t.id}">削除</button>`:''}</div>${t.gtaskId ? '<p class="hint" style="margin-top:8px">Google ToDo リストと同期しています</p>' : ''}${srcLink(t)}
     </form>`);
 }
@@ -4328,6 +4513,7 @@ function eventForm(e = {}){
       <div class="field"><label for="e-title">予定</label><input id="e-title" name="title" required value="${esc(e.title)}" autofocus></div>
       <div class="frow"><div class="field"><label for="e-date">日付</label><input id="e-date" type="date" name="date" required value="${esc(e.date||todayS())}"></div>
         <div class="field"><label for="e-time">開始</label><input id="e-time" type="time" name="time" value="${esc(e.time)}"></div></div>
+      <details class="more-f" ${e.endTime || e.place || e.note || e.kind || e.scope || e.remindMin || (e.files || []).length || (e.id && docsForEvent(e).length) ? "open" : ""}><summary>くわしく<small>終了・区分・種類・場所・通知・メモ・資料</small></summary>
       <div class="frow"><div class="field"><label for="e-end">終了</label><input id="e-end" type="time" name="endTime" value="${esc(e.endTime)}"></div><div class="field"><label for="e-after">放課後</label><button type="button" class="btn" id="e-after" data-preset-after style="padding:10px 12px">16:10〜17:00</button></div></div>
       <div class="field"><label>区分</label><div class="seg sc-seg" role="radiogroup" aria-label="区分">${[["", "おまかせ"], ["personal", "個人"], ["work", "学校（仕事）"]].map(([k, l]) => `<label class="${k}"><input type="radio" name="scope" value="${k}" ${(e.scope || "") === k ? "checked" : ""}><span>${l}</span></label>`).join("")}</div><small class="hint" style="display:block;margin-top:4px">おまかせ：種類（会議・研修など）から自動で分けます</small></div>
       <div class="frow"><div class="field"><label for="e-kind">種類</label><select id="e-kind" name="kind"><option value="">なし</option>${EKINDS.map(k=>opt(k,e.kind)).join("")}</select></div>
@@ -4337,6 +4523,7 @@ function eventForm(e = {}){
       <div class="field"><label for="e-note">メモ</label><textarea id="e-note" name="note">${esc(e.note)}</textarea></div>
       ${filesField(e.files)}
       ${evDocsSection(e)}
+      </details>
       <div class="btns"><button class="btn primary" type="submit">保存</button>${e.id?`<button class="btn danger" type="button" data-del="events:${e.id}">${e.calId ? "削除（Google からも）" : "削除"}</button>`:''}</div>${srcLink(e)}
     </form>`);
 }
@@ -4477,7 +4664,7 @@ function remindCheck(){
   reminderList(now - 20*60000, now).forEach(r => { if(!fired[r.key] && !(r.startAt && now >= r.startAt)){ fired[r.key] = now; banner(r); } });
   if(pref("morning") && new Date().getHours() >= 5){
     const k = "morning|" + todayS();
-    if(!fired[k]){ fired[k] = now; const s = morningLine(); if(s) banner({title:"おはようございます", body:s, lead:"今日のまとめ", go:"today"}); }
+    if(!fired[k]){ fired[k] = now; const s = morningLine(); if(s && !(view === "today" && !document.hidden)) banner({title:"おはようございます", body:s, lead:"今日のまとめ", go:"today"}); }
   }
   Object.keys(fired).forEach(k => { if(now - fired[k] > 3*864e5) delete fired[k]; });
   ls.set("fd-fired", fired);
@@ -4559,6 +4746,15 @@ async function gcalSyncEvent(e){
 
 /* ================= settings & home screen ================= */
 const sel = (name, cur, opts) => `<select data-pref="${name}" aria-label="${name}">${opts.map(([v,l]) => `<option value="${v}" ${String(v)===String(cur)?'selected':''}>${l}</option>`).join("")}</select>`;
+function setToc(){
+  const pane = $("#pane"); if(!pane || pane.querySelector(".set-toc")) return;
+  const secs = [...pane.querySelectorAll(":scope > .sec, :scope .sec")].filter(x => x.textContent.trim() && !x.closest(".group"));
+  if(secs.length < 4) return;
+  const nav = document.createElement("div"); nav.className = "set-toc"; nav.setAttribute("role", "navigation"); nav.setAttribute("aria-label", "設定の目次");
+  nav.innerHTML = secs.map((x, i) => { x.id = "set-" + i; return `<button type="button" class="chip" data-toc="${i}">${esc(x.textContent.trim())}</button>`; }).join("");
+  const head = pane.querySelector(".pane-h"); (head || pane.firstChild).after(nav);
+  nav.addEventListener("click", e => { const b = e.target.closest("[data-toc]"); if(!b) return; const t = document.getElementById("set-" + b.dataset.toc); if(t) pane.scrollTo({top:t.offsetTop - nav.offsetHeight - 14, behavior:REDUCE ? "auto" : "smooth"}); });
+}
 function settingsPane(){
   const draw = () => {
     const now = Date.now(), up = reminderList(now, now + 2*864e5).slice(0, 8);
@@ -4660,7 +4856,7 @@ function settingsPane(){
       <button class="row" data-act="privacy" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico("card")}</span><span class="main"><b>プライバシーと利用のきまり</b><small>データの置き場所・外に送るもの・やめ方</small></span><span class="when">${ico("right")}</span></button>
       <button class="row" data-act="onboard" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico("play")}</span><span class="main"><b>はじめての案内をもう一度見る</b></span><span class="when">${ico("right")}</span></button>`;
   };
-  openPane("", draw); draw();
+  openPane("", () => { draw(); setToc(); }); draw(); setToc();
   if(NATIVE) checkAppUpdate().then(u => { const a = $("#appver"), b2 = $("#appupd"); if(a) a.textContent = `1.0.${NATIVE_VER.code}　${u ? `新しい版 1.0.${u.n} があります` : "最新です"}`; if(b2 && u){ b2.hidden = false; b2.dataset.url = u.url; } });
   if(paired()) gcall("g.status").then(st => {
     const t = x => x ? new Date(x).toLocaleString("ja-JP", {month:"numeric", day:"numeric", hour:"2-digit", minute:"2-digit"}) : "まだ";
@@ -5062,6 +5258,7 @@ document.addEventListener("click", async (ev) => {
   if(d.act === "storage"){ storagePane(); return; }
   if(d.stor){ storageAct(b); return; }
   if(d.demo){ demoAct(d.demo); return; }
+  if(d.face){ rollFace(d.face); return; }
   if(d.carry){ carryAct(d.carry, b); return; }
   if(d.act === "privacy"){ privacyPane(); return; }
   if(d.act === "otherdev"){ otherDevPane(); return; }
