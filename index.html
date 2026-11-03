@@ -1271,6 +1271,129 @@ body.pdfv-on #cc,body.phv-on #cc,body.bigclock-on #cc,body.pdfv-on #ccb,body.phv
 .btn svg,.pill-btn svg{width:18px;height:18px;flex:none}
 .empty-big .eb-btns .btn{flex:none;min-width:132px;padding:12px 18px}
 .doc-tools select{height:auto!important;min-height:44px;padding:9px 34px 9px 12px;line-height:1.45;font-size:14.5px;box-sizing:border-box;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+
+/* ================= v39: theme colours (the board and the accent change together) ================= */
+:root[data-palette="navy"]{--accent:#2D5B8C;--accent-2:#2D5B8C;--accent-soft:#DCE7F3;--accent-ink:#FFFFFF;--ok:#2D5B8C;--board:#22374F;--board-2:#1C2F44;--bg:#ECEEF1;--surface-2:#E1E6EC;--line:rgba(25,35,52,.13);--fg:#1B2230;--muted:#5A6474;--glass-line:var(--line)}
+@media (prefers-color-scheme: dark){:root[data-palette="navy"]:not([data-theme="light"]){--accent:#8DB6E6;--accent-2:#8DB6E6;--accent-soft:#1C2C42;--accent-ink:#0D1622;--ok:#8DB6E6;--board:#1F3247;--board-2:#192A3C;--bg:#0F1319;--surface:#171D25;--surface-2:#212833;--line:rgba(210,222,240,.11);--fg:#E7ECF3;--muted:#98A3B2;--glass:var(--surface);--glass-line:var(--line)}}
+:root[data-palette="navy"][data-theme="dark"]{--accent:#8DB6E6;--accent-2:#8DB6E6;--accent-soft:#1C2C42;--accent-ink:#0D1622;--ok:#8DB6E6;--board:#1F3247;--board-2:#192A3C;--bg:#0F1319;--surface:#171D25;--surface-2:#212833;--line:rgba(210,222,240,.11);--fg:#E7ECF3;--muted:#98A3B2;--glass:var(--surface);--glass-line:var(--line)}
+:root[data-palette="ink"]{--accent:#3F4B56;--accent-2:#3F4B56;--accent-soft:#E2E6E9;--accent-ink:#FFFFFF;--ok:#3F4B56;--board:#2F3439;--board-2:#272B30;--bg:#EDEDEB;--surface-2:#E3E3E0;--line:rgba(30,32,34,.13);--fg:#1E2124;--muted:#61666B;--glass-line:var(--line)}
+@media (prefers-color-scheme: dark){:root[data-palette="ink"]:not([data-theme="light"]){--accent:#C2CCD4;--accent-2:#C2CCD4;--accent-soft:#2A3036;--accent-ink:#15181B;--ok:#C2CCD4;--board:#2A2E33;--board-2:#23272B;--bg:#121314;--surface:#1A1C1E;--surface-2:#24272A;--line:rgba(230,232,235,.11);--fg:#ECEDEE;--muted:#9EA3A8;--glass:var(--surface);--glass-line:var(--line)}}
+:root[data-palette="ink"][data-theme="dark"]{--accent:#C2CCD4;--accent-2:#C2CCD4;--accent-soft:#2A3036;--accent-ink:#15181B;--ok:#C2CCD4;--board:#2A2E33;--board-2:#23272B;--bg:#121314;--surface:#1A1C1E;--surface-2:#24272A;--line:rgba(230,232,235,.11);--fg:#ECEDEE;--muted:#9EA3A8;--glass:var(--surface);--glass-line:var(--line)}
+:root[data-palette="wine"]{--accent:#8E3B46;--accent-2:#8E3B46;--accent-soft:#F3E0E2;--accent-ink:#FFFFFF;--ok:#8E3B46;--board:#4A2A30;--board-2:#3F2328;--bg:#F0ECEB;--surface-2:#E8E1E0;--line:rgba(45,25,28,.13);--fg:#261C1D;--muted:#6E6061;--glass-line:var(--line)}
+@media (prefers-color-scheme: dark){:root[data-palette="wine"]:not([data-theme="light"]){--accent:#E3A3AC;--accent-2:#E3A3AC;--accent-soft:#3A2226;--accent-ink:#22100F;--ok:#E3A3AC;--board:#3F242A;--board-2:#351E23;--bg:#151011;--surface:#1E1718;--surface-2:#2A2122;--line:rgba(240,220,222,.11);--fg:#F0E8E9;--muted:#A99A9C;--glass:var(--surface);--glass-line:var(--line)}}
+:root[data-palette="wine"][data-theme="dark"]{--accent:#E3A3AC;--accent-2:#E3A3AC;--accent-soft:#3A2226;--accent-ink:#22100F;--ok:#E3A3AC;--board:#3F242A;--board-2:#351E23;--bg:#151011;--surface:#1E1718;--surface-2:#2A2122;--line:rgba(240,220,222,.11);--fg:#F0E8E9;--muted:#A99A9C;--glass:var(--surface);--glass-line:var(--line)}
+:root[data-palette="fuji"]{--accent:#5E4E8C;--accent-2:#5E4E8C;--accent-soft:#E7E3F2;--accent-ink:#FFFFFF;--ok:#5E4E8C;--board:#33294A;--board-2:#2B2340;--bg:#EEEDF1;--surface-2:#E4E2EA;--line:rgba(33,28,48,.13);--fg:#211E2A;--muted:#66617A;--glass-line:var(--line)}
+@media (prefers-color-scheme: dark){:root[data-palette="fuji"]:not([data-theme="light"]){--accent:#B8A9E6;--accent-2:#B8A9E6;--accent-soft:#2A2440;--accent-ink:#15111F;--ok:#B8A9E6;--board:#2E2643;--board-2:#272039;--bg:#121118;--surface:#1A1822;--surface-2:#24212E;--line:rgba(228,222,245,.11);--fg:#ECEAF3;--muted:#A09AB2;--glass:var(--surface);--glass-line:var(--line)}}
+:root[data-palette="fuji"][data-theme="dark"]{--accent:#B8A9E6;--accent-2:#B8A9E6;--accent-soft:#2A2440;--accent-ink:#15111F;--ok:#B8A9E6;--board:#2E2643;--board-2:#272039;--bg:#121118;--surface:#1A1822;--surface-2:#24212E;--line:rgba(228,222,245,.11);--fg:#ECEAF3;--muted:#A09AB2;--glass:var(--surface);--glass-line:var(--line)}
+:root[data-palette="yamabuki"]{--accent:#80580A;--accent-2:#80580A;--accent-soft:#F6EBD3;--accent-ink:#FFFFFF;--ok:#80580A;--board:#3D3424;--board-2:#342C1E;--bg:#F0EEE8;--surface-2:#E7E3D9;--line:rgba(40,33,20,.13);--fg:#241F17;--muted:#6B6354;--glass-line:var(--line)}
+@media (prefers-color-scheme: dark){:root[data-palette="yamabuki"]:not([data-theme="light"]){--accent:#E9C46A;--accent-2:#E9C46A;--accent-soft:#3A2F17;--accent-ink:#1E1606;--ok:#E9C46A;--board:#352D1E;--board-2:#2D2619;--bg:#13110D;--surface:#1C1913;--surface-2:#27231B;--line:rgba(240,232,215,.11);--fg:#F1ECE2;--muted:#A79E8C;--glass:var(--surface);--glass-line:var(--line)}}
+:root[data-palette="yamabuki"][data-theme="dark"]{--accent:#E9C46A;--accent-2:#E9C46A;--accent-soft:#3A2F17;--accent-ink:#1E1606;--ok:#E9C46A;--board:#352D1E;--board-2:#2D2619;--bg:#13110D;--surface:#1C1913;--surface-2:#27231B;--line:rgba(240,232,215,.11);--fg:#F1ECE2;--muted:#A79E8C;--glass:var(--surface);--glass-line:var(--line)}
+#bigclock.brk{background:var(--board)!important}
+#cd-g stop,#pomo-g2 stop{stop-color:var(--accent)}
+.pal-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px;margin:12px 0 4px}
+.pal{display:grid;justify-items:center;gap:6px;padding:8px 4px 6px;border-radius:14px;background:none;color:var(--fg);font:inherit;font-size:13px;font-weight:700}
+.pal .sw{position:relative;width:64px;height:44px;border-radius:10px;background:var(--b);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:transform .35s var(--spring)}
+.pal .sw::before{content:"";position:absolute;left:8px;top:10px;width:30px;height:3px;border-radius:2px;background:rgba(245,243,236,.85);box-shadow:0 7px 0 rgba(245,243,236,.55)}
+.pal .sw::after{content:"";position:absolute;left:5px;right:5px;bottom:0;height:5px;border-radius:2px 2px 0 0;background:#9A7652}
+.pal .sw i{position:absolute;right:7px;top:8px;width:14px;height:14px;border-radius:50%;background:var(--a);box-shadow:0 0 0 2px rgba(255,255,255,.85)}
+.pal[aria-pressed="true"]{background:var(--accent-soft)}
+.pal[aria-pressed="true"] .sw{transform:scale(1.06);box-shadow:0 0 0 2.5px var(--bg),0 0 0 5px var(--accent)}
+.pal:active .sw{transform:scale(.94)}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.45s}
+
+/* ================= v39: 更新履歴 ================= */
+#clv{position:fixed;inset:0;z-index:90;background:var(--bg);opacity:0;transform:translateY(24px) scale(.985);transition:opacity .35s var(--ease-out),transform .45s var(--ease-out)}
+#clv.on{opacity:1;transform:none}
+#clv.off{opacity:0;transform:translateY(30px) scale(.98)}
+body.clv-on #cc,body.clv-on #ccb{display:none!important}
+.clv-scroll{height:100%;overflow-y:auto;overscroll-behavior:contain;padding:calc(12px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.clv-board,.clv-body{max-width:760px;margin:0 auto}
+.clv-board{position:relative;background:var(--board);color:var(--chalk);border-radius:22px;padding:24px 22px 34px;overflow:hidden;will-change:transform,opacity}
+.clv-x{position:absolute;right:12px;top:12px;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.1);color:var(--chalk);z-index:2}
+.clv-x svg{width:22px;height:22px}
+.clv-app{display:flex;align-items:center;gap:9px;font-weight:800;font-size:14px;opacity:.88}
+.clv-app .logo{width:26px;height:26px}
+.clv-board h1{position:relative;display:inline-block;margin:14px 0 6px;font-size:clamp(34px,9vw,52px);font-weight:900;letter-spacing:.04em;line-height:1.15}
+.clv-board .chalk{display:inline-block;color:var(--chalk);text-shadow:0 0 1px rgba(255,255,255,.5),1px 1px 0 rgba(255,255,255,.08);clip-path:inset(-10% 100% -10% 0);animation:chalkWrite 1.1s .25s steps(18,end) forwards}
+.clv-board .stick{position:absolute;top:58%;left:0;width:30px;height:8px;border-radius:3px;background:var(--chalk);box-shadow:0 2px 0 rgba(0,0,0,.15);transform:rotate(-18deg);animation:chalkStick 1.1s .25s steps(18,end) forwards,stickAway .5s 1.4s var(--ease-out) forwards}
+@keyframes chalkWrite{to{clip-path:inset(-10% -2% -10% 0)}}
+@keyframes chalkStick{from{left:0}to{left:100%}}
+@keyframes stickAway{to{transform:translate(18px,40px) rotate(30deg);opacity:0}}
+.clv-board p{margin:0;max-width:34em;color:rgba(245,243,236,.82);font-size:14.5px;opacity:0;animation:fadeUp2 .6s 1s var(--ease-out) forwards}
+.clv-stats{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:16px;font-size:13.5px;color:rgba(245,243,236,.82)}
+.clv-stats span{opacity:0;animation:fadeUp2 .5s var(--ease-out) forwards}
+.clv-stats span:nth-child(1){animation-delay:.45s}.clv-stats span:nth-child(2){animation-delay:.55s}.clv-stats span:nth-child(3){animation-delay:.65s}
+.clv-stats b{font-family:var(--f-num);font-size:24px;font-weight:800;color:var(--chalk-y);margin-right:4px;font-variant-numeric:tabular-nums}
+@keyframes fadeUp2{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.clv-tray{position:absolute;left:16px;right:16px;bottom:0;height:9px;border-radius:4px 4px 0 0;background:var(--wood);box-shadow:inset 0 2px 0 rgba(255,255,255,.2)}
+.clv-tray i{position:absolute;right:26px;top:-7px;width:34px;height:7px;border-radius:3px;background:var(--chalk);animation:trayRoll 2.4s 1.6s var(--ease-out) both}
+@keyframes trayRoll{0%{transform:translateX(0) rotate(0)}40%{transform:translateX(-26px) rotate(-180deg)}100%{transform:translateX(-18px) rotate(-150deg)}}
+.clv-dust{position:absolute;inset:0;pointer-events:none}
+.clv-dust i{position:absolute;bottom:-8px;left:var(--x);width:3px;height:3px;border-radius:50%;background:rgba(245,243,236,.5);transform:scale(var(--s));animation:dust 6s var(--d) linear infinite}
+@keyframes dust{0%{transform:translateY(0) scale(var(--s));opacity:0}15%{opacity:.8}100%{transform:translate(18px,-240px) scale(var(--s));opacity:0}}
+.clv-filters{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 4px}
+.cl-day{margin-top:26px}
+.cl-day h2{position:relative;display:flex;align-items:baseline;gap:10px;margin:0 0 14px;padding-bottom:6px;font-size:21px;font-weight:900}
+.cl-day h2 small{font-size:13.5px;font-weight:700;color:var(--muted)}
+.cl-day h2 i{position:absolute;left:0;bottom:0;width:120px;height:4px;border-radius:2px;background:var(--chalk-y);transform:scaleX(0);transform-origin:left;transition:transform .7s .15s var(--spring)}
+.cl-day h2.in i{transform:none}
+.cl-tl{position:relative;display:grid;gap:12px;padding-left:24px}
+.cl-e{position:relative}
+.cl-seg{position:absolute;left:-17px;top:0;bottom:-12px;width:2px;border-radius:1px;background:var(--line);transform:scaleY(0);transform-origin:top;transition:transform .6s var(--ease-out)}
+.cl-e:last-child .cl-seg{bottom:0}
+.cl-dot{position:absolute;left:-23px;top:22px;width:14px;height:14px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 3px var(--accent);transform:scale(0);transition:transform .45s .15s var(--spring);z-index:1}
+.cl-e.web .cl-dot{box-shadow:inset 0 0 0 3px var(--muted)}
+.cl-e.big .cl-dot{background:var(--accent)}
+.cl-card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:15px 16px;opacity:0;transform:translateX(34px) rotate(1.4deg);transition:opacity .45s var(--ease-out),transform .6s var(--spring)}
+.cl-e.big .cl-card{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.cl-e.in .cl-seg{transform:none}.cl-e.in .cl-dot{transform:none}.cl-e.in .cl-card{opacity:1;transform:none}
+.cl-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.cl-ver{font-family:var(--f-num);font-weight:800;font-size:13.5px;padding:2px 10px;border-radius:8px;background:var(--board);color:var(--chalk);font-variant-numeric:tabular-nums;transform:scale(1.7) rotate(-10deg);opacity:0}
+.cl-e.web .cl-ver{background:transparent;color:var(--muted);box-shadow:inset 0 0 0 1px var(--line)}
+.cl-e.in .cl-ver{animation:stamp .5s .25s cubic-bezier(.3,1.6,.5,1) forwards}
+@keyframes stamp{to{transform:rotate(-2deg);opacity:1}}
+.cl-time{font-family:var(--f-num);font-weight:700;font-size:13px;color:var(--muted)}
+.cl-new{font-family:var(--f-num);font-size:11px;font-weight:800;letter-spacing:.08em;padding:3px 8px;border-radius:6px;color:#3A2E00;background:linear-gradient(100deg,var(--chalk-y) 40%,#FFF3C4 50%,var(--chalk-y) 60%);background-size:300% 100%;animation:shine 2.2s linear infinite}
+@keyframes shine{from{background-position:100% 0}to{background-position:-100% 0}}
+.cl-card h3{margin:8px 0 2px;font-size:17.5px;font-weight:900;line-height:1.4}
+.cl-lead{margin:0 0 4px;color:var(--muted);font-size:14px}
+.cl-card ul{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.cl-card li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:14.5px;line-height:1.65;opacity:0;transform:translateX(-12px)}
+.cl-e.in li{animation:liIn .4s calc(.35s + var(--j) * 70ms) var(--ease-out) forwards}
+@keyframes liIn{to{opacity:1;transform:none}}
+.cl-tag{font-size:11.5px;font-weight:800;line-height:1;padding:5px 7px 4px;border-radius:6px;margin-top:3px;white-space:nowrap}
+.cl-tag.new{background:var(--accent-soft);color:var(--accent)}
+.cl-tag.imp{background:color-mix(in srgb,var(--chalk-y) 30%,var(--surface));color:var(--fg)}
+.cl-tag.fix{background:var(--warn-soft);color:var(--warn)}
+.cl-conf{position:absolute;left:28px;top:20px;pointer-events:none}
+.cl-conf i{position:absolute;width:7px;height:4px;border-radius:1px;background:var(--c);opacity:0}
+.cl-e.in .cl-conf i,.cl-card.boom .cl-conf i{animation:conf .9s .35s cubic-bezier(.2,.8,.3,1) forwards}
+.cl-card.boom .cl-conf i{animation-delay:0s}
+@keyframes conf{0%{opacity:1;transform:rotate(var(--a)) translateX(0) rotate(0)}100%{opacity:0;transform:rotate(var(--a)) translateX(46px) rotate(220deg)}}
+.cl-card.boom{animation:boom .45s var(--spring)}
+@keyframes boom{40%{transform:scale(1.025)}}
+.cl-e.re .cl-card{animation:reIn .4s var(--ease-out)}
+@keyframes reIn{from{opacity:0;transform:translateY(8px)}}
+.cl-sprout{display:flex;align-items:center;gap:10px;margin-top:12px;color:var(--accent);font-weight:800;font-size:14px}
+.cl-sprout svg{width:64px;height:38px;fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round}
+.cl-sprout .st{stroke-dasharray:40;stroke-dashoffset:40}
+.cl-sprout .lf{fill:var(--accent);transform:scale(0);transform-box:fill-box}
+.cl-sprout .lf.l{transform-origin:100% 100%}.cl-sprout .lf.r{transform-origin:0 100%}
+.cl-sprout span{opacity:0}
+.cl-e.in .cl-sprout .st{animation:draw .7s .6s var(--ease-out) forwards}
+.cl-e.in .cl-sprout .lf.l{animation:leaf .6s 1.1s var(--spring) forwards}
+.cl-e.in .cl-sprout .lf.r{animation:leaf .6s 1.3s var(--spring) forwards}
+.cl-e.in .cl-sprout span{animation:fadeUp2 .5s 1.5s var(--ease-out) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes leaf{to{transform:scale(1)}}
+.clv-note{margin:24px 0 0;font-size:13px;color:var(--muted);opacity:0;transition:opacity .6s}
+.clv-note.in{opacity:1}
+@media (prefers-reduced-motion: reduce){
+  #clv,#clv *{animation:none!important;transition:none!important}
+  #clv .chalk{clip-path:none}#clv .stick{display:none}
+  #clv .cl-card,#clv li,#clv .cl-ver,#clv .clv-board p,#clv .clv-stats span,#clv .cl-sprout span,#clv .clv-note{opacity:1;transform:none}
+  #clv .cl-seg,#clv .cl-dot,#clv .cl-day h2 i,#clv .cl-sprout .lf{transform:none}#clv .cl-sprout .st{stroke-dashoffset:0}
+}
 </style>
 </head>
 <body>
@@ -2955,6 +3078,100 @@ function shoot(target, gallery){
   inp.click();
 }
 const MB = n => n >= 1e9 ? (n / 1e9).toFixed(2) + " GB" : n >= 1e6 ? (n / 1e6).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1e3)) + " KB";
+
+/* ================= 更新履歴 (newest at the top) ================= */
+const CHANGELOG = [
+ {day:"11月3日", sub:"火曜日・文化の日", list:[
+  {v:"アプリ内", t:"21:55", big:1, newest:1, h:"更新履歴とテーマカラー", lead:"あなたが今見ているこのページです。", it:[["n","設定から読める「更新履歴」。1.0.0 から今までを、新しい順に"],["n","テーマカラーを6色から。黒板・紺・墨・えんじ・藤・山吹。黒板とボタンの色がいっしょに変わります"]]},
+  {v:"アプリ内", t:"21:40", h:"重なりを直しました", it:[["f","空の画面のボタンのアイコンが大きくなり、説明の文章に重なっていた問題"],["f","資料の「おすすめ」の並べ替えの枠で、文字の下が切れていた問題"]]},
+  {v:"1.0.43", t:"21:20", big:1, h:"使いやすさの総点検", lead:"はじめて触る人の目で、全部の画面を見直しました。", it:[["n","お試しモード。アカウントがなくても見本のデータで全部の画面をさわれる"],["n","バックアップ。資料・書き込み・写真・設定を1つのファイルに書き出して、読み込める"],["i","コンシェルジュは右下のすみっこに。話しかけは少しで閉じ、タイマーや資料を見ている間はおとなしく"],["i","閉じた画面の下のバーは5つ＋「その他」。文字も大きく"],["i","小さいボタンも、指で押せる広さに"],["i","「今日」の時間の帯に、記号の説明"],["i","何もないページに、大きな説明とすぐ追加できるボタン"],["f","「時間割」の見出しが縦に1文字ずつ並んでいた問題"],["f","会議のコマなど、薄くて読みにくかった文字"]]},
+  {v:"1.0.42", t:"18:54", big:1, h:"タイマーを、もっと手元で", it:[["n","動いているタイマーに大きな［−1分］［＋1分］［＋5分］。「大きく表示」のままでも延ばせる"],["n","通知から「＋1分」"],["n","タイマー・ポモドーロ・ストップウォッチの間は、画面が消えない"],["i","開いたときはいつもの「今日」から。「ひと目」は右上から"]]},
+  {v:"アプリ内", t:"13:10", h:"閉じたまま、ひと目でわかる", it:[["n","「ひと目」表示。いま・残り時間・次を特大で"],["n","「データと容量」。写真と資料の使用量を見て、まとめて整理"]]},
+  {v:"アプリ内", t:"10:38", h:"黒板の下のすきまを片づけ", it:[["f","黒板の下に、天気の面の分だけ空白ができていた問題"],["f","横のバーでアイコンが2つずつ並んでいた問題"]]},
+  {v:"1.0.41", t:"10:27", h:"動きに名前をつけました", it:[["n","数字が変わると、くるっと入れ替わる"],["n","資料や写真が、タップしたカードから広がって開く"],["i","ウィジェットで切れていた長い1行が、横に流れて全部読める"]]},
+  {v:"アプリ内", t:"10:20", h:"アイコンを本物のアイコン集に", it:[["i","手描きのアイコン39個を Material Symbols に。選んでいるタブは塗りつぶし"]]},
+  {v:"1.0.40", t:"10:05", h:"ウィジェットの見本が、本物そっくりに", it:[["f","ウィジェット一覧の見本が真っ黒だった問題"],["n","アプリの一覧から「ホーム画面に置く」でそのまま追加"]]},
+  {v:"1.0.37", t:"09:42", h:"サクサク、空振りしない", it:[["f","押したのに反応しないことがあった問題"],["i","黒板はどこを押しても裏返る。空の描画を軽くして約2倍なめらか"]]},
+  {v:"1.0.35–36", t:"09:19", h:"「近日の資料」ウィジェット", it:[["n","2週間以内に使う資料をホーム画面に。タップでその資料がすぐ開く"]]}]},
+ {day:"11月2日", sub:"月曜日・いちばん長い日", list:[
+  {v:"1.0.33–34", t:"22:40", big:1, h:"黒板にお色直し", lead:"「AIが作ったっぽさ」を点検して、先生の机から色を決め直しました。", it:[["i","黒板の緑・チョークの白と黄・赤ペンの赤。「今日」は木のチョーク受けつきの黒板"],["i","影をやめて細い線で区切る、紙のような平らな面に"]]},
+  {v:"アプリ内", t:"22:25", h:"横のバーを出し入れ自由に", it:[["n","名前つき・アイコンだけ・しまう の3段階"],["n","「メニューを編集」で並べ替え"]]},
+  {v:"1.0.32", t:"21:59", h:"板書を撮ると、その授業にしまわれる", it:[["n","授業の写真。撮った時刻から何時間目の何の授業かを判断して自動で整理"]]},
+  {v:"アプリ内", t:"20:41", h:"資料に、分類と予定を", it:[["n","色つきの分類、並べ替え、まとめて移動"],["n","資料と予定のひもづけ。「今日」から資料がすぐ開く"],["i","おすすめ順：予定が近い資料が上へ、そのほかは名前順"]]},
+  {v:"1.0.30", t:"20:29", h:"PDFに、指で書き込める", it:[["n","2本指で拡大、ペン・マーカー・ふせん・消しゴム"],["f","上のボタンがスマホの時計と重なっていた問題"]]},
+  {v:"1.0.29", t:"20:12", h:"「タイマー」タブ誕生", it:[["n","ポモドーロ・タイマー・ストップウォッチ。授業で見せられる「大きく表示」"]]},
+  {v:"1.0.28", t:"19:55", h:"ポモドーロ、はじめました", it:[["n","25分集中・5分休憩。ロック画面でもカウントダウン"]]},
+  {v:"1.0.25–27", t:"19:09", big:1, h:"空に、おきゃくさん", it:[["n","鳥の群れ、飛行機雲、流れ星、気球、落ち葉、虹、ほたる、そしてごくまれに……UFO"],["n","空の何もないところをタップすると呼べる"]]},
+  {v:"1.0.24", t:"18:56", h:"雨の日は、窓に雨粒", it:[["n","「今日」の背景が時間帯×天気で変わる"],["n","「窓」ウィジェット"]]},
+  {v:"1.0.23", t:"18:10", h:"「共有」から Fold Desk へ", it:[["n","PDFは資料へ、文字やリンクはメモ・タスク・予定へ"]]},
+  {v:"1.0.22", t:"17:57", h:"裏返すと、天気", it:[["n","日付のところをタップすると、くるっと裏返って天気の面に"],["n","「資料」タブ。PDFをスマホにしまって電波がなくても開ける"]]},
+  {v:"1.0.20–21", t:"13:45", h:"天気がやってきた", it:[["n","気温・体感・湿度・紫外線・この先の雨"],["n","天気ウィジェット、コンシェルジュの「傘わすれずに！」"]]},
+  {v:"1.0.18–19", t:"11:09", h:"ウィジェットにも表情を", it:[["n","常時表示の机置きモードとスクリーンセーバー"],["i","文字を大きくしてもはみ出さない"]]},
+  {v:"1.0.17", t:"10:29", h:"残り5分で、色が変わる", it:[["n","残り5分で黄色、1分で赤"],["n","ロック画面に「いま・次」"]]},
+  {v:"1.0.16", t:"09:28", h:"動きと色を、いまどきに", it:[["n","画面の切り替えアニメーション、押したときの手ごたえ"]]}]},
+ {day:"10月30日", sub:"金曜日・はじまりの日", list:[
+  {v:"1.0.15", t:"19:23", h:"コンシェルジュが消えない", it:[["f","歩いている途中でキャラクターが消えることがあった問題"]]},
+  {v:"1.0.13–14", t:"18:52", big:1, h:"コンシェルジュ、動きが39種類に", it:[["n","ジャンプ・くるりん・おじぎ・おやつ・お絵かき・読書……セリフつき"]]},
+  {v:"1.0.12", t:"18:34", h:"スマホのカレンダーと、名刺読み取り", it:[["n","スマホのカレンダーをそのまま「予定」に"],["n","名刺をカメラで撮って「人」に登録"]]},
+  {v:"1.0.10–11", t:"14:33", h:"おしゃべりなコンシェルジュ", it:[["n","「あれやった？」「わすれてなーい？」ホーム画面でも話しかける"],["n","「短縮」「朝会」の予定で時程が自動で切り替わる"]]},
+  {v:"1.0.6–9", t:"14:02", h:"ウィジェットが、アプリと同じに動く", it:[["n","ウィジェットから完了・チェック・日付の切り替え"],["n","学校のアカウントの予定を、個人のデータと混ぜずに表示"]]},
+  {v:"1.0.4–5", t:"12:23", h:"ウィジェット11種と、壁紙のコンシェルジュ", it:[["n","今日・いま／次・時間割・タスク・準備・予定など11種類"],["n","授業中の自動マナーモード、通知のスヌーズ、祝日"]]},
+  {v:"1.0.2–3", t:"07:22", h:"Android アプリ誕生", it:[["n","ホーム画面のウィジェット、スマホの通知"]]},
+  {v:"1.0.0", t:"05:01", big:1, first:1, h:"Fold Desk、はじまる", lead:"Notion で管理していた毎日を、Fold のための専用アプリへ。", it:[["n","今日・時間割・タスク・予定・人・メモ"],["n","時間割と時程をCSVやスプレッドシートから取り込み"],["n","データは自分のGoogleドライブに"]]}]}
+];
+const CLTAG = {n:["new", "新機能"], i:["imp", "改善"], f:["fix", "修正"]};
+let clv = null;
+function changelogOpen(){
+  if(clv) return;
+  closePane();
+  const all = CHANGELOG.flatMap(d => d.list), rel = Math.max(...all.map(e => { const m = String(e.v).match(/^1\.0\.(?:\d+–)?(\d+)/); return m ? +m[1] : 0; })), cnt = k => all.reduce((a, e) => a + e.it.filter(x => x[0] === k).length, 0);
+  const dust = Array.from({length:14}, (_, i) => `<i style="--x:${(i * 37) % 100}%;--d:${(i * .53) % 6}s;--s:${.6 + (i % 4) * .25}"></i>`).join("");
+  const conf = Array.from({length:10}, (_, i) => `<i style="--a:${i * 36}deg;--c:${["var(--chalk-y)", "#F5F3EC", "var(--accent)", "#E58C8A"][i % 4]}"></i>`).join("");
+  let n = 0;
+  const entry = e => { const i = n++; return `<article class="cl-e${e.big ? " big" : ""}${e.v === "アプリ内" ? " web" : ""}${e.first ? " first" : ""}" data-tags="${[...new Set(e.it.map(x => x[0]))].join("")}" style="--k:${i}">
+    <span class="cl-seg" aria-hidden="true"></span><span class="cl-dot" aria-hidden="true"></span>
+    <div class="cl-card">${e.big ? `<span class="cl-conf" aria-hidden="true">${conf}</span>` : ""}
+      <div class="cl-head"><span class="cl-ver">${esc(e.v)}</span><span class="cl-time">${esc(e.t)}</span>${e.newest ? `<span class="cl-new">NEW</span>` : ""}</div>
+      <h3>${esc(e.h)}</h3>${e.lead ? `<p class="cl-lead">${esc(e.lead)}</p>` : ""}
+      <ul>${e.it.map((x, j) => `<li data-t="${x[0]}" style="--j:${j}"><span class="cl-tag ${CLTAG[x[0]][0]}">${CLTAG[x[0]][1]}</span><span>${esc(x[1])}</span></li>`).join("")}</ul>
+      ${e.first ? `<div class="cl-sprout" aria-hidden="true"><svg viewBox="0 0 120 70"><path class="st" d="M60 68 C60 50 60 40 60 30"/><path class="lf l" d="M60 44 C46 44 36 36 34 24 C48 24 58 32 60 44Z"/><path class="lf r" d="M60 34 C72 34 84 26 86 12 C72 12 62 20 60 34Z"/></svg><span>ここから、はじまりました</span></div>` : ""}
+    </div></article>`; };
+  const el = document.createElement("div"); el.id = "clv"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "更新履歴");
+  el.innerHTML = `<div class="clv-scroll">
+    <header class="clv-board"><div class="clv-dust" aria-hidden="true">${dust}</div>
+      <button class="clv-x" data-clv-close aria-label="閉じる">${ico("close")}</button>
+      <div class="clv-app"><i class="logo" aria-hidden="true"></i>Fold Desk</div>
+      <h1><span class="chalk">更新履歴</span><i class="stick" aria-hidden="true"></i></h1>
+      <p>最初の1行から、黒板と天気とタイマーがそろうまで。上が新しく、下に行くほど昔の話です。</p>
+      <div class="clv-stats"><span><b data-count="${rel}">0</b>回のリリース</span><span><b data-count="${cnt("n")}">0</b>の新機能</span><span><b data-count="${cnt("i") + cnt("f")}">0</b>の改善と修正</span></div>
+      <span class="clv-tray" aria-hidden="true"><i></i></span></header>
+    <div class="clv-body">
+      <div class="clv-filters" role="group" aria-label="表示する種類">${[["all", "すべて"], ["n", "新機能"], ["i", "改善"], ["f", "修正"]].map(([k, l]) => `<button class="chip" data-clf="${k}" aria-pressed="${k === "all"}">${l}</button>`).join("")}</div>
+      ${CHANGELOG.map(d => `<section class="cl-day"><h2><span>${esc(d.day)}</span><small>${esc(d.sub)}</small><i aria-hidden="true"></i></h2><div class="cl-tl">${d.list.map(entry).join("")}</div></section>`).join("")}
+      <p class="clv-note">時刻は日本時間です。「アプリ内」は、アプリを開き直すだけで届いた更新です。番号が範囲のものは、短い間に続けて出したリリースをまとめています。</p>
+    </div></div>`;
+  document.body.appendChild(el); clv = el; document.body.classList.add("clv-on");
+  const sc = el.querySelector(".clv-scroll"), board = el.querySelector(".clv-board");
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add("on")));
+  // count up
+  setTimeout(() => el.querySelectorAll("[data-count]").forEach(b => { const to = +b.dataset.count, t0 = performance.now(), dur = 1100;
+    const f = now => { const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3); b.textContent = Math.round(to * e); if(k < 1) requestAnimationFrame(f); }; REDUCE ? (b.textContent = to) : requestAnimationFrame(f); }), 450);
+  // entries come in as they scroll into view
+  const io = "IntersectionObserver" in window && !REDUCE ? new IntersectionObserver(es => es.forEach(x => { if(x.isIntersecting){ x.target.classList.add("in"); io.unobserve(x.target); } }), {root:sc, threshold:.12, rootMargin:"0px 0px -6% 0px"}) : null;
+  el.querySelectorAll(".cl-e,.cl-day h2,.clv-note").forEach(x => io ? io.observe(x) : x.classList.add("in"));
+  // the board drifts and fades a little as you scroll
+  sc.addEventListener("scroll", () => { const y = sc.scrollTop; if(y < 420 && !REDUCE){ board.style.transform = `translateY(${y * .35}px)`; board.style.opacity = String(Math.max(.25, 1 - y / 520)); } }, {passive:true});
+  el.addEventListener("click", e => {
+    if(e.target.closest("[data-clv-close]")){ changelogClose(); return; }
+    const f = e.target.closest("[data-clf]"); if(f){ const k = f.dataset.clf; el.querySelectorAll("[data-clf]").forEach(x => x.setAttribute("aria-pressed", x === f));
+      el.querySelectorAll(".cl-e").forEach(a => { const show = k === "all" || a.dataset.tags.includes(k); a.hidden = !show; a.querySelectorAll("li").forEach(li => li.hidden = !(k === "all" || li.dataset.t === k)); if(show && !REDUCE){ a.classList.remove("re"); void a.offsetWidth; a.classList.add("re"); } });
+      el.querySelectorAll(".cl-day").forEach(d => d.hidden = !d.querySelector(".cl-e:not([hidden])")); buzz(6); return; }
+    const card = e.target.closest(".cl-e.big .cl-card"); if(card && !REDUCE){ card.classList.remove("boom"); void card.offsetWidth; card.classList.add("boom"); }
+  });
+  buzz(8);
+}
+function changelogClose(){ if(!clv) return; const el = clv; clv = null; el.classList.remove("on"); el.classList.add("off"); document.body.classList.remove("clv-on"); setTimeout(() => el.remove(), REDUCE ? 0 : 420); }
+addEventListener("keydown", e => { if(e.key === "Escape" && clv) changelogClose(); });
 const BK_SKIP = /^fd-(token|stoken|api|sapi|school-cache|store-v1|queue-v1|demo|demo-state|fired|talk|wxfx-test|devcal)$/;
 async function saveBig(name, blob){
   if(NATIVE && NATIVE.saveOpen){
@@ -3998,7 +4215,12 @@ function settingsPane(){
           <div class="setrow"><span class="main"><b>このスマホのアプリに接続</b><small>インストール後に押すと、アプリにこの接続を引き継ぎます</small></span><a class="chip accent" href="${esc(androidPairLink())}">接続</a></div></div>` : ""}`}
 
       <div class="sec">表示</div>
-      <div class="seg" role="group" aria-label="外観">${[["auto","自動"],["light","ライト"],["dark","ダーク"]].map(([k,l]) => `<button type="button" data-theme-set="${k}" aria-pressed="${th===k}">${l}</button>`).join("")}</div>`;
+      <div class="seg" role="group" aria-label="外観">${[["auto","自動"],["light","ライト"],["dark","ダーク"]].map(([k,l]) => `<button type="button" data-theme-set="${k}" aria-pressed="${th===k}">${l}</button>`).join("")}</div>
+      <div class="sec" style="margin:16px 0 0">テーマカラー</div>
+      <div class="pal-row" role="group" aria-label="テーマカラー">${PALETTES.map(([k, n, b, a]) => `<button type="button" class="pal" data-pal="${k}" aria-pressed="${ls.get("fd-palette", "green") === k}"><span class="sw" style="--b:${b};--a:${a}"><i></i></span>${n}</button>`).join("")}</div>
+      <p class="hint" style="margin-top:2px">黒板とボタンの色がいっしょに変わります。ダークにしても同じ系統の色になります。</p>
+      <div class="sec">このアプリについて</div>
+      <button class="row" data-act="changelog" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico("spark")}</span><span class="main"><b>更新履歴</b><small>1.0.0 から今までに増えたこと・直したこと</small></span><span class="when">${ico("right")}</span></button>`;
   };
   openPane("", draw); draw();
   if(NATIVE) checkAppUpdate().then(u => { const a = $("#appver"), b2 = $("#appupd"); if(a) a.textContent = `1.0.${NATIVE_VER.code}　${u ? `新しい版 1.0.${u.n} があります` : "最新です"}`; if(b2 && u){ b2.hidden = false; b2.dataset.url = u.url; } });
@@ -4019,6 +4241,19 @@ function homeGuide(){
       <li><span>表紙画面のホームが別の設定なら、閉じた状態でアイコンを追加します。どちらで開いても画面に合わせて配置が変わります。</span></li>
     </ol>
     <div class="btns"><button class="btn" data-act="close">閉じる</button></div>`);
+}
+const PALETTES = [["green","黒板","#24443A","#2C6A55"],["navy","紺","#22374F","#2D5B8C"],["ink","墨","#2F3439","#3F4B56"],["wine","えんじ","#4A2A30","#8E3B46"],["fuji","藤","#33294A","#5E4E8C"],["yamabuki","山吹","#3D3424","#80580A"]];
+function applyPalette(){ const k = ls.get("fd-palette", "green"); if(k === "green") document.documentElement.removeAttribute("data-palette"); else document.documentElement.dataset.palette = k; }
+applyPalette();
+function setPalette(k, btn){
+  const go = () => { ls.set("fd-palette", k); applyPalette(); document.querySelectorAll("[data-pal]").forEach(x => x.setAttribute("aria-pressed", x.dataset.pal === k)); };
+  if(document.startViewTransition && !REDUCE){
+    const r = btn ? btn.getBoundingClientRect() : {left:innerWidth / 2, top:innerHeight / 2, width:0, height:0}, x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const far = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    const vt = document.startViewTransition(go);
+    vt.ready.then(() => document.documentElement.animate({clipPath:[`circle(0px at ${x}px ${y}px)`, `circle(${far}px at ${x}px ${y}px)`]}, {duration:520, easing:"cubic-bezier(.2,.8,.2,1)", pseudoElement:"::view-transition-new(root)"})).catch(() => {});
+  } else go();
+  buzz(8);
 }
 function applyTheme(){ const t = ls.get("fd-theme", "auto"); if(t === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.dataset.theme = t; }
 applyTheme();
@@ -4322,6 +4557,7 @@ document.addEventListener("click", async (ev) => {
   if(d.act === "settings"){ document.body.classList.remove("rail-peek"); settingsPane(); return; }
   if(d.act === "navmore"){ navMorePane(); return; }
   if(d.act === "backup"){ backupPane(); return; }
+  if(d.act === "changelog"){ changelogOpen(); return; }
   if(d.glance){ if(d.glance === "full"){ ui.todayFull = true; schedule(); } else if(d.glance === "on"){ ui.todayFull = false; schedule(); } else if(d.glance === "wx"){ ui.todayFull = true; ui.heroFlip = true; schedule(); setTimeout(() => { try { sizeFlip(); wxmini.sync(); } catch(e){} }, 50); } return; }
   if(d.act === "storage"){ storagePane(); return; }
   if(d.stor){ storageAct(b); return; }
@@ -4371,6 +4607,7 @@ document.addEventListener("click", async (ev) => {
   if(d.ccTalk){ concierge.setCfg({talk:d.ccTalk}); b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); return; }
   if(d.ccRoam){ concierge.setCfg({roam:d.ccRoam === "roam"}); b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); return; }
   if(d.ccLevel){ concierge.setCfg({level:d.ccLevel}); b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); if(d.ccLevel !== "calm") concierge.home(); return; }
+  if(d.pal){ setPalette(d.pal, b); return; }
   if(d.themeSet){ ls.set("fd-theme", d.themeSet); applyTheme(); b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); return; }
   if(d.rem){ const f = b.closest("form"), n = new Date(); let x = null;
     if(d.rem === "today16"){ x = new Date(n); x.setHours(16,10,0,0); if(x < n) x.setDate(x.getDate()+1); }
@@ -5142,6 +5379,7 @@ function pushSnapshot(now){
   if(now) go2(); else snapT = setTimeout(go2, 1500);
 }
 window.__fdBack = () => {
+  if(clv){ changelogClose(); return true; }
   if(phv){ closePhoto(); return true; }
   if(pdfv){ closeDoc(); return true; }
   const pk = $("#picker"); if(pk && pk.classList.contains("on")){ pk.classList.remove("on"); return true; }
