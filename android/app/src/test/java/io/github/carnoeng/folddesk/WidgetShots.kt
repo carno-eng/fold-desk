@@ -76,6 +76,47 @@ class WidgetShots {
         File(out, "$name.png").outputStream().use { b.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
+    /** Picker previews: the real widgets with sample content, on a transparent background (copied into res/drawable-nodpi). */
+    private fun preview(name: String, rv: RemoteViews, wDp: Int, hDp: Int) {
+        try {
+            val d = c.resources.displayMetrics.density; val host = FrameLayout(c); host.addView(rv.apply(c, host))
+            val w = (wDp * d).toInt(); val h = (hDp * d).toInt()
+            host.measure(View.MeasureSpec.makeMeasureSpec(w, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(h, View.MeasureSpec.EXACTLY)); host.layout(0, 0, w, h)
+            val b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888); host.draw(Canvas(b))
+            File(out, "preview_$name.png").outputStream().use { b.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        } catch (e: Throwable) { println("PREVIEW $name: $e") }
+    }
+
+    @Test fun previews() {
+        val s = snap(false)
+        val wx = JSONObject(s.toString()).put("weather", JSONObject("""{"t":18,"feels":17,"hum":62,"uv":6,"uvLabel":"強い","label":"晴れ時々くもり","kind":"part","day":true,"hi":21,"lo":11,"pop":60,"place":"横浜","code":2,"precip":0,"wind":8,"sr":370,"ss":1005,"tip":"","hours":[{"h":"いま","t":18,"kind":"part","pop":10},{"h":"10時","t":19,"kind":"sun","pop":0},{"h":"11時","t":20,"kind":"sun","pop":0},{"h":"12時","t":21,"kind":"cloud","pop":30},{"h":"13時","t":20,"kind":"rain","pop":50}]}"""))
+        val now = System.currentTimeMillis()
+        val full = JSONObject(wx.toString())
+            .put("events", JSONArray("""[{"label":"今日","title":"校内研修","time":"15:30","place":"多目的室","account":""},{"label":"11/6(金)","title":"漢字検定","time":"15:35","place":"","account":"学校"},{"label":"11/10(火)","title":"保護者会","time":"14:00","place":"教室","account":""}]"""))
+            .put("reminders", JSONArray().put(JSONObject().put("at", now + 25 * 60_000).put("title", "3時間目 教科主任会").put("body", "会議室"))
+                .put(JSONObject().put("at", now + 95 * 60_000).put("title", "校内研修").put("body", "多目的室")))
+            .put("brief", JSONObject("""{"time":"7:30","lines":["通常時程・授業4コマ","今日までのタスク 1件","15:30 校内研修","午後から雨。傘をわすれずに"]}"""))
+            .put("docs", JSONArray("""[{"id":"d1","title":"漢検 実施計画","label":"今日","ev":"15:35 漢字検定","cat":"漢検","pages":3},{"id":"d2","title":"保護者会 しおり","label":"明日","ev":"14:00 保護者会","cat":"","pages":4},{"id":"d3","title":"研修資料 ICT活用","label":"11/10","ev":"","cat":"研修","pages":12}]"""))
+            .put("week", JSONObject().put("times", JSONArray("[1,2,3,4,5]")).put("days", JSONArray().apply {
+                val subj = listOf(listOf("国語","算数","生活","体育","音楽"), listOf("算数","国語","図工","図工","学活"), listOf("国語","体育","算数","生活",""), listOf("算数","国語","音楽","道徳","情報"), listOf("国語","算数","体育","生活",""))
+                listOf("月","火","水","木","金").forEachIndexed { i, l -> put(JSONObject().put("label", l).put("md", "${2 + i}").put("today", i == 1).put("cells", JSONArray().apply {
+                    subj[i].forEach { t -> put(JSONObject().put("k", if (t.isEmpty()) "free" else if (t == "情報") "joho" else "class").put("t", t)) } })) } }))
+        preview("hero", Widgets.hero(c, wx, 300f, 190f), 300, 190)
+        preview("today", Widgets.today(c, s, 1, 300f), 260, 300)
+        preview("next", Widgets.next(c, s), 250, 110)
+        preview("tasks", Widgets.tasks(c, full, 180f), 260, 180)
+        preview("prep", Widgets.prep(c, full, 150f), 260, 150)
+        preview("events", Widgets.events(c, full, 180f), 260, 180)
+        preview("remind", Widgets.reminders(c, full, 150f), 260, 150)
+        preview("follow", Widgets.follow(c, full, 160f), 260, 160)
+        preview("brief", Widgets.brief(c, full, 200f), 260, 200)
+        preview("docs", Widgets.docs(c, full, 200f), 260, 200)
+        preview("week", Widgets.week(c, full, 300f, 220f), 300, 220)
+        preview("weather", Widgets.weather(c, full, 260f, 160f), 260, 160)
+        preview("window", Widgets.window(c, full, 220f, 150f), 220, 150)
+        preview("add", RemoteViews(c.packageName, R.layout.widget_add), 160, 70)
+    }
+
     @Test fun render() {
         val s = snap(false); val hol = snap(true)
         for ((w, h) in listOf(340 to 170, 340 to 190, 340 to 240, 340 to 300, 340 to 440, 560 to 250, 600 to 420)) {
