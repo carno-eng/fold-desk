@@ -1665,7 +1665,137 @@ body:not([data-mode="cover-p"]) .face-peek{top:40%}
   body:not([data-mode="cover-p"]) .wf-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:22px;align-items:start}
   body:not([data-mode="cover-p"]) .wf-grid .corkboard{margin-top:12px}
 }
-</style>
+
+/* ================= v45: tab motion — instant switch, each page with its own entrance ================= */
+.tab{touch-action:manipulation}
+.tab:active svg,.tab:active .ic-o,.tab:active .ic-f{transform:scale(.86);transition:transform .08s}
+.tab[aria-current="page"] svg{animation:tabPop .38s cubic-bezier(.3,1.6,.5,1)}
+@keyframes tabPop{0%{transform:scale(.7)}60%{transform:scale(1.12)}100%{transform:none}}
+@keyframes txPage{from{opacity:0;transform:translate3d(var(--tx),0,0)}to{opacity:1;transform:none}}
+@keyframes txRise{from{opacity:0;transform:translate3d(0,16px,0) scale(.985)}to{opacity:1;transform:none}}
+@keyframes txSlide{from{opacity:0;transform:translate3d(var(--tx2),0,0)}to{opacity:1;transform:none}}
+@keyframes txPop{0%{opacity:0;transform:scale(.6)}70%{opacity:1;transform:scale(1.06)}100%{transform:none}}
+@keyframes txBoard{0%{opacity:0;transform:translate3d(0,-18px,0) rotateX(12deg)}70%{opacity:1;transform:translate3d(0,3px,0)}100%{transform:none}}
+@keyframes txRing{0%{opacity:0;transform:scale(.8) rotate(-30deg)}70%{opacity:1;transform:scale(1.03) rotate(3deg)}100%{transform:none}}
+@keyframes txCell{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:none}}
+#view.tx{--tx:22px;--tx2:28px}
+#view.tx-back{--tx:-22px;--tx2:-28px}
+#view.tx > .page-h,#view.tx > .face-dots{animation:txPage .26s cubic-bezier(.2,.8,.2,1) both}
+#view.tx .grid > *,#view.tx .stack > *,#view.tx .pgrid > *,#view.tx > .card,#view.tx .wf-grid > *,#view.tx .doc-grid > *,#view.tx .docs > *{animation:txRise .34s cubic-bezier(.2,.8,.2,1) both}
+#view.tx :is(.grid,.stack,.pgrid,.wf-grid) > :nth-child(1){animation-delay:.02s}
+#view.tx :is(.grid,.stack,.pgrid,.wf-grid) > :nth-child(2){animation-delay:.06s}
+#view.tx :is(.grid,.stack,.pgrid,.wf-grid) > :nth-child(3){animation-delay:.10s}
+#view.tx :is(.grid,.stack,.pgrid,.wf-grid) > :nth-child(4){animation-delay:.14s}
+#view.tx :is(.grid,.stack,.pgrid,.wf-grid) > :nth-child(n+5){animation-delay:.17s}
+/* 今日: the board drops into place */
+#view.tx-today .flipcard{animation:txBoard .46s cubic-bezier(.2,.9,.3,1.2) both!important;transform-origin:50% 0}
+/* タスク・メモ・人: rows slide in one after another */
+#view.tx-tasks .card .row,#view.tx-memo .grid > .card,#view.tx-people .pgrid > *{animation:txSlide .3s cubic-bezier(.2,.8,.2,1) both}
+/* タイマー: the ring spins in */
+#view.tx-timer .pomo-ring,#view.tx-timer .cd-ring,#view.tx-timer .sw-time{animation:txRing .5s cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timer .tmr-seg{animation:txPage .26s cubic-bezier(.2,.8,.2,1) both}
+/* 資料: papers float up */
+#view.tx-docs .doc{animation:txRise .34s cubic-bezier(.2,.8,.2,1) both}
+@media (prefers-reduced-motion: reduce){#view.tx *,#view.tx > *{animation:none!important}}
+
+#view.tx-timetable .tt tbody tr:nth-child(1) td:nth-child(2) .cell,#view.tx-timetable .tt tbody tr:nth-child(1) td:nth-child(2) > *:first-child{animation:txCell .28s 0ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(1) td:nth-child(3) .cell,#view.tx-timetable .tt tbody tr:nth-child(1) td:nth-child(3) > *:first-child{animation:txCell .28s 18ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(1) td:nth-child(4) .cell,#view.tx-timetable .tt tbody tr:nth-child(1) td:nth-child(4) > *:first-child{animation:txCell .28s 36ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(1) td:nth-child(5) .cell,#view.tx-timetable .tt tbody tr:nth-child(1) td:nth-child(5) > *:first-child{animation:txCell .28s 54ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(1) td:nth-child(6) .cell,#view.tx-timetable .tt tbody tr:nth-child(1) td:nth-child(6) > *:first-child{animation:txCell .28s 72ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(1) td:nth-child(7) .cell,#view.tx-timetable .tt tbody tr:nth-child(1) td:nth-child(7) > *:first-child{animation:txCell .28s 90ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(2) td:nth-child(2) .cell,#view.tx-timetable .tt tbody tr:nth-child(2) td:nth-child(2) > *:first-child{animation:txCell .28s 18ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(2) td:nth-child(3) .cell,#view.tx-timetable .tt tbody tr:nth-child(2) td:nth-child(3) > *:first-child{animation:txCell .28s 36ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(2) td:nth-child(4) .cell,#view.tx-timetable .tt tbody tr:nth-child(2) td:nth-child(4) > *:first-child{animation:txCell .28s 54ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(2) td:nth-child(5) .cell,#view.tx-timetable .tt tbody tr:nth-child(2) td:nth-child(5) > *:first-child{animation:txCell .28s 72ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(2) td:nth-child(6) .cell,#view.tx-timetable .tt tbody tr:nth-child(2) td:nth-child(6) > *:first-child{animation:txCell .28s 90ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(2) td:nth-child(7) .cell,#view.tx-timetable .tt tbody tr:nth-child(2) td:nth-child(7) > *:first-child{animation:txCell .28s 108ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(3) td:nth-child(2) .cell,#view.tx-timetable .tt tbody tr:nth-child(3) td:nth-child(2) > *:first-child{animation:txCell .28s 36ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(3) td:nth-child(3) .cell,#view.tx-timetable .tt tbody tr:nth-child(3) td:nth-child(3) > *:first-child{animation:txCell .28s 54ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(3) td:nth-child(4) .cell,#view.tx-timetable .tt tbody tr:nth-child(3) td:nth-child(4) > *:first-child{animation:txCell .28s 72ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(3) td:nth-child(5) .cell,#view.tx-timetable .tt tbody tr:nth-child(3) td:nth-child(5) > *:first-child{animation:txCell .28s 90ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(3) td:nth-child(6) .cell,#view.tx-timetable .tt tbody tr:nth-child(3) td:nth-child(6) > *:first-child{animation:txCell .28s 108ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(3) td:nth-child(7) .cell,#view.tx-timetable .tt tbody tr:nth-child(3) td:nth-child(7) > *:first-child{animation:txCell .28s 126ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(4) td:nth-child(2) .cell,#view.tx-timetable .tt tbody tr:nth-child(4) td:nth-child(2) > *:first-child{animation:txCell .28s 54ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(4) td:nth-child(3) .cell,#view.tx-timetable .tt tbody tr:nth-child(4) td:nth-child(3) > *:first-child{animation:txCell .28s 72ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(4) td:nth-child(4) .cell,#view.tx-timetable .tt tbody tr:nth-child(4) td:nth-child(4) > *:first-child{animation:txCell .28s 90ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(4) td:nth-child(5) .cell,#view.tx-timetable .tt tbody tr:nth-child(4) td:nth-child(5) > *:first-child{animation:txCell .28s 108ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(4) td:nth-child(6) .cell,#view.tx-timetable .tt tbody tr:nth-child(4) td:nth-child(6) > *:first-child{animation:txCell .28s 126ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(4) td:nth-child(7) .cell,#view.tx-timetable .tt tbody tr:nth-child(4) td:nth-child(7) > *:first-child{animation:txCell .28s 144ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(5) td:nth-child(2) .cell,#view.tx-timetable .tt tbody tr:nth-child(5) td:nth-child(2) > *:first-child{animation:txCell .28s 72ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(5) td:nth-child(3) .cell,#view.tx-timetable .tt tbody tr:nth-child(5) td:nth-child(3) > *:first-child{animation:txCell .28s 90ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(5) td:nth-child(4) .cell,#view.tx-timetable .tt tbody tr:nth-child(5) td:nth-child(4) > *:first-child{animation:txCell .28s 108ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(5) td:nth-child(5) .cell,#view.tx-timetable .tt tbody tr:nth-child(5) td:nth-child(5) > *:first-child{animation:txCell .28s 126ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(5) td:nth-child(6) .cell,#view.tx-timetable .tt tbody tr:nth-child(5) td:nth-child(6) > *:first-child{animation:txCell .28s 144ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(5) td:nth-child(7) .cell,#view.tx-timetable .tt tbody tr:nth-child(5) td:nth-child(7) > *:first-child{animation:txCell .28s 162ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(6) td:nth-child(2) .cell,#view.tx-timetable .tt tbody tr:nth-child(6) td:nth-child(2) > *:first-child{animation:txCell .28s 90ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(6) td:nth-child(3) .cell,#view.tx-timetable .tt tbody tr:nth-child(6) td:nth-child(3) > *:first-child{animation:txCell .28s 108ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(6) td:nth-child(4) .cell,#view.tx-timetable .tt tbody tr:nth-child(6) td:nth-child(4) > *:first-child{animation:txCell .28s 126ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(6) td:nth-child(5) .cell,#view.tx-timetable .tt tbody tr:nth-child(6) td:nth-child(5) > *:first-child{animation:txCell .28s 144ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(6) td:nth-child(6) .cell,#view.tx-timetable .tt tbody tr:nth-child(6) td:nth-child(6) > *:first-child{animation:txCell .28s 162ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(6) td:nth-child(7) .cell,#view.tx-timetable .tt tbody tr:nth-child(6) td:nth-child(7) > *:first-child{animation:txCell .28s 180ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(7) td:nth-child(2) .cell,#view.tx-timetable .tt tbody tr:nth-child(7) td:nth-child(2) > *:first-child{animation:txCell .28s 108ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(7) td:nth-child(3) .cell,#view.tx-timetable .tt tbody tr:nth-child(7) td:nth-child(3) > *:first-child{animation:txCell .28s 126ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(7) td:nth-child(4) .cell,#view.tx-timetable .tt tbody tr:nth-child(7) td:nth-child(4) > *:first-child{animation:txCell .28s 144ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(7) td:nth-child(5) .cell,#view.tx-timetable .tt tbody tr:nth-child(7) td:nth-child(5) > *:first-child{animation:txCell .28s 162ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(7) td:nth-child(6) .cell,#view.tx-timetable .tt tbody tr:nth-child(7) td:nth-child(6) > *:first-child{animation:txCell .28s 180ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(7) td:nth-child(7) .cell,#view.tx-timetable .tt tbody tr:nth-child(7) td:nth-child(7) > *:first-child{animation:txCell .28s 198ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(8) td:nth-child(2) .cell,#view.tx-timetable .tt tbody tr:nth-child(8) td:nth-child(2) > *:first-child{animation:txCell .28s 126ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(8) td:nth-child(3) .cell,#view.tx-timetable .tt tbody tr:nth-child(8) td:nth-child(3) > *:first-child{animation:txCell .28s 144ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(8) td:nth-child(4) .cell,#view.tx-timetable .tt tbody tr:nth-child(8) td:nth-child(4) > *:first-child{animation:txCell .28s 162ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(8) td:nth-child(5) .cell,#view.tx-timetable .tt tbody tr:nth-child(8) td:nth-child(5) > *:first-child{animation:txCell .28s 180ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(8) td:nth-child(6) .cell,#view.tx-timetable .tt tbody tr:nth-child(8) td:nth-child(6) > *:first-child{animation:txCell .28s 198ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-timetable .tt tbody tr:nth-child(8) td:nth-child(7) .cell,#view.tx-timetable .tt tbody tr:nth-child(8) td:nth-child(7) > *:first-child{animation:txCell .28s 216ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(8){animation:txPop .3s 0ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(9){animation:txPop .3s 8ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(10){animation:txPop .3s 16ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(11){animation:txPop .3s 24ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(12){animation:txPop .3s 32ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(13){animation:txPop .3s 40ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(14){animation:txPop .3s 48ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(15){animation:txPop .3s 30ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(16){animation:txPop .3s 38ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(17){animation:txPop .3s 46ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(18){animation:txPop .3s 54ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(19){animation:txPop .3s 62ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(20){animation:txPop .3s 70ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(21){animation:txPop .3s 78ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(22){animation:txPop .3s 60ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(23){animation:txPop .3s 68ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(24){animation:txPop .3s 76ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(25){animation:txPop .3s 84ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(26){animation:txPop .3s 92ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(27){animation:txPop .3s 100ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(28){animation:txPop .3s 108ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(29){animation:txPop .3s 90ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(30){animation:txPop .3s 98ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(31){animation:txPop .3s 106ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(32){animation:txPop .3s 114ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(33){animation:txPop .3s 122ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(34){animation:txPop .3s 130ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(35){animation:txPop .3s 138ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(36){animation:txPop .3s 120ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(37){animation:txPop .3s 128ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(38){animation:txPop .3s 136ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(39){animation:txPop .3s 144ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(40){animation:txPop .3s 152ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(41){animation:txPop .3s 160ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(42){animation:txPop .3s 168ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(43){animation:txPop .3s 150ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(44){animation:txPop .3s 158ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(45){animation:txPop .3s 166ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(46){animation:txPop .3s 174ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(47){animation:txPop .3s 182ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(48){animation:txPop .3s 190ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-events .cal > :nth-child(49){animation:txPop .3s 198ms cubic-bezier(.2,.9,.3,1.2) both}
+#view.tx-tasks .card .row:nth-child(2),#view.tx-docs .doc:nth-child(1),#view.tx-memo .grid > .card:nth-child(1),#view.tx-people .pgrid > :nth-child(1){animation-delay:35ms}
+#view.tx-tasks .card .row:nth-child(3),#view.tx-docs .doc:nth-child(2),#view.tx-memo .grid > .card:nth-child(2),#view.tx-people .pgrid > :nth-child(2){animation-delay:70ms}
+#view.tx-tasks .card .row:nth-child(4),#view.tx-docs .doc:nth-child(3),#view.tx-memo .grid > .card:nth-child(3),#view.tx-people .pgrid > :nth-child(3){animation-delay:105ms}
+#view.tx-tasks .card .row:nth-child(5),#view.tx-docs .doc:nth-child(4),#view.tx-memo .grid > .card:nth-child(4),#view.tx-people .pgrid > :nth-child(4){animation-delay:140ms}
+#view.tx-tasks .card .row:nth-child(6),#view.tx-docs .doc:nth-child(5),#view.tx-memo .grid > .card:nth-child(5),#view.tx-people .pgrid > :nth-child(5){animation-delay:175ms}
+#view.tx-tasks .card .row:nth-child(7),#view.tx-docs .doc:nth-child(6),#view.tx-memo .grid > .card:nth-child(6),#view.tx-people .pgrid > :nth-child(6){animation-delay:210ms}
+#view.tx-tasks .card .row:nth-child(8),#view.tx-docs .doc:nth-child(7),#view.tx-memo .grid > .card:nth-child(7),#view.tx-people .pgrid > :nth-child(7){animation-delay:245ms}
+#view.tx-tasks .card .row:nth-child(9),#view.tx-docs .doc:nth-child(8),#view.tx-memo .grid > .card:nth-child(8),#view.tx-people .pgrid > :nth-child(8){animation-delay:245ms}</style>
 </head>
 <body>
 
@@ -1827,7 +1957,12 @@ addEventListener("hashchange", () => {
   const prev = view, k = location.hash.slice(1), next = VIEWS.some(v => v.k === k) ? k : prev;
   if(next !== "today") ui.todayFace = "main";
   const i0 = VIEWS.findIndex(v => v.k === prev), i1 = VIEWS.findIndex(v => v.k === next);
-  if(next !== prev && document.startViewTransition && !REDUCE && !document.hidden && paired()){
+  if(next !== prev && paired() && !document.hidden){
+    const v = $("#view"); view = next; cancelAnimationFrame(rafId); rafId = 0; skyPauseUntil = performance.now() + 380;
+    render(); v.scrollTop = 0; playEnter(next, i1 < i0 ? "back" : "fwd"); buzz(6);
+    return;
+  }
+  if(false){
     document.documentElement.dataset.dir = i1 < i0 ? "back" : "fwd"; skyPauseUntil = performance.now() + 450;
     const v = $("#view"); v.classList.add("vt");
     cancelAnimationFrame(rafId); rafId = 0;
@@ -1842,6 +1977,17 @@ addEventListener("hashchange", () => {
   }
   view = next; schedule(); $("#view").scrollTop = 0;
 });
+let txT = 0;
+function playEnter(k, dir){
+  const v = $("#view"); if(!v || REDUCE || document.body.classList.contains("eco")) return;
+  v.className = v.className.replace(/\btx(-[a-z]+)?\b/g, "").trim(); void v.offsetWidth;
+  v.classList.add("tx", "tx-" + dir, "tx-" + k); clearTimeout(txT); txT = setTimeout(() => { v.className = v.className.replace(/\btx(-[a-z]+)?\b/g, "").trim(); }, 900);
+}
+/* the tab answers the moment the finger touches it */
+let tabDownAt = 0;
+document.addEventListener("pointerdown", e => { if(e.button !== 0) return; const t = e.target.closest && e.target.closest(".tab[data-go]"); if(!t || t.closest("#pane")) return;
+  tabDownAt = performance.now(); if(t.dataset.go !== view) go(t.dataset.go); }, true);
+document.addEventListener("click", e => { const t = e.target.closest && e.target.closest(".tab[data-go]"); if(t && performance.now() - tabDownAt < 700){ e.stopPropagation(); e.preventDefault(); } }, true);
 function buzz(ms){ try { if(!REDUCE && navigator.vibrate) navigator.vibrate(ms); } catch(e){} }
 /* touch glow, clipped to the control under the finger */
 let lastTile = null;
@@ -1967,6 +2113,7 @@ function morphNode(a, b){
   if(a.nodeType !== b.nodeType || a.nodeName !== b.nodeName){ a.replaceWith(b); return; }
   if(a.nodeType === 3 || a.nodeType === 8){ if(a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
   if(a.nodeType !== 1) return;
+  if(a.tagName === "CANVAS") return;
   const ba = b.attributes; for(let i = 0; i < ba.length; i++){ const at = ba[i]; if(a.getAttribute(at.name) !== at.value) a.setAttribute(at.name, at.value); }
   const aa = a.attributes; for(let i = aa.length - 1; i >= 0; i--){ const n = aa[i].name; if(!b.hasAttribute(n)) a.removeAttribute(n); }
   const tag = a.tagName;
@@ -2295,8 +2442,8 @@ function makeSky(opt = {}){
     addEventListener("resize", () => { key = ""; });
   }
   function build(){
-    dpr = opt.sel ? Math.min(2, devicePixelRatio || 1) : Math.min(1.25, devicePixelRatio || 1); W = opt.sel ? Math.max(1, cv.clientWidth) : innerWidth; H = opt.sel ? Math.max(1, cv.clientHeight) : Math.round(innerHeight * .62); cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
-    sky = document.createElement("canvas"); sky.width = cv.width; sky.height = cv.height; const g = sky.getContext("2d");
+    dpr = opt.sel ? Math.min(3, devicePixelRatio || 1) : Math.min(1.25, devicePixelRatio || 1); W = opt.sel ? Math.max(1, cv.clientWidth) : innerWidth; H = opt.sel ? Math.max(1, cv.clientHeight) : Math.round(innerHeight * .62); cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    sky = document.createElement("canvas"); sky.width = cv.width; sky.height = cv.height; key = JSON.stringify([st.phase, st.kind, st.lvl, st.cover > .4, opt.sel ? cv.clientWidth : innerWidth, opt.sel ? cv.clientHeight : innerHeight, st.cols, cv.width]); const g = sky.getContext("2d");
     const gr = g.createLinearGradient(0, 0, 0, sky.height); gr.addColorStop(0, st.cols[0]); gr.addColorStop(.55, st.cols[1]); gr.addColorStop(1, st.cols[2]);
     g.fillStyle = gr; g.fillRect(0, 0, sky.width, sky.height);
     // sun or moon glow
@@ -2473,7 +2620,7 @@ function makeSky(opt = {}){
     else if(document.hidden || !document.body.classList.contains("wxfx-on")) return;
     if(t < skyPauseUntil) return;
     if(t - last < 33) return; const dt = Math.min(.06, (t - last) / 1000); last = t;
-    const s2 = sceneState(), k2 = JSON.stringify([s2.phase, s2.kind, s2.lvl, s2.cover > .4, opt.sel ? cv.clientWidth : innerWidth, opt.sel ? cv.clientHeight : innerHeight, s2.cols]);
+    const s2 = sceneState(), k2 = JSON.stringify([s2.phase, s2.kind, s2.lvl, s2.cover > .4, opt.sel ? cv.clientWidth : innerWidth, opt.sel ? cv.clientHeight : innerHeight, s2.cols, cv.width]);
     if(k2 !== key){ st = s2; key = k2; build(); }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.drawImage(sky, 0, 0, W, H);
@@ -3375,7 +3522,8 @@ const MB = n => n >= 1e9 ? (n / 1e9).toFixed(2) + " GB" : n >= 1e6 ? (n / 1e6).t
 /* ================= 更新履歴 (newest at the top) ================= */
 const CHANGELOG = [
  {day:"11月4日", sub:"水曜日・だれでも使える日", list:[
-  {v:"アプリ内", t:"昼", big:1, newest:1, h:"窓と掲示板を仕上げ", it:[["n","1日の帯に学校の時間（朝から下校まで）。日の出・日の入りは太陽の印で、正しい位置に"],["n","掲示板の紙を長押しで「明日にまわす」「はがす」"],["n","窓の空をタップすると、鳥や飛行機が通ることも"],["i","時刻と天気は窓の下の小さな黒板に。窓は景色だけ"],["i","広い画面では窓と掲示板を横に並べる。キャラクターは窓辺に座る"],["i","掲示板は今日の分を6枚まで、残りは「ほか○件」。黒板の右はしに窓の目印"],["i","ほかのタブから「今日」にもどると、いつも黒板から"],["f","窓の面で戻るボタンを押すとアプリが閉じていた問題"],["f","省エネ中に窓が青い四角になっていた問題、文字「特大」で掲示板がくずれる問題"]]},
+  {v:"アプリ内", t:"夕方", big:1, newest:1, h:"タブを、ぬるぬるに", it:[["i","タブは指がふれた瞬間に切りかわり、ページごとにちがう動きで出てくる。時間割はななめに波のように、予定はカレンダーが週ごとに、タイマーは輪が回って、今日は黒板が上からすとんと"],["i","押したタブのアイコンがぽんとはねる"],["f","窓の空が1分ほどでぼやけていた問題。画面のこまかさに合わせてくっきり描くように"],["f","窓の面からもどったとき、キャラクターが画面の途中に残っていた問題"]]},
+  {v:"アプリ内", t:"昼", big:1, h:"窓と掲示板を仕上げ", it:[["n","1日の帯に学校の時間（朝から下校まで）。日の出・日の入りは太陽の印で、正しい位置に"],["n","掲示板の紙を長押しで「明日にまわす」「はがす」"],["n","窓の空をタップすると、鳥や飛行機が通ることも"],["i","時刻と天気は窓の下の小さな黒板に。窓は景色だけ"],["i","広い画面では窓と掲示板を横に並べる。キャラクターは窓辺に座る"],["i","掲示板は今日の分を6枚まで、残りは「ほか○件」。黒板の右はしに窓の目印"],["i","ほかのタブから「今日」にもどると、いつも黒板から"],["f","窓の面で戻るボタンを押すとアプリが閉じていた問題"],["f","省エネ中に窓が青い四角になっていた問題、文字「特大」で掲示板がくずれる問題"]]},
   {v:"アプリ内", t:"深夜", big:1, h:"窓と掲示板", lead:"「今日」を左になぞると、サイコロが転がるように面が変わります。", it:[["n","窓：いまの空（天気・時間帯）と、日の出から日の入りまでの1日の様子"],["n","掲示板：今日使う資料がピンで貼られ、期限のタスクは付箋に。これから1週間の資料も小さく"],["i","天気の面を黒板とチョークの見た目に。ポモドーロの輪は赤をやめてテーマ色に"],["i","背景の空を落ち着いた色に。「新しくなりました」は上に出すように"],["i","タスクと予定の入力は、大事なところだけを先に。残りは「くわしく」に"],["i","設定に目次。ボタンの見た目をそろえ、資料の検索欄を広く"],["f","開いた直後の「朝のまとめ」が見出しに重なっていた問題"]]},
   {v:"アプリ内", t:"夜", big:1, h:"AI なしで、ぜんぶ無料に", lead:"別の申し込みや料金がいる機能をやめて、スマホの中だけで動くようにしました。", it:[["i","「ひとことで入れる」は、日付・時刻・「〜まで」・「○時間目」をスマホの中で読み取る方式に。「明日16時 学年会」「金曜までに見積もり確認」「3時間目 補教 2-1」など"],["i","メモの「振り分け」も同じ方式で、だれでも使える"],["i","名刺は、スマホの中で読んだ文字を決まりにそって整理"],["i","AI の鍵が必要だった「時間割を写真から読む」と「Gmail を AI で読む」はやめました"]]},
   {v:"1.0.44", t:"夜", big:1, h:"だれでも使いやすく", lead:"スマホにくわしくない人の目で、入り口から見直しました。", it:[["n","はじめての案内。使う機能を「シンプル」「ぜんぶ」から選べる"],["n","時間割の「ひな形」（45分・50分・40分授業）"],["n","文字の大きさ（小・標準・大・特大）と、省エネモード"],["n","自動バックアップ（週1回、スマホの「ダウンロード」に最新の1つ）"],["n","パソコン・タブレットでも同じデータを開ける「ほかの端末でも使う」"],["n","「新しくなりました」のお知らせ、「プライバシーと利用のきまり」"],["i","通知やカレンダーの許可は、理由を説明してから"],["i","お試しで入れたものを、つないだあとに引き継げる"],["i","「閉じた画面」などの Fold だけの言葉を、どのスマホでもわかる言葉に"],["i","キャラクターの絵を登録していないときは、キャラクターを出さない"]]}]},
@@ -5627,6 +5775,7 @@ const concierge = (() => {
   let pos = ls.get("fd-cc-pos", null) || {x: innerWidth - W - 24, y: innerHeight - H - 110};
   let tgt = null, clip = "greet", fi = 0, acc = 0, last = 0, nextMove = performance.now() + 2500, thinking = false, drag = null, bubOpen = false, sayTimer = 0, raf = 0, quietUntil = 0;
   const speed = () => cfg.level === "active" ? 210 : 160;
+  let onSill = false;
   const sillEl = () => view === "today" && ui.todayFace === "window" && !cfg.roam ? document.querySelector(".win-sill") : null;
   function bounds(){
     const sl = sillEl(); if(sl){ const r = sl.getBoundingClientRect(); const y = r.top - H + 12; return {left:r.left + 6, right:Math.max(r.left + 6, r.right - W - 6), top:y, bottom:y}; }
@@ -5706,7 +5855,7 @@ const concierge = (() => {
     }
     { const sl = sillEl(); if(sl && !drag){ const r = sl.getBoundingClientRect(), ok = r.top > 50 && r.top < innerHeight - 70; el.classList.toggle("off-sill", !ok);
         if(ok){ const y = r.top - H + 12; pos.y = y; if(tgt) tgt.y = y; pos.x = Math.min(Math.max(pos.x, r.left + 6), r.right - W - 6); if(tgt) tgt.x = Math.min(Math.max(tgt.x, r.left + 6), r.right - W - 6); } }
-      else el.classList.remove("off-sill"); }
+      else { el.classList.remove("off-sill"); if(onSill){ onSill = false; tgt = null; clamp(); } } if(sl) onSill = true; }
     draw();
   }
   const savePos = () => ls.set("fd-cc-pos", {x: Math.round(pos.x), y: Math.round(pos.y)});
