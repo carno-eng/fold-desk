@@ -88,6 +88,13 @@ class WidgetShots {
     }
 
     @Test fun previews() {
+        // previews should look like a school morning whatever time the build runs: pick a zone where it is about 10:20 now
+        val utc = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC")); val utcMin = utc.get(Calendar.HOUR_OF_DAY) * 60 + utc.get(Calendar.MINUTE)
+        var off = (10 * 60 + 20 - utcMin); if (off > 14 * 60) off -= 24 * 60; if (off < -12 * 60) off += 24 * 60
+        val zone = java.util.SimpleTimeZone(off * 60_000, "Preview"); val old = java.util.TimeZone.getDefault(); java.util.TimeZone.setDefault(zone)
+        try { previews0() } finally { java.util.TimeZone.setDefault(old) }
+    }
+    private fun previews0() {
         val s = snap(false)
         val wx = JSONObject(s.toString()).put("weather", JSONObject("""{"t":18,"feels":17,"hum":62,"uv":6,"uvLabel":"強い","label":"晴れ時々くもり","kind":"part","day":true,"hi":21,"lo":11,"pop":60,"place":"横浜","code":2,"precip":0,"wind":8,"sr":370,"ss":1005,"tip":"","hours":[{"h":"いま","t":18,"kind":"part","pop":10},{"h":"10時","t":19,"kind":"sun","pop":0},{"h":"11時","t":20,"kind":"sun","pop":0},{"h":"12時","t":21,"kind":"cloud","pop":30},{"h":"13時","t":20,"kind":"rain","pop":50}]}"""))
         val now = System.currentTimeMillis()
@@ -108,7 +115,7 @@ class WidgetShots {
         preview("prep", Widgets.prep(c, full, 150f), 260, 150)
         preview("events", Widgets.events(c, full, 180f), 260, 180)
         preview("remind", Widgets.reminders(c, full, 150f), 260, 150)
-        preview("follow", Widgets.follow(c, full, 160f), 260, 160)
+        preview("follow", Widgets.follow(c, full, 180f), 260, 180)
         preview("brief", Widgets.brief(c, full, 200f), 260, 200)
         preview("docs", Widgets.docs(c, full, 200f), 260, 200)
         preview("week", Widgets.week(c, full, 300f, 220f), 300, 220)
