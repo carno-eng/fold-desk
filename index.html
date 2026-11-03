@@ -1081,6 +1081,40 @@ main.enter .page-h,main.enter .grid > *,main.enter .stack > *,main.enter .tt-wra
 .rail .brand{font-weight:700}
 /* chalk feel on the board: figures slightly off-white */
 .hero .date b,.ring .lab b{color:var(--chalk)}
+
+/* ================= v30: smooth motion ================= */
+:root{--ease-out:cubic-bezier(.2,.8,.2,1);--ease-io:cubic-bezier(.45,0,.2,1)}
+button,a,[role="button"],.chip,.tab,.row,.prow{touch-action:manipulation}
+/* the board turns over in one even motion */
+.flip-inner{transition:transform .6s var(--ease-io)!important;will-change:transform}
+.flipcard .face{-webkit-transform-style:preserve-3d;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flipcard .front{transform:translateZ(.1px)}
+.flipcard .hero.front{cursor:pointer}
+/* page changes: short slide, no blur */
+::view-transition-group(page){animation-duration:.3s;animation-timing-function:var(--ease-out)}
+::view-transition-old(page){animation:vtOut2 .16s ease-in both}
+::view-transition-new(page){animation:vtIn2 .3s var(--ease-out) both}
+html[data-dir="back"]::view-transition-old(page){animation-name:vtOut2b}
+html[data-dir="back"]::view-transition-new(page){animation-name:vtIn2b}
+@keyframes vtOut2{to{opacity:0;transform:translateX(-16px)}}
+@keyframes vtIn2{from{opacity:0;transform:translateX(24px)}}
+@keyframes vtOut2b{to{opacity:0;transform:translateX(16px)}}
+@keyframes vtIn2b{from{opacity:0;transform:translateX(-24px)}}
+/* sheets: quicker, no overshoot */
+#pane,body:is([data-mode="cover-l"],[data-mode="main-p"]) #pane{transition:transform .38s var(--ease-out)!important}
+body[data-mode="main-l"].pane-open #pane{animation-duration:.3s!important;animation-timing-function:var(--ease-out)!important}
+/* full-screen blurs are expensive on a big screen: plain dimming instead */
+#scrim,#picker{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+#toast{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.hero.back.has-sky .wxb-stats > div,.hero.back.has-sky .chip{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(8,14,30,.42)!important}
+#pdfv .bar{backdrop-filter:none!important;background:rgba(20,22,30,.96)!important}
+@keyframes titleShrink{to{transform:translateY(10px) scale(.72);opacity:0}}
+#toast{transition:transform .3s var(--ease-out),opacity .2s!important}
+.tabbar .ind{transition:transform .35s var(--ease-out),width .3s var(--ease-out)!important}
+.rail{transition:width .3s var(--ease-out),padding .3s var(--ease-out),opacity .2s!important}
+/* scrolling stays on the compositor */
+#view{will-change:scroll-position}
+#wxfx{will-change:transform;height:62%!important;bottom:auto!important;-webkit-mask-image:linear-gradient(#000 72%,transparent);mask-image:linear-gradient(#000 72%,transparent)}
 </style>
 </head>
 <body>
@@ -1266,7 +1300,7 @@ addEventListener("hashchange", () => {
   const prev = view, k = location.hash.slice(1), next = VIEWS.some(v => v.k === k) ? k : prev;
   const i0 = VIEWS.findIndex(v => v.k === prev), i1 = VIEWS.findIndex(v => v.k === next);
   if(next !== prev && document.startViewTransition && !REDUCE && !document.hidden && paired()){
-    document.documentElement.dataset.dir = i1 < i0 ? "back" : "fwd";
+    document.documentElement.dataset.dir = i1 < i0 ? "back" : "fwd"; skyPauseUntil = performance.now() + 450;
     const v = $("#view"); v.classList.add("vt");
     cancelAnimationFrame(rafId); rafId = 0;
     try {
@@ -1367,7 +1401,8 @@ function render(){
   const ok = paired() && syncState !== "auth";
   document.body.classList.toggle("unpaired", !ok);
   if(!ok){ v.innerHTML = setupView(); return; }
-  v.innerHTML = `<div class="navbar" aria-hidden="true"><b>${TITLES[view] || ""}</b></div>` + ({today:vToday, timetable:vTT, tasks:vTasks, events:vEvents, people:vPeople, memo:vMemo, docs:vDocs, timer:vTimer}[view] || vToday)();
+  const html = `<div class="navbar" aria-hidden="true"><b>${TITLES[view] || ""}</b></div>` + ({today:vToday, timetable:vTT, tasks:vTasks, events:vEvents, people:vPeople, memo:vMemo, docs:vDocs, timer:vTimer}[view] || vToday)();
+  if(changed || !v.firstChild) v.innerHTML = html; else morphInto(v, html);
   if(changed){ v.classList.remove("enter"); void v.offsetWidth; v.classList.add("enter"); render.at = performance.now(); }
   else if(performance.now() - (render.at||0) > 700) v.classList.remove("enter");
   v.scrollTop = st;
@@ -1378,6 +1413,25 @@ function render(){
 }
 $("#view").addEventListener("scroll", e => e.target.classList.toggle("scrolled", e.target.scrollTop > 56), {passive:true});
 
+/* keep existing elements and change only what differs (like a small virtual DOM) */
+function morphInto(el, html){ const t = document.createElement("template"); t.innerHTML = html; morphKids(el, t.content); }
+function morphKids(a, b){
+  const A = [...a.childNodes], B = [...b.childNodes];
+  for(let i = 0; i < B.length; i++){ if(i < A.length) morphNode(A[i], B[i]); else a.appendChild(B[i]); }
+  for(let i = B.length; i < A.length; i++) A[i].remove();
+}
+function morphNode(a, b){
+  if(a.nodeType !== b.nodeType || a.nodeName !== b.nodeName){ a.replaceWith(b); return; }
+  if(a.nodeType === 3 || a.nodeType === 8){ if(a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; }
+  if(a.nodeType !== 1) return;
+  const ba = b.attributes; for(let i = 0; i < ba.length; i++){ const at = ba[i]; if(a.getAttribute(at.name) !== at.value) a.setAttribute(at.name, at.value); }
+  const aa = a.attributes; for(let i = aa.length - 1; i >= 0; i--){ const n = aa[i].name; if(!b.hasAttribute(n)) a.removeAttribute(n); }
+  const tag = a.tagName;
+  if(tag === "CANVAS") return;
+  if(tag === "INPUT" || tag === "TEXTAREA"){ if(document.activeElement !== a){ if(a.value !== b.value) a.value = b.value; if(a.type === "checkbox" || a.type === "radio") a.checked = b.checked; } return; }
+  morphKids(a, b);
+  if(tag === "SELECT" && document.activeElement !== a){ const sel = b.querySelector ? [...b.options].find(o => o.selected) : null; if(sel && a.value !== sel.value) a.value = sel.value; }
+}
 /* ================= shared pieces ================= */
 function taskRow(t){
   const r = remain(t.due, t.status === "done");
@@ -1620,9 +1674,9 @@ document.addEventListener("click", e => {
   const card = e.target.closest && e.target.closest(".flipcard"); if(!card) return;
   if(e.target.closest("button,.seg,.day,.wxb-hours,a,input,select")) return;
   const onBack = card.classList.contains("flipped");
-  if(!onBack && !e.target.closest(".hero-top")) return;
-  ui.heroFlip = !onBack; card.classList.toggle("flipped", ui.heroFlip); buzz(8); try { wxmini.sync(); } catch(e){}
-  if(ui.heroFlip) fetchWeather();
+  if(!onBack && e.target.closest(".ring,.daybar,.hero-mode,.mode-seg")) { /* the time controls keep their own meaning */ }
+  skyPauseUntil = performance.now() + 700; ui.heroFlip = !onBack; card.classList.toggle("flipped", ui.heroFlip); buzz(8); setTimeout(() => { try { wxmini.sync(); } catch(e){} }, 640);
+  if(ui.heroFlip) setTimeout(fetchWeather, 700);
 });
 function wxTryPane(){
   let t = {}; try { t = JSON.parse(localStorage.getItem("fd-wxfx-test") || "null") || {}; } catch(e){}
@@ -1686,6 +1740,7 @@ function sceneState(){
   cols = cols.map(c => mix(c, tgt, Math.min(.9, k)));
   return {phase, kind:kl.kind, lvl:kl.lvl, cover, wind:fx.wind || 0, cols, night, m, sr, ss, dark:lum(cols[1]) < .5};
 }
+let skyPauseUntil = 0;
 function makeSky(opt = {}){
   let cv = null, ctx = null, sky = null, st = null, key = "", raf = 0, last = 0, W = 0, H = 0, dpr = 1;
   let streaks = [], drops = [], flakes = [], clouds = [], stars = [], fog = [], flash = 0, vis = [], nextVis = 0, lastTalk = 0;
@@ -1696,7 +1751,7 @@ function makeSky(opt = {}){
     addEventListener("resize", () => { key = ""; });
   }
   function build(){
-    dpr = Math.min(2, devicePixelRatio || 1); W = opt.sel ? Math.max(1, cv.clientWidth) : innerWidth; H = opt.sel ? Math.max(1, cv.clientHeight) : innerHeight; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    dpr = opt.sel ? Math.min(2, devicePixelRatio || 1) : Math.min(1.25, devicePixelRatio || 1); W = opt.sel ? Math.max(1, cv.clientWidth) : innerWidth; H = opt.sel ? Math.max(1, cv.clientHeight) : Math.round(innerHeight * .62); cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     sky = document.createElement("canvas"); sky.width = cv.width; sky.height = cv.height; const g = sky.getContext("2d");
     const gr = g.createLinearGradient(0, 0, 0, sky.height); gr.addColorStop(0, st.cols[0]); gr.addColorStop(.55, st.cols[1]); gr.addColorStop(1, st.cols[2]);
     g.fillStyle = gr; g.fillRect(0, 0, sky.width, sky.height);
@@ -1849,16 +1904,30 @@ function makeSky(opt = {}){
     return false;
   }
   function cloud(c){
-    const s = c.s * Math.min(W, 700) / 3.2, col = st.night ? "rgba(70,78,100," : st.kind === "rain" || st.kind === "thunder" ? "rgba(90,100,120," : "rgba(255,255,255,";
-    const al = st.night ? .35 : st.kind === "rain" ? .55 : .5;
-    [[0, 0, 1], [-.55, .12, .7], [.55, .1, .75], [.2, -.25, .7], [-.25, -.18, .6]].forEach(([dx, dy, k]) => {
-      const x = c.x + dx * s, y = c.y + dy * s, r = s * .55 * k, g = ctx.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0, col + al + ")"); g.addColorStop(1, col + "0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); });
+    if(!c.img){
+      const s0 = c.s * Math.min(W, 700) / 3.2, col = st.night ? "rgba(70,78,100," : st.kind === "rain" || st.kind === "thunder" ? "rgba(90,100,120," : "rgba(255,255,255,";
+      const al = st.night ? .35 : st.kind === "rain" ? .55 : .5, w = Math.ceil(s0 * 2.4), h = Math.ceil(s0 * 1.7);
+      const cv2 = document.createElement("canvas"); cv2.width = Math.max(1, Math.round(w * dpr)); cv2.height = Math.max(1, Math.round(h * dpr)); const g2 = cv2.getContext("2d"); g2.scale(dpr, dpr);
+      [[0, 0, 1], [-.55, .12, .7], [.55, .1, .75], [.2, -.25, .7], [-.25, -.18, .6]].forEach(([dx, dy, k]) => {
+        const x = w / 2 + dx * s0, y = h * .55 + dy * s0, r = s0 * .55 * k, g = g2.createRadialGradient(x, y, 0, x, y, r);
+        g.addColorStop(0, col + al + ")"); g.addColorStop(1, col + "0)"); g2.fillStyle = g; g2.beginPath(); g2.arc(x, y, r, 0, Math.PI * 2); g2.fill(); });
+      c.img = cv2; c.w = w; c.h = h;
+    }
+    ctx.drawImage(c.img, c.x - c.w / 2, c.y - c.h * .55, c.w, c.h);
+  }
+  const dropCache = new Map();
+  function dropSprite(r){
+    const k = Math.round(r * 2) / 2; let im = dropCache.get(k); if(im) return im;
+    const sz = Math.ceil(k * 2 + 2), cv2 = document.createElement("canvas"); cv2.width = Math.round(sz * dpr); cv2.height = Math.round(sz * dpr); const g2 = cv2.getContext("2d"); g2.scale(dpr, dpr);
+    const cx = sz / 2, g = g2.createRadialGradient(cx - k * .35, cx - k * .4, k * .1, cx, cx, k);
+    g.addColorStop(0, "rgba(255,255,255,.55)"); g.addColorStop(.35, "rgba(255,255,255,.12)"); g.addColorStop(.85, "rgba(20,30,50,.18)"); g.addColorStop(1, "rgba(255,255,255,.25)");
+    g2.fillStyle = g; g2.beginPath(); g2.ellipse(cx, cx, k * .9, k, 0, 0, 6.3); g2.fill(); im = {c:cv2, sz}; dropCache.set(k, im); return im;
   }
   function frame(t){
     raf = requestAnimationFrame(frame);
     if(opt.sel){ ensure(); if(document.hidden || !cv || !cv.clientWidth) return; }
     else if(document.hidden || !document.body.classList.contains("wxfx-on")) return;
+    if(t < skyPauseUntil) return;
     if(t - last < 33) return; const dt = Math.min(.06, (t - last) / 1000); last = t;
     const s2 = sceneState(), k2 = JSON.stringify([s2.phase, s2.kind, s2.lvl, s2.cover > .4, opt.sel ? cv.clientWidth : innerWidth, opt.sel ? cv.clientHeight : innerHeight, s2.cols]);
     if(k2 !== key){ st = s2; key = k2; build(); }
@@ -1878,21 +1947,21 @@ function makeSky(opt = {}){
     if(streaks.length){
       const sl = Math.min(.35, .08 + st.wind / 120);
       ctx.lineCap = "round"; ctx.strokeStyle = st.night ? "rgba(190,205,235,1)" : "rgba(235,242,255,1)";
+      ctx.lineWidth = .9 + st.lvl * .15; const paths = [new Path2D(), new Path2D(), new Path2D()];
       streaks.forEach(r => { r.y += r.v * dt; r.x += r.v * sl * dt; if(r.y > H){ r.y = R(-60, -10); r.x = R(-W * .2, W); }
-        ctx.globalAlpha = r.a * (opt.sel ? 1 : .7); ctx.lineWidth = .9 + st.lvl * .15; ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x - r.l * sl, r.y - r.l); ctx.stroke(); });
+        const P = paths[r.a < .27 ? 0 : r.a < .36 ? 1 : 2]; P.moveTo(r.x, r.y); P.lineTo(r.x - r.l * sl, r.y - r.l); });
+      [.22, .31, .41].forEach((al, i) => { ctx.globalAlpha = al * (opt.sel ? 1 : .7); ctx.stroke(paths[i]); });
       ctx.globalAlpha = 1;
     }
     // snow
-    flakes.forEach(f => { f.y += f.v * dt; f.x += Math.sin(t / 1000 + f.ph) * 12 * dt; if(f.y > H + 5){ f.y = -5; f.x = R(0, W); } ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.3); ctx.fill(); });
+    if(flakes.length){ const P = new Path2D(); flakes.forEach(f => { f.y += f.v * dt; f.x += Math.sin(t / 1000 + f.ph) * 12 * dt; if(f.y > H + 5){ f.y = -5; f.x = R(0, W); } P.moveTo(f.x + f.r, f.y); P.arc(f.x, f.y, f.r, 0, 6.3); }); ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.fill(P); }
     // drops on the glass: sit, then sometimes slide down leaving a little trail
     drops.forEach((d, i) => {
       d.t -= dt;
       if(!d.slide && d.t < 0 && d.r > 4 && Math.random() < .02){ d.slide = true; }
       if(d.slide){ d.vy = Math.min(220, d.vy + 260 * dt); d.y += d.vy * dt; if(Math.random() < .08){ ctx.fillStyle = "rgba(255,255,255,.18)"; ctx.beginPath(); ctx.arc(d.x + R(-1, 1), d.y - d.r * 2, 1.2, 0, 6.3); ctx.fill(); } }
       if(d.y - d.r > H) drops[i] = newDrop(false);
-      const g = ctx.createRadialGradient(d.x - d.r * .35, d.y - d.r * .4, d.r * .1, d.x, d.y, d.r);
-      g.addColorStop(0, "rgba(255,255,255,.55)"); g.addColorStop(.35, "rgba(255,255,255,.12)"); g.addColorStop(.85, "rgba(20,30,50,.18)"); g.addColorStop(1, "rgba(255,255,255,.25)");
-      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(d.x, d.y, d.r * .9, d.r * (d.slide ? 1.25 : 1), 0, 0, 6.3); ctx.fill();
+      const sp = dropSprite(d.r), sy2 = d.slide ? 1.25 : 1; ctx.drawImage(sp.c, d.x - sp.sz / 2, d.y - sp.sz * sy2 / 2, sp.sz, sp.sz * sy2);
     });
     if(st.kind === "rain" && st.lvl >= 2 && Math.random() < .004 * st.lvl) drops.push(newDrop(false));
     if(drops.length > 160) drops.splice(0, drops.length - 160);

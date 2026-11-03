@@ -28,6 +28,8 @@ object Web {
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
             setSupportMultipleWindows(false)
             mediaPlaybackRequiresUserGesture = true
+            // keep the visible page rasterized ahead of time, so scrolling and page changes stay smooth
+            offscreenPreRaster = true
             userAgentString = "$userAgentString FoldDeskApp/${BuildConfig.VERSION_CODE}"
             // follow the phone's font size, within a range the layout is checked for
             textZoom = (ctx.resources.configuration.fontScale * 100).toInt().coerceIn(85, 120)
