@@ -1,0 +1,108 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig
+> Task :app:generateDebugResValues
+> Task :app:checkDebugAarMetadata
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
+> Task :app:mergeDebugResources
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileDebug
+> Task :app:javaPreCompileDebugUnitTest
+> Task :app:mergeDebugShaders
+> Task :app:processDebugManifestForPackage
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets
+> Task :app:processDebugResources
+> Task :app:packageDebugUnitTestForUnitTest
+> Task :app:generateDebugUnitTestConfig
+> Task :app:compileDebugKotlin
+> Task :app:compileDebugJavaWithJavac
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:processDebugJavaRes
+> Task :app:compileDebugUnitTestKotlin
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processDebugUnitTestJavaRes
+> Task :app:testDebugUnitTest
+
+BUILD SUCCESSFUL in 1m 4s
+28 actionable tasks: 28 executed
+aod-landscape.png
+aod-portrait.png
+big-follow-340x200.png
+big-hero-340x210.png
+big-next-250x110.png
+big-tasks-340x220.png
+big-today-340x380.png
+docs-340x220.png
+docs-empty-340x160.png
+follow-340x200.png
+hero-340x170.png
+hero-340x190.png
+hero-340x240.png
+hero-340x300.png
+hero-340x440.png
+hero-560x250.png
+hero-600x420.png
+hero-holiday-340x210.png
+hero-holiday-340x300.png
+hero-mood-break.png
+hero-mood-soon.png
+hero-weather-340x210.png
+next-250x110.png
+next-mood-soon.png
+prep-340x180.png
+preview_add.png
+preview_brief.png
+preview_docs.png
+preview_events.png
+preview_follow.png
+preview_hero.png
+preview_next.png
+preview_prep.png
+preview_remind.png
+preview_tasks.png
+preview_today.png
+preview_weather.png
+preview_week.png
+preview_window.png
+tasks-340x220.png
+today-340x380.png
+visitor-balloon.png
+visitor-birds.png
+visitor-fireflies.png
+visitor-leaves.png
+visitor-nightplane.png
+visitor-paper.png
+visitor-petals.png
+visitor-plane.png
+visitor-rainbow.png
+visitor-ufo.png
+visitor-umbrella.png
+weather-250x120.png
+weather-340x200.png
+window-clear-0.png
+window-clear-4.png
+window-fog-0.png
+window-fog-4.png
+window-heavy-0.png
+window-heavy-5.png
+window-rain-0.png
+window-rain-5.png
+window-snow-0.png
+window-snow-6.png
+window-thunder-0.png
+window-thunder-5.png
+window-visitors.png
+window-widget-340x200.png
