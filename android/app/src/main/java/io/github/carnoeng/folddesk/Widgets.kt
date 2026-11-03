@@ -38,6 +38,7 @@ class BriefWidget : FdWidget()
 class AddWidget : FdWidget()
 class WeatherWidget : FdWidget()
 class WindowWidget : FdWidget()
+class DocsWidget : FdWidget()
 
 /** Schedule helpers shared by widgets and alarms. Times are "HH:MM" on a "yyyy-MM-dd" date, local time. */
 object Sched {
@@ -124,6 +125,7 @@ object Widgets {
         each(ids<RemindWidget>(c, m)) { reminders(c, s, minH(m, it)) }
         each(ids<FollowWidget>(c, m)) { follow(c, s, minH(m, it)) }
         each(ids<BriefWidget>(c, m)) { brief(c, s, minH(m, it)) }
+        each(ids<DocsWidget>(c, m)) { docs(c, s, minH(m, it)) }
         ids<WindowWidget>(c, m).forEach { id -> val z = sizes(m, id)
             try { m.updateAppWidget(id, window(c, s, z.maxOf { x -> x.width }, z.maxOf { x -> x.height })) }
             catch (_: Exception) { try { m.updateAppWidget(id, window(c, s, 160f, 100f)) } catch (_: Exception) { } } }
@@ -481,7 +483,7 @@ object Widgets {
 
     /* ===================== card-style lists (with the same buttons as the app) ===================== */
     private class Row(val left: String, val title: String, val sub: String = "", val right: String = "", val warn: Boolean = false,
-                      val check: PendingIntent? = null, val btn: String = "", val btnPi: PendingIntent? = null)
+                      val check: PendingIntent? = null, val btn: String = "", val btnPi: PendingIntent? = null, val rowPi: PendingIntent? = null)
 
     private fun list(c: Context, h: Float, title: String, count: String, rows: List<Row>, empty: String, route: String, add: Boolean = false): RemoteViews {
         val v = RemoteViews(c.packageName, R.layout.widget_list)
@@ -499,6 +501,7 @@ object Widgets {
             row.setTextViewText(R.id.right, r.right); row.show(R.id.right, r.right.isNotEmpty())
             if (r.warn) row.setTextColor(R.id.right, RED)
             if (r.check != null) { row.show(R.id.check, true); row.setOnClickPendingIntent(R.id.check, r.check) }
+            if (r.rowPi != null) row.setOnClickPendingIntent(R.id.row, r.rowPi)
             if (r.btnPi != null) { row.show(R.id.btn, true); row.setTextViewText(R.id.btn, r.btn); row.setOnClickPendingIntent(R.id.btn, r.btnPi) }
             v.addView(R.id.rows, row)
         }
@@ -549,6 +552,18 @@ object Widgets {
                     warn = it.optInt("days") >= 3 && it.optBoolean("me"),
                     btn = "済み", btnPi = if (id.isNotEmpty()) ActionReceiver.pi(c, "follow", id) { putExtra("id", id) } else null) },
             "返信待ちはありません", "follow")
+    }
+
+    /** Documents for the next two weeks (linked to an event or with a use-date); a tap opens that document. */
+    fun docs(c: Context, s: JSONObject?, h: Float): RemoteViews {
+        val d = arr(s, "docs")
+        return list(c, h, "近日の資料", if (d.isNotEmpty()) "${d.size}" else "",
+            d.map { val id = it.optString("id")
+                Row(it.optString("label"), it.optString("title"),
+                    listOf(it.optString("ev"), it.optString("cat")).filter { x -> x.isNotEmpty() }.joinToString("　").ifEmpty { if (it.optInt("pages") > 0) "${it.optInt("pages")}ページ" else "" },
+                    right = if (it.optBoolean("inked")) "書き込み" else "", warn = it.optString("label") == "今日",
+                    rowPi = if (Regex("^[A-Za-z0-9_-]{1,40}$").matches(id)) open(c, "doc:$id") else null) },
+            if (s?.has("docs") == true) "2週間以内に使う資料はありません\n資料を予定とひもづけるか「使う日」を入れると出ます" else "アプリを一度開くと資料が出ます", "docs")
     }
 
     fun brief(c: Context, s: JSONObject?, h: Float): RemoteViews {

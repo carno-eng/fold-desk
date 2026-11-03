@@ -2608,7 +2608,7 @@ const DOCS = (() => {
   };
 })();
 let docsList = null;
-async function loadDocs(){ try { docsList = (await DOCS.list()).sort((a, b) => (b.added || "").localeCompare(a.added || "")); } catch(e){ docsList = []; } schedule(); }
+async function loadDocs(){ try { docsList = (await DOCS.list()).sort((a, b) => (b.added || "").localeCompare(a.added || "")); } catch(e){ docsList = []; } schedule(); try { pushSnapshot(); } catch(e){} }
 loadDocs();
 let pdfjsP = null;
 function loadPdfjs(){
@@ -2763,7 +2763,7 @@ function docsForEvent(e){
   return docsList.filter(d => (d.ev || []).some(x => ids.has(x.id) || evKey2(x) === k));
 }
 function liveEvent(x){ return S.events.find(e => e.id === x.id) || S.events.find(e => evKey2(e) === evKey2(x)) || null; }
-async function linkDoc(docId, e, on){
+async function linkDoc(docId, e, on){ setTimeout(() => { try { pushSnapshot(); } catch(x){} }, 300);
   const d = (docsList || []).find(x => x.id === docId); if(!d || !e) return;
   d.ev = (d.ev || []).filter(x => !(x.id === e.id || evKey2(x) === evKey2(e)));
   if(on){ d.ev.push({id:e.id, title:e.title, date:e.date, time:e.time || ""}); if(!d.date) d.date = e.date; }
@@ -4716,7 +4716,13 @@ function buildSnapshot(){
       tip:wxTip(w)[0] || "", code:w.code, precip:(w.fx || {}).precip || 0, cloud:(w.fx || {}).cloud ?? -1, wind:(w.fx || {}).wind || 0, sr:(w.fx || {}).sr || -1, ss:(w.fx || {}).ss || -1, hours:w.hours.slice(0, 6).map(x => ({h:x.h, t:x.t, p:x.p ?? 0, kind:WMO(x.code)[1], day:x.day}))}; })();
   { const w = wxNow(); if(w && w.rainAt) topics.unshift({key:`wx:${t}`, text:`${w.rainAt.h}時ごろから雨みたい。傘わすれずに！`}); else if(w && w.uvMax >= 6) topics.unshift({key:`wx:${t}`, text:"今日は紫外線が強いよ。日焼け止め塗った？"}); }
   const talkLevel = concierge && concierge.cfg && concierge.cfg.on === false ? "off" : ((concierge && concierge.cfg && concierge.cfg.talk) || "normal");
-  return {v:5, at:now, days, tasks, prep, reminders, week, events, follow, brief, hero, talk, modes, topics, talkLevel, weather:wxs};
+  const docsSoon = docsList ? (() => { const lim = addDays(t, 14);
+    return docsList.map(d => ({d, u:nextUse(d)})).filter(x => x.u && x.u <= lim).sort((a, b) => a.u.localeCompare(b.u) || a.d.title.localeCompare(b.d.title, "ja", {numeric:true})).slice(0, 12)
+      .map(({d, u}) => { const e = (d.ev || []).map(x => liveEvent(x) || x).filter(x => x.date === u).sort((a, b) => (a.time || "").localeCompare(b.time || ""))[0];
+        return {id:d.id, title:d.title, date:u, label:u === t ? "今日" : u === addDays(t, 1) ? "明日" : md(u), ev:e ? [e.time, e.title].filter(Boolean).join(" ") : "", cat:d.cat && d.cat !== "未分類" ? d.cat : "", pages:d.pages || 0, inked:!!d.inked}; }); })() : null;
+  const snapOut = {v:5, at:now, days, tasks, prep, reminders, week, events, follow, brief, hero, talk, modes, topics, talkLevel, weather:wxs};
+  if(docsSoon) snapOut.docs = docsSoon;
+  return snapOut;
 }
 let snapT = 0;
 function pushSnapshot(now){
@@ -4751,7 +4757,7 @@ function widgetGuide(){
       <li><span>一覧から <b>Fold Desk</b> を選び、置きたいものを長押しして配置します。</span></li>
     </ol>
     <div class="group" style="margin-top:14px">
-      ${[["今日（情報シート）","アプリの「今日」の青いシート。大きさに合わせて中身が変わり、縦に広げると時程の切り替えボタンと残りのコマも出ます"],["いま・次","小さなサイズ。いまの授業の残り時間か、次の予定まで"],["今日の日程","コマの一覧。‹ › で明日以降の日程も見られます"],["週の時間割","月〜金の時間割。今日の列と、その日だけの変更が分かる"],["タスク","期限の近いタスク。左の丸を押すと完了"],["授業準備","次の授業日の準備物。丸を押すとチェック"],["これからの予定","2週間先までの予定"],["お知らせ予定","これから出る通知の一覧"],["返信待ち","返信が必要なメール。「済み」で消えます"],["今朝のまとめ","毎朝の自動まとめ"],["天気","いまの天気・気温・湿度・紫外線と、この先の雨"],["窓（空のようす）","窓から外をのぞくように、いまの空が動きます。雨の強さ・雪・霧・雷と、朝・昼・夕焼け・夜の光"],["ひとことで追加","押すとすぐ入力できる小さなボタン"]]
+      ${[["今日（情報シート）","アプリの「今日」の青いシート。大きさに合わせて中身が変わり、縦に広げると時程の切り替えボタンと残りのコマも出ます"],["いま・次","小さなサイズ。いまの授業の残り時間か、次の予定まで"],["今日の日程","コマの一覧。‹ › で明日以降の日程も見られます"],["週の時間割","月〜金の時間割。今日の列と、その日だけの変更が分かる"],["タスク","期限の近いタスク。左の丸を押すと完了"],["授業準備","次の授業日の準備物。丸を押すとチェック"],["これからの予定","2週間先までの予定"],["お知らせ予定","これから出る通知の一覧"],["返信待ち","返信が必要なメール。「済み」で消えます"],["今朝のまとめ","毎朝の自動まとめ"],["近日の資料","2週間以内の予定で使う資料。タップでその資料が開きます"],["天気","いまの天気・気温・湿度・紫外線と、この先の雨"],["窓（空のようす）","窓から外をのぞくように、いまの空が動きます。雨の強さ・雪・霧・雷と、朝・昼・夕焼け・夜の光"],["ひとことで追加","押すとすぐ入力できる小さなボタン"]]
         .map(([a, b2]) => `<div class="setrow"><span class="main"><b>${a}</b><small>${b2}</small></span></div>`).join("")}
     </div>
     <p class="hint" style="margin-top:10px">ウィジェットは授業の区切りで自動で切り替わり、アプリを開かなくても2時間ごとに最新のデータへ更新されます。</p>
@@ -5109,7 +5115,7 @@ if(paired()){
   window.__fdResume = () => { store.reload(); store.pull(); refreshSchool(); refreshDevice(); };
   addEventListener("online", () => store.pull());
 }
-if(["#ask","#prep","#settings","#follow","#share","#pomo","#cd"].includes(location.hash)) setTimeout(() => openRoute(location.hash), 500);
+if(["#ask","#prep","#settings","#follow","#share","#pomo","#cd"].includes(location.hash) || location.hash.indexOf("#doc=") === 0) setTimeout(() => openRoute(location.hash), 500);
 async function widgetAct(a){
   if(a.a === "task"){ const t = S.tasks.find(x => x.id === a.id); if(t && t.status !== "done"){ if(t.gcalId) await gcalDelete(t.gcalId); await put("tasks", t.id, {...t, status:"done", gcalId:""}); } }
   else if(a.a === "follow"){ const f = S.followups.find(x => x.id === a.id); if(f && f.status !== "done") await put("followups", f.id, {...f, status:"done"}); }
@@ -5133,6 +5139,8 @@ if(NATIVE && location.hash === "#snapshot"){
 }
 document.addEventListener("visibilitychange", () => { if(document.hidden) pushSnapshot(true); });
 function openRoute(h){
+  if(h.indexOf("#doc=") === 0){ const id = decodeURIComponent(h.slice(5)); history.replaceState(null, "", location.pathname + "#docs"); go("docs");
+    let n = 0; const tryOpen = () => { if(docsList && docsList.some(d => d.id === id)) openDoc(id); else if(docsList && n > 3) toast("資料が見つかりませんでした"); else if(n++ < 30) setTimeout(tryOpen, 150); }; tryOpen(); return; }
   if(h === "#ask") askPane();
   else if(h === "#prep"){ go("today"); setTimeout(() => prepPane(prepTarget()), 300); }
   else if(h === "#settings"){ go("today"); setTimeout(() => settingsPane(), 300); }

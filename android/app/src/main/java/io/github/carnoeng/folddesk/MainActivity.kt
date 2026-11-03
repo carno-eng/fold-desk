@@ -134,6 +134,7 @@ class MainActivity : ComponentActivity() {
             if (Regex("^[A-Za-z0-9_-]{20,2000}$").matches(school)) return Web.APP_URL + "#school=" + school
         }
         val route = i?.getStringExtra("route") ?: "today"
+        if (route.startsWith("doc:") && Regex("^doc:[A-Za-z0-9_-]{1,40}$").matches(route)) return Web.APP_URL + "#doc=" + route.substring(4)
         return Web.APP_URL + "#" + (if (route in ROUTES) route else "today")
     }
 

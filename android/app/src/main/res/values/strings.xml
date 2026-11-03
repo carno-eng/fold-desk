@@ -10,6 +10,7 @@
     <string name="widget_prep_info_desc">次の授業日の準備物</string>
     <string name="widget_events_info_desc">2週間先までの予定</string>
     <string name="widget_remind_info_desc">これから出るお知らせの一覧</string>
+    <string name="widget_docs_info_desc">2週間以内の予定で使う資料。タップでその資料が開きます</string>
     <string name="widget_follow_info_desc">返信が必要なメール</string>
     <string name="widget_brief_info_desc">毎朝の自動まとめ</string>
     <string name="widget_add_info_desc">押すとすぐ「ひとことで追加」</string>
