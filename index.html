@@ -1431,6 +1431,94 @@ body.clv-on #cc,body.clv-on #ccb{display:none!important}
 .sc-seg label.personal input:checked + span{color:var(--sc-p)}
 .sc-seg label.work input:checked + span{color:var(--sc-w)}
 .ics-row{flex-wrap:wrap;gap:8px}
+
+/* ================= v41 ================= */
+body.cc-noart #cc,body.cc-noart #ccb{display:none!important}
+body.cc-noart #view .cc-sp{display:none!important}
+.doc-text h4{margin:18px 0 6px;font-size:15.5px;font-weight:800}
+.doc-text h4:first-child{margin-top:0}
+.doc-text ul{margin:0;padding-left:1.2em;display:grid;gap:6px;font-size:14px;line-height:1.75}
+.doc-text b{font-weight:800}
+/* onboarding */
+#onb{position:fixed;inset:0;z-index:95;display:grid;place-items:center;padding:16px;background:rgba(10,16,13,.55);opacity:0;transition:opacity .3s}
+#onb.on{opacity:1}#onb.off{opacity:0}
+.onb-card{width:min(440px,100%);background:var(--surface);border-radius:24px;overflow:hidden;box-shadow:var(--shadow-lg);transform:translateY(20px) scale(.97);transition:transform .45s var(--spring)}
+#onb.on .onb-card{transform:none}
+.onb-track{display:flex;transition:transform .45s var(--ease-out)}
+.onb-s{flex:0 0 100%;padding:22px 22px 6px;text-align:center}
+.onb-s h2{margin:16px 0 6px;font-size:21px;font-weight:900}
+.onb-s p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.75}
+.onb-art{height:150px;border-radius:18px;background:var(--board);display:grid;place-items:center;overflow:hidden;position:relative}
+.onb-art::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:7px;border-radius:3px 3px 0 0;background:var(--wood)}
+.ob-board{display:grid;justify-items:center;color:var(--chalk)}
+.ob-board b{font-family:var(--f-num);font-size:44px;font-weight:800;letter-spacing:.02em}
+.ob-board span{font-size:14px;opacity:.85}
+.ob-board i{width:150px;height:8px;margin-top:10px;border-radius:4px;background:rgba(255,255,255,.18);position:relative;overflow:hidden}
+.ob-board i::after{content:"";position:absolute;inset:0;width:0;background:var(--chalk-y);border-radius:4px}
+.onb-s.on .ob-board i::after{animation:obFill 2.4s .3s var(--ease-out) forwards}
+@keyframes obFill{to{width:62%}}
+.ob-grid{display:grid;grid-template-columns:repeat(5,34px);gap:6px}
+.ob-grid i{height:20px;border-radius:5px;background:rgba(255,255,255,.14);transform:scale(.4);opacity:0}
+.onb-s.on .ob-grid i{animation:obPop .35s calc(var(--k) * 45ms + .2s) var(--spring) forwards}
+.ob-grid i:nth-child(3n){background:var(--chalk)}.ob-grid i:nth-child(4n+1){background:var(--chalk-y)}
+@keyframes obPop{to{transform:none;opacity:1}}
+.ob-stack{position:relative;width:170px;height:100px}
+.ob-stack i{position:absolute;left:0;right:0;height:36px;border-radius:10px;background:var(--chalk);opacity:0;transform:translateY(30px)}
+.ob-stack i:nth-child(1){top:0;background:var(--chalk-y)}.ob-stack i:nth-child(2){top:32px;opacity:.85}.ob-stack i:nth-child(3){top:64px;background:#9fc7b5}
+.onb-s.on .ob-stack i{animation:obUp .5s var(--spring) forwards}
+.onb-s.on .ob-stack i:nth-child(2){animation-delay:.15s}.onb-s.on .ob-stack i:nth-child(3){animation-delay:.3s}
+@keyframes obUp{to{opacity:1;transform:none}}
+.ob-pick{display:grid;grid-template-columns:repeat(4,38px);gap:10px}
+.ob-pick i{height:38px;border-radius:12px;background:rgba(255,255,255,.2)}
+.ob-pick i:nth-child(-n+2){background:var(--chalk)}
+.onb-s.on .ob-pick i{animation:obPop .4s var(--spring) both}
+.onb-s.on .ob-pick i:nth-child(2){animation-delay:.08s}.onb-s.on .ob-pick i:nth-child(3){animation-delay:.16s}.onb-s.on .ob-pick i:nth-child(4){animation-delay:.24s}
+.onb-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.onb-opt{display:grid;gap:2px;padding:12px;border-radius:14px;background:var(--surface-2);text-align:center;font:inherit;color:var(--fg)}
+.onb-opt b{font-size:15px;font-weight:800}.onb-opt small{font-size:12px;color:var(--muted)}
+.onb-opt[aria-pressed="true"]{background:var(--accent-soft);box-shadow:inset 0 0 0 2px var(--accent)}
+.onb-foot{display:flex;align-items:center;gap:8px;padding:14px 18px 18px}
+.onb-foot .btn{flex:none;min-width:96px}
+.onb-dots{display:flex;gap:6px;flex:1}
+.onb-dots i{width:7px;height:7px;border-radius:4px;background:var(--line);transition:width .3s,background .3s}
+.onb-dots i.on{width:20px;background:var(--accent)}
+/* new-version card */
+#news{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:70;display:flex;align-items:center;gap:10px;width:min(420px,calc(100% - 32px));padding:10px 10px 10px 14px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow-lg),inset 0 0 0 1px var(--line);transform:translate(-50%,24px);opacity:0;transition:transform .45s var(--spring),opacity .3s}
+#news.on{transform:translate(-50%,0);opacity:1}
+#news .nw-ic{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:var(--accent-soft);color:var(--accent)}
+#news .nw-ic svg{width:20px;height:20px}
+#news .nw-t{flex:1;min-width:0;display:grid}
+#news .nw-t b{font-size:14px;font-weight:800}
+#news .nw-t small{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body:not([data-mode="cover-p"]) #news{bottom:24px}
+/* permission */
+.perm{display:grid;justify-items:center;text-align:center;gap:8px;padding:8px 4px}
+.perm-ic{display:grid;place-items:center;width:64px;height:64px;border-radius:20px;background:var(--accent-soft);color:var(--accent)}
+.perm-ic svg{width:32px;height:32px}
+.perm b{font-size:18px;font-weight:900}
+.perm p{margin:0;font-size:14.5px;line-height:1.75;color:var(--muted)}
+/* timetable helpers */
+.tt-tpl{display:grid;gap:4px;padding:12px 14px;margin-bottom:12px;border-radius:14px;background:var(--surface-2)}
+.tt-tpl b{font-size:14.5px;font-weight:800}.tt-tpl small{font-size:12.5px;color:var(--muted)}
+.tt-tpl .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+/* backup nudge */
+.bk-nudge{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:14px 0 0;padding:12px 14px;border-radius:14px;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--line)}
+.bk-nudge > span:first-child{color:var(--accent)}.bk-nudge svg{width:22px;height:22px}
+.bk-nudge .t{flex:1;min-width:180px;display:grid}.bk-nudge .t b{font-size:14px;font-weight:800}.bk-nudge .t small{font-size:12.5px;color:var(--muted)}
+.bk-nudge .acts{display:flex;gap:8px;margin-left:auto}
+/* 13) energy saver: no endless loops */
+body.eco *,body.eco *::before,body.eco *::after{animation-iteration-count:1!important}
+body.eco #wxfx{display:none!important}
+/* 20) text size */
+#view,#pane,#tabbar,#rail,#clv .clv-scroll,#onb .onb-card{zoom:var(--uiz,1)}
+.zoom-seg{display:flex}
+:is(.card,div):has(> table.tt){overflow-x:auto;-webkit-overflow-scrolling:touch}
+html.zoomed table.tt th,html.zoomed table.tt td{padding-left:2px;padding-right:2px}
+.zoom-seg button{flex:1}
+/* 19) wide screens: use the space, but keep lines readable */
+@media (min-width:1280px){
+  body:not([data-mode="cover-p"]) #view > .page-h,body:not([data-mode="cover-p"]) #view > :not(.navbar){max-width:1180px;margin-left:auto;margin-right:auto}
+}
 </style>
 </head>
 <body>
@@ -1452,7 +1540,16 @@ body.clv-on #cc,body.clv-on #ccb{display:none!important}
 <script>
 (() => {
 "use strict";
-try { if(/^#pair=/.test(location.hash) && localStorage.getItem("fd-demo")){ ["fd-demo", "fd-demo-state", "fd-store-v1", "fd-queue-v1"].forEach(k => localStorage.removeItem(k)); } } catch(e){}
+function demoCarry(){
+  try {
+    const st = JSON.parse(localStorage.getItem("fd-demo-state") || "null"); if(!st) return;
+    const cols = {}; let n = 0;
+    Object.entries(st.cols || {}).forEach(([c, docs]) => { if(c === "briefs") return; Object.entries(docs || {}).forEach(([id, d]) => { if(JSON.stringify(d).indexOf("【見本】") >= 0) return; (cols[c] = cols[c] || {})[id] = d; n++; }); });
+    const tt = st.cfg && st.cfg.timetable && JSON.stringify(st.cfg.timetable) !== st.ttOrig ? st.cfg.timetable : null;
+    if(n || tt) localStorage.setItem("fd-demo-carry", JSON.stringify({cols, tt, n}));
+  } catch(e){}
+}
+try { if(/^#pair=/.test(location.hash) && localStorage.getItem("fd-demo")){ demoCarry(); ["fd-demo", "fd-demo-state", "fd-store-v1", "fd-queue-v1"].forEach(k => localStorage.removeItem(k)); } } catch(e){}
 /* ================= icons ================= */
 /* icons: Material Symbols Rounded (Apache-2.0), outline and filled */
 const I = {"today": "<path d=\"M180-80q-24 0-42-18t-18-42v-620q0-24 18-42t42-18h65v-28q0-13.6 9-22.8 9-9.2 23.02-9.2t23.5 9.2Q310-861.6 310-848v28h340v-28q0-13.6 9-22.8 9-9.2 23.02-9.2t23.5 9.2Q715-861.6 715-848v28h65q24 0 42 18t18 42v620q0 24-18 42t-42 18H180Zm0-60h600v-430H180v430Zm0-490h600v-130H180v130Zm0 0v-130 130Z\"/>", "tt": "<path d=\"M140-160q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h680q24 0 42 18t18 42v520q0 24-18 42t-42 18H140Zm374-60h123v-520H514v520Zm-190 0h123v-520H324v520Zm-184 0h124v-520H140v520Zm557 0h123v-520H697v520Z\"/>", "tasks": "<path d=\"M480-80q-85 0-158-30.5T195-195q-54-54-84.5-127T80-480q0-84 30.5-157T195-764q54-54 127-85t158-31q60 0 117 17.5T704-811q11 7 13.5 19t-5.5 22q-8 10-20 11t-23-6q-42-27-90-41t-99-14q-145 0-242.5 97.5T140-480q0 145 97.5 242.5T480-140q145 0 242.5-97.5T820-480q0-19-1.5-37t-5.5-35q-2-13 4-24t18-13q13-3 24 4.5t13 20.5q4 20 6 41t2 43q0 85-31 158t-85 127q-54 54-127 84.5T480-80Zm-59-309 392-392q9-9 22-9t23 9q10 10 10 23t-10 23L442-319q-9 9-21 9t-21-9L278-442q-9-9-8.5-22.5T279-487q9-9 22.5-9t22.5 9l97 98Z\"/>", "events": "<path d=\"M528-248.18q-28-28.19-28-69Q500-358 528.18-386q28.19-28 69-28Q638-414 666-385.82q28 28.19 28 69Q694-276 665.82-248q-28.19 28-69 28Q556-220 528-248.18ZM180-80q-24 0-42-18t-18-42v-620q0-24 18-42t42-18h65v-28q0-13.6 9-22.8 9-9.2 23.02-9.2t23.5 9.2Q310-861.6 310-848v28h340v-28q0-13.6 9-22.8 9-9.2 23.02-9.2t23.5 9.2Q715-861.6 715-848v28h65q24 0 42 18t18 42v620q0 24-18 42t-42 18H180Zm0-60h600v-430H180v430Zm0-490h600v-130H180v130Zm0 0v-130 130Z\"/>", "people": "<path d=\"M38-254q0-35 18-63.5t50-42.5q73-32 131.5-46T358-420q62 0 120 14t131 46q32 14 50.5 42.5T678-254v34q0 25-17.5 42.5T618-160H98q-25 0-42.5-17.5T38-220v-34Zm824 94H724q5-15 9.5-29.5T738-220v-34q0-63-29-101.5T622-420q69 8 130 22t99 34q33 19 52 47t19 63v34q0 25-17.5 42.5T862-160ZM250-523q-42-42-42-108t42-108q42-42 108-42t108 42q42 42 42 108t-42 108q-42 42-108 42t-108-42Zm426 0q-42 42-108 42-11 0-24.5-1.5T519-488q24-25 36.5-61.5T568-631q0-45-12.5-79.5T519-774q11-3 24.5-5t24.5-2q66 0 108 42t42 108q0 66-42 108ZM98-220h520v-34q0-16-9.5-31T585-306q-72-32-121-43t-106-11q-57 0-106.5 11T130-306q-14 6-23 21t-9 31v34Zm324.5-346.5Q448-592 448-631t-25.5-64.5Q397-721 358-721t-64.5 25.5Q268-670 268-631t25.5 64.5Q319-541 358-541t64.5-25.5ZM358-220Zm0-411Z\"/>", "memo": "<path d=\"M180-180h400v-170q0-12.75 8.63-21.38Q597.25-380 610-380h170v-400H180v600Zm0 60q-24.75 0-42.37-17.63Q120-155.25 120-180v-600q0-24.75 17.63-42.38Q155.25-840 180-840h600q24.75 0 42.38 17.62Q840-804.75 840-780v395q0 12.44-5 23.72T822-342L618-138q-8 8-19.28 13-11.28 5-23.72 5H180Zm260-300H330q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h110q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5Zm190-160H330q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h300q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5ZM180-180v-600 600Z\"/>", "docs": "<path d=\"M140-160q-24 0-42-18.5T80-220v-520q0-23 18-41.5t42-18.5h256q12.44 0 23.72 5t19.37 13.09L481-740h339q23 0 41.5 18.5T880-680v460q0 23-18.5 41.5T820-160H140Zm0-60h680v-460H456l-60-60H140v520Zm0 0v-520 520Z\"/>", "dl": "<path d=\"M469-327q-5-2-10-7L308-485q-9-9.27-8.5-21.64.5-12.36 9.11-21.36 9.39-9 21.89-9t21.5 9l98 99v-341q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v341l99-99q8.8-9 20.9-8.5 12.1.5 21.49 9.5 8.61 9 8.61 21.5t-9 21.5L501-334q-5 5-10.13 7-5.14 2-11 2-5.87 0-10.87-2ZM220-160q-24 0-42-18t-18-42v-113q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v113h520v-113q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v113q0 24-18 42t-42 18H220Z\"/>", "zin": "<path d=\"M346-556h-52q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h52v-51q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v51h51q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5h-51v52q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63-8.5-8.62-8.5-21.37v-52Zm32 227q-108.16 0-183.08-75Q120-479 120-585t75-181q75-75 181.5-75t181 75Q632-691 632-584.85 632-542 618-502q-14 40-42 75l242 240q9 8.56 9 21.78T818-143q-9 9-22.22 9-13.22 0-21.78-9L533-384q-30 26-69.96 40.5Q423.08-329 378-329Zm-1-60q81.25 0 138.13-57.5Q572-504 572-585t-56.87-138.5Q458.25-781 377-781q-82.08 0-139.54 57.5Q180-666 180-585t57.46 138.5Q294.92-389 377-389Z\"/>", "zout": "<path d=\"M305-556q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h141q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H305Zm73 227q-108.16 0-183.08-75Q120-479 120-585t75-181q75-75 181.5-75t181 75Q632-691 632-584.85 632-542 618-502q-14 40-42 75l242 240q9 8.56 9 21.78T818-143q-9 9-22.22 9-13.22 0-21.78-9L533-384q-30 26-69.96 40.5Q423.08-329 378-329Zm-1-60q81.25 0 138.13-57.5Q572-504 572-585t-56.87-138.5Q458.25-781 377-781q-82.08 0-139.54 57.5Q180-666 180-585t57.46 138.5Q294.92-389 377-389Z\"/>", "dots": "<path d=\"M207.86-432Q188-432 174-446.14t-14-34Q160-500 174.14-514t34-14Q228-528 242-513.86t14 34Q256-460 241.86-446t-34 14Zm272 0Q460-432 446-446.14t-14-34Q432-500 446.14-514t34-14Q500-528 514-513.86t14 34Q528-460 513.86-446t-34 14Zm272 0Q732-432 718-446.14t-14-34Q704-500 718.14-514t34-14Q772-528 786-513.86t14 34Q800-460 785.86-446t-34 14Z\"/>", "plus": "<path d=\"M450-450H230q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h220v-220q0-12.75 8.68-21.38 8.67-8.62 21.5-8.62 12.82 0 21.32 8.62 8.5 8.63 8.5 21.38v220h220q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H510v220q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63-8.5-8.62-8.5-21.37v-220Z\"/>", "search": "<path d=\"M378-329q-108.16 0-183.08-75Q120-479 120-585t75-181q75-75 181.5-75t181 75Q632-691 632-584.85 632-542 618-502q-14 40-42 75l242 240q9 8.56 9 21.78T818-143q-9 9-22.22 9-13.22 0-21.78-9L533-384q-30 26-69.96 40.5Q423.08-329 378-329Zm-1-60q81.25 0 138.13-57.5Q572-504 572-585t-56.87-138.5Q458.25-781 377-781q-82.08 0-139.54 57.5Q180-666 180-585t57.46 138.5Q294.92-389 377-389Z\"/>", "close": "<path d=\"M480-438 270-228q-9 9-21 9t-21-9q-9-9-9-21t9-21l210-210-210-210q-9-9-9-21t9-21q9-9 21-9t21 9l210 210 210-210q9-9 21-9t21 9q9 9 9 21t-9 21L522-480l210 210q9 9 9 21t-9 21q-9 9-21 9t-21-9L480-438Z\"/>", "check": "<path d=\"m378-332 363-363q9-9 21.5-9t21.5 9q9 9 9 21.5t-9 21.5L399-267q-9 9-21 9t-21-9L175-449q-9-9-8.5-21.5T176-492q9-9 21.5-9t21.5 9l159 160Z\"/>", "left": "<path d=\"m406-481 177 177q9 9 8.5 21t-9.5 21q-9 9-21.5 9t-21.5-9L341-460q-5-5-7-10t-2-11q0-6 2-11t7-10l199-199q9-9 21.5-9t21.5 9q9 9 9 21.5t-9 21.5L406-481Z\"/>", "right": "<path d=\"M530-481 353-658q-9-9-8.5-21t9.5-21q9-9 21.5-9t21.5 9l198 198q5 5 7 10t2 11q0 6-2 11t-7 10L396-261q-9 9-21 8.5t-21-9.5q-9-9-9-21.5t9-21.5l176-176Z\"/>", "card": "<path d=\"M232-247h239v-14q0-18-9-32t-23-19q-32-11-50-14.5t-35-3.5q-19 0-40.5 4.5T265-312q-15 5-24 19t-9 32v14Zm361-67h120q11 0 18-7t7-18q0-11-7-18t-18-7H593q-11 0-18 7t-7 18q0 11 7 18t18 7Zm-200.5-65.5Q408-395 408-418t-15.5-38.5Q377-472 354-472t-38.5 15.5Q300-441 300-418t15.5 38.5Q331-364 354-364t38.5-15.5ZM593-427h120q11 0 18-7t7-18q0-11-7-18t-18-7H593q-11 0-18 7t-7 18q0 11 7 18t18 7ZM140-80q-24 0-42-18t-18-42v-480q0-24 18-42t42-18h250v-140q0-24 18-42t42-18h60q24 0 42 18t18 42v140h250q24 0 42 18t18 42v480q0 24-18 42t-42 18H140Zm0-60h680v-480H570v30q0 28-18 44t-42 16h-60q-24 0-42-16t-18-44v-30H140v480Zm310-450h60v-230h-60v230Zm30 210Z\"/>", "spark": "<path d=\"M190-410q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h240q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H190Zm0-165q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h410q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H190Zm0-165q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h410q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H190Zm330 550v-81q0-5.57 2-10.78 2-5.22 7-10.22l211.61-210.77q9.11-9.12 20.25-13.18Q772-520 783-520q12 0 23 4.5t20 13.5l37 37q9 9 13 20t4 22q0 11-4.5 22.5t-13.58 20.62L652-169q-5 5-10.22 7-5.21 2-10.78 2h-81q-12.75 0-21.37-8.63Q520-177.25 520-190Zm300-233-37-37 37 37ZM580-220h38l121-122-18-19-19-18-122 121v38Zm141-141-19-18 37 37-18-19Z\"/>", "pen": "<path d=\"M180-180h44l472-471-44-44-472 471v44Zm-30 60q-13 0-21.5-8.5T120-150v-73q0-12 5-23.5t13-19.5l557-556q8-8 19-12.5t23-4.5q11 0 22 4.5t20 12.5l44 44q9 9 13 20t4 22q0 11-4.5 22.5T823-694L266-138q-8 8-19.5 13t-23.5 5h-73Zm629-617-41-41 41 41Zm-105 64-22-22 44 44-22-22Z\"/>", "hl": "<path d=\"M554-407 439-522 217-300l115 115 222-222Zm-72-158 115 115 213-213-115-115-213 213Zm-64-21 200 200-234 234q-19 19-52.5 19T279-152l-11-11-25 25q-8 8-19.5 13t-23.5 5h-94q-10 0-13.5-9.5T96-146l94-94-4-4q-22-22-21.5-55.5T187-355l231-231Zm0 0 237-237q17-17 43-17t43 17l112 112q17 17 16.5 45.5T852-620L618-386 418-586Z\"/>", "eraser": "<path d=\"M678-220h173q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H618l60-60Zm-486 60q-5.91 0-11.46-2-5.54-2-10.54-7l-72-75q-18-17-17.5-41.5T97-327l458-498q16-17 40.57-17 24.56 0 41.43 17l205 215q17 17 18 42t-16 42L512-170q-4.55 5-10.24 7.5T490-160H192Zm288-60 324-352-207-217-455 503 64 66h274Zm0-260Z\"/>", "undo": "<path d=\"M289-200q-13 0-21.5-8.5T259-230q0-13 8.5-21.5T289-260h280q70 0 120.5-46.5T740-422q0-69-50.5-115.5T569-584H274l93 93q9 9 9 21t-9 21q-9 9-21 9t-21-9L181-593q-5-5-7-10t-2-11q0-6 2-11t7-10l144-144q9-9 21-9t21 9q9 9 9 21t-9 21l-93 93h294q95 0 163.5 64T800-422q0 94-68.5 158T568-200H289Z\"/>", "textT": "<path d=\"M304.5-174.58Q290-189.17 290-210v-490H130q-20.83 0-35.42-14.62Q80-729.24 80-750.12 80-771 94.58-785.5 109.17-800 130-800h420q20.83 0 35.42 14.62Q600-770.76 600-749.88q0 20.88-14.58 35.38Q570.83-700 550-700H390v490q0 20.83-14.62 35.42Q360.76-160 339.88-160q-20.88 0-35.38-14.58Zm360 0Q650-189.17 650-210v-290h-80q-20.83 0-35.42-14.62Q520-529.24 520-550.12q0-20.88 14.58-35.38Q549.17-600 570-600h260q20.83 0 35.42 14.62Q880-570.76 880-549.88q0 20.88-14.58 35.38Q850.83-500 830-500h-80v290q0 20.83-14.62 35.42Q720.76-160 699.88-160q-20.88 0-35.38-14.58Z\"/>", "share2": "<path d=\"M220-80q-24 0-42-18t-18-42v-469q0-24 18-42t42-18h139q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H220v469h520v-469H599q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h141q24 0 42 18t18 42v469q0 24-18 42t-42 18H220Zm237.5-275.63Q449-364.25 449-377v-427l-67 67q-9 9-21 9t-21.39-9q-8.61-9-8.61-21.5t9-21.5l118-119q5-5 10.13-7 5.14-2 11-2 5.87 0 10.87 2 5 2 10 7l119 119q9 9 9 21.16t-8.61 21Q610-729 597.53-729q-12.46 0-21.53-9l-67-66v427q0 12.75-8.68 21.37-8.67 8.63-21.5 8.63-12.82 0-21.32-8.63Z\"/>", "camera": "<path d=\"M479.5-267q72.5 0 121.5-49t49-121.5q0-72.5-49-121T479.5-607q-72.5 0-121 48.5t-48.5 121q0 72.5 48.5 121.5t121 49Zm0-60q-47.5 0-78.5-31.5t-31-79q0-47.5 31-78.5t78.5-31q47.5 0 79 31t31.5 78.5q0 47.5-31.5 79t-79 31.5ZM140-120q-24 0-42-18t-18-42v-513q0-23 18-41.5t42-18.5h147l55-66q8-11 20-16t26-5h184q14 0 26 5t20 16l55 66h147q23 0 41.5 18.5T880-693v513q0 24-18.5 42T820-120H140Zm0-60h680v-513H645l-73-87H388l-73 87H140v513Zm340-257Z\"/>", "image": "<path d=\"M180-120q-24 0-42-18t-18-42v-600q0-24 18-42t42-18h600q24 0 42 18t18 42v600q0 24-18 42t-42 18H180Zm0-60h600v-600H180v600Zm0 0v-600 600Zm86-97h429q8.5 0 12.75-8t-.75-16L590-457q-5-6-12-6t-12 6L446-302l-81-111q-5-6-12-6t-12 6l-86 112q-6 8-1.75 16t12.75 8Z\"/>", "sidebar": "<path d=\"M140-160q-24.75 0-42.37-17.63Q80-195.25 80-220v-520q0-24.75 17.63-42.38Q115.25-800 140-800h680q24.75 0 42.38 17.62Q880-764.75 880-740v520q0 24.75-17.62 42.37Q844.75-160 820-160H140Zm543-443h137v-137H683v137Zm0 186h137v-126H683v126ZM140-220h483v-520H140v520Zm543 0h137v-137H683v137Z\"/>", "grip": "<path d=\"M349.91-160q-28.91 0-49.41-20.59-20.5-20.59-20.5-49.5t20.59-49.41q20.59-20.5 49.5-20.5t49.41 20.59q20.5 20.59 20.5 49.5t-20.59 49.41q-20.59 20.5-49.5 20.5Zm260 0q-28.91 0-49.41-20.59-20.5-20.59-20.5-49.5t20.59-49.41q20.59-20.5 49.5-20.5t49.41 20.59q20.5 20.59 20.5 49.5t-20.59 49.41q-20.59 20.5-49.5 20.5Zm-260-250q-28.91 0-49.41-20.59-20.5-20.59-20.5-49.5t20.59-49.41q20.59-20.5 49.5-20.5t49.41 20.59q20.5 20.59 20.5 49.5t-20.59 49.41q-20.59 20.5-49.5 20.5Zm260 0q-28.91 0-49.41-20.59-20.5-20.59-20.5-49.5t20.59-49.41q20.59-20.5 49.5-20.5t49.41 20.59q20.5 20.59 20.5 49.5t-20.59 49.41q-20.59 20.5-49.5 20.5Zm-260-250q-28.91 0-49.41-20.59-20.5-20.59-20.5-49.5t20.59-49.41q20.59-20.5 49.5-20.5t49.41 20.59q20.5 20.59 20.5 49.5t-20.59 49.41q-20.59 20.5-49.5 20.5Zm260 0q-28.91 0-49.41-20.59-20.5-20.59-20.5-49.5t20.59-49.41q20.59-20.5 49.5-20.5t49.41 20.59q20.5 20.59 20.5 49.5t-20.59 49.41q-20.59 20.5-49.5 20.5Z\"/>", "up": "<path d=\"M480-554 304-378q-9 9-21 8.5t-21-9.5q-9-9-9-21.5t9-21.5l197-197q9-9 21-9t21 9l198 198q9 9 9 21t-9 21q-9 9-21.5 9t-21.5-9L480-554Z\"/>", "down": "<path d=\"M469-358q-5-2-10-7L261-563q-9-9-8.5-21.5T262-606q9-9 21.5-9t21.5 9l175 176 176-176q9-9 21-8.5t21 9.5q9 9 9 21.5t-9 21.5L501-365q-5 5-10 7t-11 2q-6 0-11-2Z\"/>", "more": "<path d=\"M207.86-432Q188-432 174-446.14t-14-34Q160-500 174.14-514t34-14Q228-528 242-513.86t14 34Q256-460 241.86-446t-34 14Zm272 0Q460-432 446-446.14t-14-34Q432-500 446.14-514t34-14Q500-528 514-513.86t14 34Q528-460 513.86-446t-34 14Zm272 0Q732-432 718-446.14t-14-34Q704-500 718.14-514t34-14Q772-528 786-513.86t14 34Q800-460 785.86-446t-34 14Z\"/>", "timer": "<path d=\"M390-860q-13 0-21.5-8.5T360-890q0-13 8.5-21.5T390-920h180q13 0 21.5 8.5T600-890q0 13-8.5 21.5T570-860H390Zm111.5 438.5Q510-430 510-443v-170q0-13-8.5-21.5T480-643q-13 0-21.5 8.5T450-613v170q0 13 8.5 21.5T480-413q13 0 21.5-8.5Zm-161 312Q275-138 226-187t-77.5-114.5Q120-367 120-441t28.5-139.5Q177-646 226-695t114.5-77.5Q406-801 480-801q67 0 126 22.5T711-716l30-30q9-9 21-9t21 9q9 9 9 21t-9 21l-30 30q36 40 61.5 97T840-441q0 74-28.5 139.5T734-187q-49 49-114.5 77.5T480-81q-74 0-139.5-28.5Zm352-119Q780-316 780-441t-87.5-212.5Q605-741 480-741t-212.5 87.5Q180-566 180-441t87.5 212.5Q355-141 480-141t212.5-87.5ZM480-440Z\"/>", "play": "<path d=\"M320-258v-450q0-14 9-22t21-8q4 0 8 1t8 3l354 226q7 5 10.5 11t3.5 14q0 8-3.5 14T720-458L366-232q-4 2-8 3t-8 1q-12 0-21-8t-9-22Zm60-225Zm0 171 269-171-269-171v342Z\"/>", "pause": "<path d=\"M585-200q-24.75 0-42.37-17.63Q525-235.25 525-260v-440q0-24.75 17.63-42.38Q560.25-760 585-760h115q24.75 0 42.38 17.62Q760-724.75 760-700v440q0 24.75-17.62 42.37Q724.75-200 700-200H585Zm-325 0q-24.75 0-42.37-17.63Q200-235.25 200-260v-440q0-24.75 17.63-42.38Q235.25-760 260-760h115q24.75 0 42.38 17.62Q435-724.75 435-700v440q0 24.75-17.62 42.37Q399.75-200 375-200H260Zm325-60h115v-440H585v440Zm-325 0h115v-440H260v440Zm0-440v440-440Zm325 0v440-440Z\"/>", "bell": "<path d=\"M190-200q-12.75 0-21.37-8.68-8.63-8.67-8.63-21.5 0-12.82 8.63-21.32 8.62-8.5 21.37-8.5h50v-304q0-84 49.5-150.5T420-798v-22q0-25 17.5-42.5T480-880q25 0 42.5 17.5T540-820v22q81 17 130.5 83.5T720-564v304h50q12.75 0 21.38 8.68 8.62 8.67 8.62 21.5 0 12.82-8.62 21.32-8.63 8.5-21.38 8.5H190Zm290-302Zm0 422q-33 0-56.5-23.5T400-160h160q0 33-23.5 56.5T480-80ZM300-260h360v-304q0-75-52.5-127.5T480-744q-75 0-127.5 52.5T300-564v304Z\"/>", "gear": "<path d=\"M421-80q-14 0-25-9t-13-23l-15-94q-19-7-40-19t-37-25l-86 40q-14 6-28 1.5T155-226L97-330q-8-13-4.5-27t15.5-23l80-59q-2-9-2.5-20.5T185-480q0-9 .5-20.5T188-521l-80-59q-12-9-15.5-23t4.5-27l58-104q8-13 22-17.5t28 1.5l86 40q16-13 37-25t40-18l15-95q2-14 13-23t25-9h118q14 0 25 9t13 23l15 94q19 7 40.5 18.5T669-710l86-40q14-6 27.5-1.5T804-734l59 104q8 13 4.5 27.5T852-580l-80 57q2 10 2.5 21.5t.5 21.5q0 10-.5 21t-2.5 21l80 58q12 8 15.5 22.5T863-330l-58 104q-8 13-22 17.5t-28-1.5l-86-40q-16 13-36.5 25.5T592-206l-15 94q-2 14-13 23t-25 9H421Zm15-60h88l14-112q33-8 62.5-25t53.5-41l106 46 40-72-94-69q4-17 6.5-33.5T715-480q0-17-2-33.5t-7-33.5l94-69-40-72-106 46q-23-26-52-43.5T538-708l-14-112h-88l-14 112q-34 7-63.5 24T306-642l-106-46-40 72 94 69q-4 17-6.5 33.5T245-480q0 17 2.5 33.5T254-413l-94 69 40 72 106-46q24 24 53.5 41t62.5 25l14 112Zm44-210q54 0 92-38t38-92q0-54-38-92t-92-38q-54 0-92 38t-38 92q0 54 38 92t92 38Zm0-130Z\"/>", "home": "<path d=\"M220-180h150v-220q0-12.75 8.63-21.38Q387.25-430 400-430h160q12.75 0 21.38 8.62Q590-412.75 590-400v220h150v-390L480-765 220-570v390Zm-60 0v-390q0-14.25 6.38-27 6.37-12.75 17.62-21l260-195q15.68-12 35.84-12Q500-825 516-813l260 195q11.25 8.25 17.63 21 6.37 12.75 6.37 27v390q0 24.75-17.62 42.37Q764.75-120 740-120H560q-12.75 0-21.37-8.63Q530-137.25 530-150v-220H430v220q0 12.75-8.62 21.37Q412.75-120 400-120H220q-24.75 0-42.37-17.63Q160-155.25 160-180Zm320-293Z\"/>", "phone": "<path d=\"M260-40q-24.75 0-42.37-17.63Q200-75.25 200-100v-760q0-24 18-42t42-18h438q24.75 0 42.38 17.62Q758-884.75 758-860v150q18 3 30 16.95 12 13.96 12 31.63V-587q0 19-12 33t-30 17v437q0 24.75-17.62 42.37Q722.75-40 698-40H260Zm0-60h438v-760H260v760Zm0 0v-760 760Zm240-629q9-9 9-21t-9-21q-9-9-21-9t-21 9q-9 9-9 21t9 21q9 9 21 9t21-9Z\"/>"};
@@ -1648,16 +1745,16 @@ function navMorePane(){
   openPane(`${paneHead("その他")}<div class="card" style="padding:4px 14px">${hid.map(v => `<button class="row" data-go="${v.k}" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico(v.i)}</span><span class="main"><b>${v.l}</b></span><span class="when">${ico("right")}</span></button>`).join("")}</div>
     <div class="card" style="padding:4px 14px;margin-top:10px"><button class="row" data-act="search" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico("search")}</span><span class="main"><b>検索</b></span><span class="when">${ico("right")}</span></button><button class="row" data-act="settings" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico("gear")}</span><span class="main"><b>通知と設定</b></span><span class="when">${ico("right")}</span></button></div>
     <div class="btns"><button class="btn" data-act="navedit">${ico("pen")} メニューを編集</button></div>
-    <p class="hint">閉じた画面の下のバーには、「メニューを編集」で上から${BAR_N}つに並べたものが出ます。</p>`);
+    <p class="hint">縦長の画面（スマホ・Fold を閉じたとき）の下のバーには、「メニューを編集」で上から${BAR_N}つに並べたものが出ます。</p>`);
 }
 function navEditPane(){
   const c = navCfg(), vs = navViews();
   openPane(`${paneHead("メニューを編集")}
-    <p class="hint" style="margin-top:0">よく使うものを上に。閉じた画面の下のバーには上から${BAR_N}つが並び、残りは「その他」に入ります。オフにしたものも「その他」から開けます。「今日」はしまえません。</p>
+    <p class="hint" style="margin-top:0">よく使うものを上に。縦長の画面（スマホ・Fold を閉じたとき）の下のバーには上から${BAR_N}つが並び、残りは「その他」に入ります。オフにしたものも「その他」から開けます。「今日」はしまえません。</p>
     <div class="group navedit">${vs.map((v, i) => { const off = v.k !== "today" && c.off.includes(v.k); return `<div class="nr ${off ? "off" : ""}">${ico(v.i)}<b>${v.l}</b>
       <button class="mv" data-nav-mv="${v.k}:-1" ${i === 0 ? "disabled" : ""} aria-label="上へ">${ico("up")}</button><button class="mv" data-nav-mv="${v.k}:1" ${i === vs.length - 1 ? "disabled" : ""} aria-label="下へ">${ico("down")}</button>
       ${v.k === "today" ? `<span class="chip muted">固定</span>` : `<button class="switch" role="switch" aria-checked="${!off}" data-nav-tog="${v.k}" aria-label="${v.l}を表示"></button>`}</div>`; }).join("")}</div>
-    <div class="field" style="margin-top:14px"><label>横のバーの大きさ（開いた画面）</label><div class="railsize">${[["full", "名前つき"], ["mini", "アイコンだけ"], ["hide", "しまう"]].map(([k, l]) => `<button class="chip" data-rail-set="${k}" aria-pressed="${c.rail === k}">${l}</button>`).join("")}</div>
+    <div class="field" style="margin-top:14px"><label>横のバーの大きさ（タブレット・パソコン・Fold を開いたとき）</label><div class="railsize">${[["full", "名前つき"], ["mini", "アイコンだけ"], ["hide", "しまう"]].map(([k, l]) => `<button class="chip" data-rail-set="${k}" aria-pressed="${c.rail === k}">${l}</button>`).join("")}</div>
       <p class="hint">横のバーの上にあるボタンでも切り替えられます。しまったときは左上のボタンか、画面の左はしから右へなぞると出てきます。</p></div>
     <div class="btns"><button class="btn" data-nav-reset>元に戻す</button><button class="btn primary" data-act="close">完了</button></div>`);
 }
@@ -1699,7 +1796,7 @@ function render(){
   const ok = paired() && syncState !== "auth";
   document.body.classList.toggle("unpaired", !ok);
   if(!ok){ v.innerHTML = setupView(); return; }
-  const html = `<div class="navbar" aria-hidden="true"><b>${TITLES[view] || ""}</b></div>` + ({today:vToday, timetable:vTT, tasks:vTasks, events:vEvents, people:vPeople, memo:vMemo, docs:vDocs, timer:vTimer}[view] || vToday)() + (DEMO() ? demoBand() : "") + `<div class="cc-sp" aria-hidden="true"></div>`;
+  const html = `<div class="navbar" aria-hidden="true"><b>${TITLES[view] || ""}</b></div>` + ({today:vToday, timetable:vTT, tasks:vTasks, events:vEvents, people:vPeople, memo:vMemo, docs:vDocs, timer:vTimer}[view] || vToday)() + (DEMO() ? demoBand() : "") + (view === "today" && ui.bkNudge ? `<div class="bk-nudge"><span>${ico("dl")}</span><span class="t"><b>資料と写真のバックアップ</b><small>30日以上書き出していません。機種変更などで消えないように、ときどき書き出しておきましょう</small></span><span class="acts"><button class="chip" data-bk-later>あとで</button><button class="chip accent" data-act="backup">書き出す</button></span></div>` : "") + `<div class="cc-sp" aria-hidden="true"></div>`;
   if(changed || !v.firstChild) v.innerHTML = html; else morphInto(v, html);
   if(changed){ v.classList.remove("enter"); void v.offsetWidth; v.classList.add("enter"); render.at = performance.now(); }
   else if(performance.now() - (render.at||0) > 700) v.classList.remove("enter");
@@ -2270,11 +2367,11 @@ function makeSky(opt = {}){
   }
   function sync(){
     if(opt.sel){
-      const on2 = view === "today" && ui.heroFlip && ls.get("fd-wxfx", true) !== false && !REDUCE;
+      const on2 = view === "today" && ui.heroFlip && ls.get("fd-wxfx", true) !== false && !REDUCE && !ECO();
       if(on2 && !raf){ last = 0; raf = requestAnimationFrame(frame); } else if(!on2 && raf){ cancelAnimationFrame(raf); raf = 0; cv = null; }
       return;
     }
-    const on = view === "today" && paired() && ls.get("fd-wxfx", true) !== false && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const on = view === "today" && paired() && ls.get("fd-wxfx", true) !== false && !ECO() && !matchMedia("(prefers-reduced-motion: reduce)").matches;
     if(on){ ensure(); if(!raf){ last = 0; raf = requestAnimationFrame(frame); } }
     else if(raf){ cancelAnimationFrame(raf); raf = 0; }
     document.body.classList.toggle("wxfx-on", on);
@@ -3124,11 +3221,13 @@ const MB = n => n >= 1e9 ? (n / 1e9).toFixed(2) + " GB" : n >= 1e6 ? (n / 1e6).t
 
 /* ================= 更新履歴 (newest at the top) ================= */
 const CHANGELOG = [
+ {day:"11月4日", sub:"水曜日・だれでも使える日", list:[
+  {v:"1.0.44", t:"夜", big:1, newest:1, h:"だれでも使いやすく", lead:"スマホにくわしくない人の目で、入り口から見直しました。", it:[["n","はじめての案内。使う機能を「シンプル」「ぜんぶ」から選べる"],["n","時間割の「ひな形」（45分・50分・40分授業）と、写真からの読み取り"],["n","文字の大きさ（小・標準・大・特大）と、省エネモード"],["n","自動バックアップ（週1回、スマホの「ダウンロード」に最新の1つ）"],["n","パソコン・タブレットでも同じデータを開ける「ほかの端末でも使う」"],["n","「新しくなりました」のお知らせ、「プライバシーと利用のきまり」"],["i","通知やカレンダーの許可は、理由を説明してから"],["i","お試しで入れたものを、つないだあとに引き継げる"],["i","「閉じた画面」などの Fold だけの言葉を、どのスマホでもわかる言葉に"],["i","キャラクターの絵を登録していないときは、キャラクターを出さない"]]}]},
  {day:"11月3日", sub:"火曜日・文化の日", list:[
-  {v:"アプリ内", t:"22:40", big:1, newest:1, h:"個人の予定と、学校の予定", lead:"Google カレンダーから持ってきて、ひと目で分けられるように。", it:[["n","Google カレンダーの書き出しファイル（.ics・.zip）を「予定」の「読み込む」から。くり返しの予定や連休もそのまま入る"],["n","予定に「個人」「学校（仕事）」の区分。色と札で見分けられる"],["n","「予定」の上のボタンで、個人・学校の予定をそれぞれ表示／非表示。「今日」とウィジェットにも反映"],["i","学校のカレンダーとして読み込んだ予定は、このスマホの中だけに保存"],["i","テーマカラーの名前を日本の伝統色に。常磐色・藍色・墨色・臙脂色・江戸紫・山吹茶"]]},
+  {v:"アプリ内", t:"22:40", big:1, h:"個人の予定と、学校の予定", lead:"Google カレンダーから持ってきて、ひと目で分けられるように。", it:[["n","Google カレンダーの書き出しファイル（.ics・.zip）を「予定」の「読み込む」から。くり返しの予定や連休もそのまま入る"],["n","予定に「個人」「学校（仕事）」の区分。色と札で見分けられる"],["n","「予定」の上のボタンで、個人・学校の予定をそれぞれ表示／非表示。「今日」とウィジェットにも反映"],["i","学校のカレンダーとして読み込んだ予定は、このスマホの中だけに保存"],["i","テーマカラーの名前を日本の伝統色に。常磐色・藍色・墨色・臙脂色・江戸紫・山吹茶"]]},
   {v:"アプリ内", t:"21:55", big:1, h:"更新履歴とテーマカラー", lead:"あなたが今見ているこのページです。", it:[["n","設定から読める「更新履歴」。1.0.0 から今までを、新しい順に"],["n","テーマカラーを6色から。常磐色・藍色・墨色・臙脂色・江戸紫・山吹茶。黒板とボタンの色がいっしょに変わります"]]},
   {v:"アプリ内", t:"21:40", h:"重なりを直しました", it:[["f","空の画面のボタンのアイコンが大きくなり、説明の文章に重なっていた問題"],["f","資料の「おすすめ」の並べ替えの枠で、文字の下が切れていた問題"]]},
-  {v:"1.0.43", t:"21:20", big:1, h:"使いやすさの総点検", lead:"はじめて触る人の目で、全部の画面を見直しました。", it:[["n","お試しモード。アカウントがなくても見本のデータで全部の画面をさわれる"],["n","バックアップ。資料・書き込み・写真・設定を1つのファイルに書き出して、読み込める"],["i","コンシェルジュは右下のすみっこに。話しかけは少しで閉じ、タイマーや資料を見ている間はおとなしく"],["i","閉じた画面の下のバーは5つ＋「その他」。文字も大きく"],["i","小さいボタンも、指で押せる広さに"],["i","「今日」の時間の帯に、記号の説明"],["i","何もないページに、大きな説明とすぐ追加できるボタン"],["f","「時間割」の見出しが縦に1文字ずつ並んでいた問題"],["f","会議のコマなど、薄くて読みにくかった文字"]]},
+  {v:"1.0.43", t:"21:20", big:1, h:"使いやすさの総点検", lead:"はじめて触る人の目で、全部の画面を見直しました。", it:[["n","お試しモード。アカウントがなくても見本のデータで全部の画面をさわれる"],["n","バックアップ。資料・書き込み・写真・設定を1つのファイルに書き出して、読み込める"],["i","コンシェルジュは右下のすみっこに。話しかけは少しで閉じ、タイマーや資料を見ている間はおとなしく"],["i","縦長の画面（スマホ・Fold を閉じたとき）の下のバーは5つ＋「その他」。文字も大きく"],["i","小さいボタンも、指で押せる広さに"],["i","「今日」の時間の帯に、記号の説明"],["i","何もないページに、大きな説明とすぐ追加できるボタン"],["f","「時間割」の見出しが縦に1文字ずつ並んでいた問題"],["f","会議のコマなど、薄くて読みにくかった文字"]]},
   {v:"1.0.42", t:"18:54", big:1, h:"タイマーを、もっと手元で", it:[["n","動いているタイマーに大きな［−1分］［＋1分］［＋5分］。「大きく表示」のままでも延ばせる"],["n","通知から「＋1分」"],["n","タイマー・ポモドーロ・ストップウォッチの間は、画面が消えない"],["i","開いたときはいつもの「今日」から。「ひと目」は右上から"]]},
   {v:"アプリ内", t:"13:10", h:"閉じたまま、ひと目でわかる", it:[["n","「ひと目」表示。いま・残り時間・次を特大で"],["n","「データと容量」。写真と資料の使用量を見て、まとめて整理"]]},
   {v:"アプリ内", t:"10:38", h:"黒板の下のすきまを片づけ", it:[["f","黒板の下に、天気の面の分だけ空白ができていた問題"],["f","横のバーでアイコンが2つずつ並んでいた問題"]]},
@@ -3360,8 +3459,148 @@ async function icsUndo(id){
   else { for(const e of personalEvents.filter(y => y.imp === id)) await del("events", e.id); }
   ls.set("fd-ics-imports", imps.filter(y => y.id !== id)); mergeEvents(); schedule(); toast("取り消しました");
 }
+
+/* after pairing, offer to bring over what was typed during the trial */
+let carryAsked = false;
+function carryCheck(){
+  if(carryAsked || DEMO() || !paired() || syncState !== "ok" || ui.pane) return;
+  const c = ls.get("fd-demo-carry", null); if(!c) return; carryAsked = true;
+  const L = {tasks:"タスク", events:"予定", memos:"メモ", people:"人", orgs:"所属", progress:"授業の進度", followups:"返信待ち", logs:"記録", overrides:"時間割の変更"};
+  const rows = Object.entries(c.cols || {}).filter(([k, v]) => Object.keys(v).length).map(([k, v]) => `<div class="setrow"><span class="main"><b>${L[k] || k}</b></span><span class="num">${Object.keys(v).length}件</span></div>`).join("") + (c.tt ? `<div class="setrow"><span class="main"><b>時間割</b></span><span class="num">あり</span></div>` : "");
+  openPane(`${paneHead("お試しで入れたものを引き継ぐ")}<p class="empty" style="margin-top:0">お試し中に自分で入れたものがあります。あなたの Google ドライブに入れますか？（【見本】は入れません）</p>
+    <div class="group">${rows}</div>
+    <div class="btns"><button class="btn" data-carry="no">入れない</button><button class="btn primary" data-carry="yes">引き継ぐ</button></div>`);
+}
+async function carryAct(k, b){
+  const c = ls.get("fd-demo-carry", null); try { localStorage.removeItem("fd-demo-carry"); } catch(e){}
+  if(k === "yes" && c){ b.disabled = true;
+    for(const [col, docs] of Object.entries(c.cols || {})) for(const [id, d] of Object.entries(docs)) { try { await put(col, id, d); } catch(e){} }
+    if(c.tt && !(S.tt && Object.values(S.tt.grid || {}).some(d => (d || []).some(x => x && x.subject)))) { try { await putTT(c.tt); } catch(e){} }
+    toast("引き継ぎました"); }
+  closePane();
+}
+setInterval(carryCheck, 2500);
+
+function privacyPane(){
+  openPane(`${paneHead("プライバシーと利用のきまり")}
+    <div class="doc-text">
+    <h4>データはどこにあるか</h4>
+    <ul><li><b>予定・タスク・時間割・メモ・人</b>：あなた自身の Google ドライブ（「Fold Desk データ」フォルダ）にだけ保存します。作った人を含め、ほかの人は見られません。</li>
+      <li><b>資料（PDF）・書き込み・授業の写真・アプリの設定</b>：このスマホの中にだけ保存します。どこにも送りません。</li>
+      <li><b>学校のカレンダー</b>（学校のアカウント・読み込んだ学校のカレンダー）：このスマホの中にだけ置き、個人の Google には入れません。</li></ul>
+    <h4>外に送るもの</h4>
+    <ul><li><b>天気</b>：選んだ場所の緯度・経度だけを天気サービス（Open-Meteo）に送ります。名前やアカウントは送りません。</li>
+      <li><b>AI の機能</b>（メモの振り分け・名刺・時間割の読み取り）：あなたの Apps Script から、あなたが設定した Gemini の鍵で送ります。使わなければ送りません。</li>
+      <li>広告・利用状況の集計・追跡は、いっさいしません。</li></ul>
+    <h4>学校で使うときのお願い</h4>
+    <ul><li>児童・生徒や保護者の個人情報（名前・成績・家庭の事情など）は、入れないでください。</li>
+      <li>勤務先の決まり（私物の端末やクラウドの使い方）がある場合は、それに従ってください。</li></ul>
+    <h4>やめるとき</h4>
+    <ul><li>「通知と設定」の「この端末の接続を解除」で、このスマホからデータを消せます。</li>
+      <li>Google ドライブの「Fold Desk データ」フォルダを消すと、保存したデータがすべて消えます。</li>
+      <li>アプリを消すと、このスマホの中の資料・写真も消えます。必要なら先に「バックアップ」を書き出してください。</li></ul>
+    <h4>おことわり</h4>
+    <ul><li>このアプリは個人が作ったもので、動作やデータの保存を保証するものではありません。大事なものは元のファイルも残しておいてください。</li>
+      <li>内容は予告なく変わることがあります。変わったときは「更新履歴」に書きます。</li></ul>
+    </div>
+    <div class="btns"><button class="btn primary" data-act="close">閉じる</button></div>`);
+}
+
+function onboardCheck(){
+  if(ls.get("fd-onboarded", false) || !paired() || !S.ready || document.getElementById("onb") || ui.pane) return;
+  const hasTT = S.tt && Object.values(S.tt.grid || {}).some(d => (d || []).some(x => x && x.subject));
+  if(!DEMO() && (hasTT || S.tasks.length || S.events.length)){ ls.set("fd-onboarded", true); return; }
+  onboardOpen();
+}
+function onboardOpen(){
+  const slides = [
+    {art:"board", h:"今日が、ひと目で", p:"いまの授業と、残り何分か。次は何か。開いた瞬間にわかります。"},
+    {art:"grid", h:"時間割を入れると、動き出す", p:"時間割と授業の時間を入れると、残り時間やお知らせが自動になります。"},
+    {art:"stack", h:"予定・タスク・資料もここに", p:"Google カレンダーの読み込み、期限のあるタスク、研修の資料。まとめて手元に。"},
+    {art:"pick", h:"使う機能を選びましょう", p:"あとから「メニューを編集」でいつでも変えられます。", pick:1}];
+  const el = document.createElement("div"); el.id = "onb"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "はじめての案内");
+  el.innerHTML = `<div class="onb-card"><div class="onb-track">${slides.map((x, i) => `<section class="onb-s" data-i="${i}">
+      <div class="onb-art ${x.art}" aria-hidden="true">${x.art === "board" ? `<div class="ob-board"><b>10:42</b><span>あと18分</span><i></i></div>` : x.art === "grid" ? `<div class="ob-grid">${Array.from({length:15}, (_, k) => `<i style="--k:${k}"></i>`).join("")}</div>` : x.art === "stack" ? `<div class="ob-stack"><i></i><i></i><i></i></div>` : `<div class="ob-pick"><i></i><i></i><i></i><i></i></div>`}</div>
+      <h2>${x.h}</h2><p>${x.p}</p>
+      ${x.pick ? `<div class="onb-choice"><button class="onb-opt" data-onb-mode="simple" aria-pressed="true"><b>シンプル</b><small>今日・時間割・タスク・予定</small></button><button class="onb-opt" data-onb-mode="all" aria-pressed="false"><b>ぜんぶ使う</b><small>資料・タイマー・メモ・人も</small></button></div>` : ""}
+    </section>`).join("")}</div>
+    <div class="onb-foot"><div class="onb-dots">${slides.map((_, i) => `<i data-d="${i}"></i>`).join("")}</div><button class="btn" data-onb="skip">あとで</button><button class="btn primary" data-onb="next">次へ</button></div></div>`;
+  document.body.appendChild(el); let i = 0, mode = "simple";
+  const show = () => { el.querySelector(".onb-track").style.transform = `translateX(${-i * 100}%)`; el.querySelectorAll(".onb-dots i").forEach((d, k) => d.classList.toggle("on", k === i)); el.querySelectorAll(".onb-s").forEach((x, k) => x.classList.toggle("on", k === i));
+    el.querySelector('[data-onb="next"]').textContent = i === slides.length - 1 ? "はじめる" : "次へ"; };
+  const finish = () => { ls.set("fd-onboarded", true);
+    if(mode === "simple"){ const c = navCfg(); c.off = [...new Set([...c.off, "docs", "timer", "memo", "people"])]; saveNav(c); rebuildNav(); }
+    el.classList.add("off"); setTimeout(() => el.remove(), 350);
+    const hasTT = S.tt && Object.values(S.tt.grid || {}).some(d => (d || []).some(x => x && x.subject));
+    if(!hasTT) setTimeout(() => ttSetupPane("times"), 400); };
+  el.addEventListener("click", e => { const b = e.target.closest("[data-onb],[data-onb-mode]"); if(!b) return;
+    if(b.dataset.onbMode){ mode = b.dataset.onbMode; el.querySelectorAll("[data-onb-mode]").forEach(x => x.setAttribute("aria-pressed", x === b)); return; }
+    if(b.dataset.onb === "skip"){ ls.set("fd-onboarded", true); el.classList.add("off"); setTimeout(() => el.remove(), 350); return; }
+    if(i < slides.length - 1){ i++; show(); } else finish(); });
+  let sx = null; el.addEventListener("pointerdown", e => { sx = e.clientX; }); el.addEventListener("pointerup", e => { if(sx === null) return; const dx = e.clientX - sx; sx = null; if(Math.abs(dx) > 50){ i = Math.max(0, Math.min(slides.length - 1, i + (dx < 0 ? 1 : -1))); show(); } });
+  requestAnimationFrame(() => { el.classList.add("on"); show(); });
+}
+setInterval(onboardCheck, 1500);
+
+function newsCheck(){
+  if(!paired() || !S.ready || !ls.get("fd-onboarded", false) || document.getElementById("onb") || document.getElementById("news")) return;
+  const top = CHANGELOG[0].list[0], key = top.v + top.t + top.h, seen = ls.get("fd-seen-cl", null);
+  if(seen === key) return;
+  ls.set("fd-seen-cl", key); if(seen === null && !DEMO()){ /* first time on a phone that already used the app: still tell once */ }
+  const el = document.createElement("div"); el.id = "news"; el.setAttribute("role", "status");
+  el.innerHTML = `<span class="nw-ic">${ico("spark")}</span><span class="nw-t"><b>新しくなりました</b><small>${esc(top.h)}</small></span><button class="chip accent" data-news="open">見る</button><button class="icon-btn sm" data-news="x" aria-label="閉じる">${ico("close")}</button>`;
+  document.body.appendChild(el); requestAnimationFrame(() => el.classList.add("on"));
+  const close = () => { el.classList.remove("on"); setTimeout(() => el.remove(), 350); };
+  el.addEventListener("click", e => { const b = e.target.closest("[data-news]"); if(!b) return; close(); if(b.dataset.news === "open") changelogOpen(); });
+  setTimeout(close, 12000);
+}
+setTimeout(() => { newsCheck(); setInterval(newsCheck, 60000); }, 4000);
+
+const PERMS = {
+  notif:{ic:"bell", h:"通知を使います", p:"授業の始まる前や、タスクの期限、タイマーの終わりをお知らせします。夜中に鳴らしたり、広告を送ったりはしません。", go:`<button class="btn primary" data-act="notifyperm" data-ok="1">許可する</button>`},
+  cal:{ic:"events", h:"スマホのカレンダーを読みます", p:"スマホに入っているカレンダーの予定を「予定」に並べます。読むだけで、書きかえたり外に送ったりはしません。", go:`<button class="btn primary" data-devcal-on data-ok="1">許可する</button>`}};
+function permPane(k){ const x = PERMS[k];
+  openPane(`${paneHead("許可のお願い")}<div class="perm"><span class="perm-ic">${ico(x.ic)}</span><b>${x.h}</b><p>${x.p}</p><p class="hint">次に出るスマホの確認で「許可」を選んでください。あとから設定で変えられます。</p></div>
+    <div class="btns"><button class="btn" data-act="close">今はしない</button>${x.go}</div>`); }
+
+async function autoBackup(){
+  try {
+    if(!paired() || DEMO()) return;
+    if(!docsList) await loadDocs(); if(!photoList) await loadPhotos();
+    if(!(docsList || []).length && !(photoList || []).length) return;
+    const at = Date.parse(ls.get("fd-backup-at", "") || "") || 0, days = (Date.now() - at) / 864e5;
+    if(NATIVE && NATIVE.saveCloseReplace && ls.get("fd-autobk", true) !== false){
+      if(days < 7) return;
+      const r = await backupBlob(ls.get("fd-autobk-photos", true) !== false);
+      if(await saveBig(`FoldDesk-自動-${todayS()}.fdbackup`, r.blob, "auto")){ ls.set("fd-backup-at", new Date().toISOString()); toast("バックアップを「ダウンロード」に更新しました"); }
+    } else if(days >= 30 && ls.get("fd-bk-later", "") < todayS()) ui.bkNudge = true, schedule();
+  } catch(e){}
+}
+setTimeout(autoBackup, 25000);
+document.addEventListener("change", e => { if(e.target.matches && e.target.matches("[data-bk-photos]")) ls.set("fd-autobk-photos", e.target.checked); });
+
+function webPairLink(){
+  const base = /^https:/.test(location.protocol) && /github\.io$/.test(location.hostname) ? location.origin + location.pathname : "https://carno-eng.github.io/fold-desk/";
+  const p = btoa(unescape(encodeURIComponent(JSON.stringify({u:API.url, t:API.token})))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return base + "#pair=" + p;
+}
+function otherDevPane(){
+  openPane(`${paneHead("ほかの端末でも使う")}
+    <p class="empty" style="margin-top:0">パソコンやタブレットのブラウザ（Chrome・Edge・Safari）で、このスマホと同じデータを開けます。大きな画面では、時間割や予定が横に広く並びます。</p>
+    <ol class="steps"><li><span>下の「リンクを送る」で、<b>自分だけが見られる場所</b>（自分宛てのメールなど）にリンクを送ります。</span></li>
+      <li><span>パソコンやタブレットでそのリンクを開くと、自動でつながります。</span></li>
+      <li><span>つながったら、送ったメールやメッセージは<b>消してください</b>。リンクは鍵と同じです。</span></li></ol>
+    <p class="hint">人に見られてしまったときは、Apps Script で rotateToken を実行すると、すべての端末の接続がいったん切れます（つなぎ直しが必要です）。</p>
+    <div class="btns"><button class="btn" data-share="copy">${ico("dl")} コピー</button><button class="btn primary" data-share="send">${ico("share2")} リンクを送る</button></div>`);
+}
+async function shareLink(k){
+  const url = webPairLink();
+  if(k === "send" && navigator.share){ try { await navigator.share({title:"Fold Desk の接続リンク", url}); return; } catch(e){ if(e && e.name === "AbortError") return; } }
+  try { await navigator.clipboard.writeText(url); toast("コピーしました。送ったあとは消してください"); }
+  catch(e){ toast("コピーできませんでした"); }
+}
 const BK_SKIP = /^fd-(token|stoken|api|sapi|school-cache|ics-work|store-v1|queue-v1|demo|demo-state|fired|talk|wxfx-test|devcal)$/;
-async function saveBig(name, blob){
+async function saveBig(name, blob, replaceKey){
   if(NATIVE && NATIVE.saveOpen){
     const id = NATIVE.saveOpen(name, "application/octet-stream"); if(!id) return false;
     const CH = 3 * 1024 * 1024;
@@ -3370,7 +3609,7 @@ async function saveBig(name, blob){
       for(let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
       if(!NATIVE.saveWrite(id, btoa(bin))){ NATIVE.saveClose(id, false); return false; }
     }
-    return NATIVE.saveClose(id, true);
+    return replaceKey && NATIVE.saveCloseReplace ? NATIVE.saveCloseReplace(id, replaceKey) : NATIVE.saveClose(id, true);
   }
   if(NATIVE) return false;
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
@@ -3424,14 +3663,16 @@ function backupPane(){
   openPane(`${paneHead("バックアップ")}
     <p class="empty" style="margin-top:0">PDF資料・書き込み・授業の写真・アプリの設定は、このスマホの中にだけ保存されています。機種変更や初期化の前に、1つのファイルに書き出しておけます。予定・タスク・人・メモは Google ドライブにあるので、ここには入りません。</p>
     <div class="group"><div class="setrow"><span class="main"><b>最後のバックアップ</b><small>${at ? `${esc(new Date(at).toLocaleDateString("ja-JP"))}（${days === 0 ? "今日" : days + "日前"}）` : "まだありません"}</small></span></div>
-      <label class="setrow"><span class="main"><b>授業の写真も入れる</b><small>写真が多いとファイルが大きくなります</small></span><input type="checkbox" data-bk-photos checked style="width:22px;height:22px"></label></div>
-    <p class="hint">接続の合言葉と学校のデータは、安全のため入れません。ファイルには資料が入るので、人に渡さないでください。</p>
+      ${NATIVE && NATIVE.saveCloseReplace ? `<div class="setrow"><span class="main"><b>自動で書き出す</b><small>週に1回、このスマホの「ダウンロード」に最新の1つを保存します（古いものは入れかえ）</small></span><button class="switch" role="switch" aria-checked="${ls.get("fd-autobk", true) !== false}" data-autobk aria-label="自動で書き出す"></button></div>` : `<div class="setrow"><span class="main"><b>ときどきお知らせ</b><small>30日書き出していないと、「今日」でお知らせします</small></span></div>`}
+      <label class="setrow"><span class="main"><b>授業の写真も入れる</b><small>写真が多いとファイルが大きくなります</small></span><input type="checkbox" data-bk-photos ${ls.get("fd-autobk-photos", true) !== false ? "checked" : ""} style="width:22px;height:22px"></label></div>
+    <p class="hint">接続の接続キーと学校のデータは、安全のため入れません。ファイルには資料が入るので、人に渡さないでください。</p>
     <div class="btns"><button class="btn" data-bk="pick">${ico("share2")} 読み込む</button><button class="btn primary" data-bk="export">${ico("dl")} 書き出す</button></div>`);
 }
 async function demoAct(k){
   if(k === "start"){ ls.set("fd-demo", true); ls.set("fd-demo-state", demoData()); location.hash = "#today"; location.reload(); return; }
   if(k === "clear"){ const st = ls.get("fd-demo-state", demoData()); Object.keys(st.cols).forEach(c => st.cols[c] = {}); st.cfg = {}; st.rev++; ls.set("fd-demo-state", st); await store.pull(true); toast("見本を消しました"); return; }
-  if(k === "exit"){ if(!confirm("お試しを終えて、接続の画面に戻ります。お試し中に入れた予定やタスクは消えます（資料と写真は残ります）。")) return;
+  if(k === "exit"){ if(!confirm("お試しを終えて、接続の画面に戻ります。お試し中に入れた予定・タスク・メモ・時間割は、つないだあとに引き継げます（見本は消えます）。")) return;
+    demoCarry();
     ["fd-demo", "fd-demo-state", "fd-store-v1", "fd-queue-v1"].forEach(x => localStorage.removeItem(x)); location.hash = ""; location.reload(); }
 }
 async function storagePane(){
@@ -4325,6 +4566,7 @@ function settingsPane(){
       <div class="sec" style="margin-top:0">接続</div>
       <div class="group">
         <div class="setrow"><span class="main"><b>${syncState === "ok" ? "同期しています" : syncState === "offline" ? "オフライン（あとで同期）" : "確認中"}</b><small>データはあなたの Google Drive にだけ保存されます${store.pending ? `・未送信 ${store.pending} 件` : ""}</small></span><button class="chip accent" data-act="syncnow">今すぐ同期</button></div>
+        ${DEMO() ? "" : `<div class="setrow"><span class="main"><b>ほかの端末でも使う</b><small>パソコンやタブレットのブラウザで、同じデータを開けます</small></span><button class="chip accent" data-act="otherdev">つなぐ</button></div>`}
         <div class="setrow"><span class="main"><b>この端末の接続を解除</b><small>スマホをなくした時は Apps Script で rotateToken()</small></span><button class="chip warn" data-act="unpair">解除</button></div>
       </div>
       <div class="sec">アプリ内の通知</div>
@@ -4348,7 +4590,7 @@ function settingsPane(){
       <div class="sec">コンシェルジュ</div>
       <div class="group">
         <div class="setrow"><span class="main"><b>表示する</b><small>タップで今日の案内、ドラッグで好きな場所へ</small></span><button class="switch" role="switch" aria-checked="${concierge.cfg.on}" data-cc-on aria-label="コンシェルジュを表示"></button></div>
-        <div class="setrow"><span class="main"><b>キャラクター画像</b><small>${document.getElementById("cc").classList.contains("art") ? "登録済み（あなたの Drive に保存）" : "まだありません。concierge.webp を選んでください"}</small></span><button class="chip accent" data-act="ccart">選ぶ</button></div>
+        <div class="setrow"><span class="main"><b>キャラクター画像</b><small>${document.getElementById("cc").classList.contains("art") ? "登録済み（あなたの Drive に保存）" : "まだありません。画像を登録すると、キャラクターが出てきて声をかけてくれます"}</small></span><button class="chip accent" data-act="ccart">選ぶ</button></div>
         <div class="setrow"><span class="main"><b>おしゃべり</b><small>予定や忘れものを声かけ</small></span><div class="seg mini" role="group" aria-label="おしゃべりの量">${[["often","多め"],["normal","ふつう"],["low","控えめ"],["off","オフ"]].map(([k,l]) => `<button type="button" data-cc-talk="${k}" aria-pressed="${(concierge.cfg.talk||"normal")===k}">${l}</button>`).join("")}</div></div>
         <div class="setrow"><span class="main"><b>いる場所</b><small>「すみっこ」は画面の右下だけ。ほかの表示に重なりにくくなります</small></span><div class="seg mini" role="group" aria-label="いる場所">${[["corner","すみっこ"],["roam","画面全体"]].map(([k,l]) => `<button type="button" data-cc-roam="${k}" aria-pressed="${(concierge.cfg.roam ? "roam" : "corner") === k}">${l}</button>`).join("")}</div></div>
         <div class="setrow"><span class="main"><b>動き</b></span><div class="seg mini" role="group" aria-label="動きの量">${[["active","よく動く"],["normal","ふつう"],["calm","じっと"]].map(([k,l]) => `<button type="button" data-cc-level="${k}" aria-pressed="${concierge.cfg.level===k}">${l}</button>`).join("")}</div></div>
@@ -4364,7 +4606,7 @@ function settingsPane(){
         <div class="setrow"><span class="main"><b>スター付きメールをタスクに</b><small>タスクを完了すると Gmail のスターも外します</small></span><button class="switch" role="switch" aria-checked="${G().starred}" data-g-toggle="starred" aria-label="スター付きメールをタスクに"></button></div>
         <div class="setrow"><span class="main"><b>Gmail を AI で読む</b><small id="g-ai">やること・予定・返信待ちを1時間ごとに取り出します</small></span><button class="switch" role="switch" aria-checked="${G().gmailAi}" data-g-toggle="gmailAi" aria-label="Gmail を AI で読む"></button></div>
         <div class="setrow"><span class="main"><b>予定から時程を自動で切り替える</b><small>「短縮」「朝会」などの名前の終日予定がある日は、その時程にします（手で選んだ日はそのまま）</small></span><button class="switch" role="switch" aria-checked="${pref("autoMode") !== false}" data-pref-switch="autoMode" aria-label="予定から時程を自動で切り替える"></button></div>
-        <div class="setrow"><span class="main"><b>閉じた画面は「ひと目」から始める</b><small>Foldを閉じて開いたとき、いまの授業と残り時間だけを大きく表示（オフでも「今日」の右上から切り替えられます）</small></span><button class="switch" role="switch" aria-checked="${ls.get("fd-glance-first", false) === true}" data-glance-first aria-label="ひと目から始める"></button></div>
+        <div class="setrow"><span class="main"><b>縦長の画面は「ひと目」から始める</b><small>スマホ（Fold を閉じたとき）で開くと、いまの授業と残り時間だけを大きく表示（オフでも「今日」の右上から切り替えられます）</small></span><button class="switch" role="switch" aria-checked="${ls.get("fd-glance-first", false) === true}" data-glance-first aria-label="ひと目から始める"></button></div>
         <div class="setrow"><span class="main"><b>「今日」の背景を天気と時間で変える</b><small>雨・雪・雲・朝焼け・夕焼け・星空などを動きで表示。鳥や飛行機、流れ星もときどき（オフで電池を節約）</small></span><button class="switch" role="switch" aria-checked="${ls.get("fd-wxfx", true) !== false}" data-wxfx-toggle aria-label="天気の背景"></button></div>
         <div class="setrow"><span class="main"><b>背景のお試し</b><small>天気と時間帯を選んで見た目を確認</small></span><button class="chip" data-wxfx-try>試す</button></div>
         <div class="setrow"><span class="main"><b>同じ名前の予定をまとめる</b><small>同じ日・同じ名前の予定（個人・学校・メールから・手入力）を1つにして表示</small></span><button class="switch" role="switch" aria-checked="${pref("mergeEvents") !== false}" data-pref-switch="mergeEvents" aria-label="同じ名前の予定をまとめる"></button></div>
@@ -4409,8 +4651,13 @@ function settingsPane(){
       <div class="sec" style="margin:16px 0 0">テーマカラー</div>
       <div class="pal-row" role="group" aria-label="テーマカラー">${PALETTES.map(([k, n, b, a]) => `<button type="button" class="pal" data-pal="${k}" aria-pressed="${ls.get("fd-palette", "green") === k}"><span class="sw" style="--b:${b};--a:${a}"><i></i></span><span class="pal-n">${n.split("|")[0]}<small>${n.split("|")[1] || ""}</small></span></button>`).join("")}</div>
       <p class="hint" style="margin-top:2px">黒板とボタンの色がいっしょに変わります。ダークにしても同じ系統の色になります。</p>
+      <div class="sec" style="margin:16px 0 0">文字の大きさ</div>
+      <div class="seg zoom-seg" role="group" aria-label="文字の大きさ">${[[0.9, "小"], [1, "標準"], [1.12, "大"], [1.25, "特大"]].map(([z, l]) => `<button type="button" data-zoom="${z}" aria-pressed="${ls.get("fd-zoom", 1) === z}" style="font-size:${Math.round(14 * z)}px">${l}</button>`).join("")}</div>
+      <div class="group" style="margin-top:12px"><div class="setrow"><span class="main"><b>省エネモード</b><small>空の動き・キャラクターの歩き・くり返しの動きを止めて、電池を長持ちさせます</small></span><button class="switch" role="switch" aria-checked="${ls.get("fd-eco", false) === true}" data-eco aria-label="省エネモード"></button></div></div>
       <div class="sec">このアプリについて</div>
-      <button class="row" data-act="changelog" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico("spark")}</span><span class="main"><b>更新履歴</b><small>1.0.0 から今までに増えたこと・直したこと</small></span><span class="when">${ico("right")}</span></button>`;
+      <button class="row" data-act="changelog" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico("spark")}</span><span class="main"><b>更新履歴</b><small>1.0.0 から今までに増えたこと・直したこと</small></span><span class="when">${ico("right")}</span></button>
+      <button class="row" data-act="privacy" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico("card")}</span><span class="main"><b>プライバシーと利用のきまり</b><small>データの置き場所・外に送るもの・やめ方</small></span><span class="when">${ico("right")}</span></button>
+      <button class="row" data-act="onboard" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico("play")}</span><span class="main"><b>はじめての案内をもう一度見る</b></span><span class="when">${ico("right")}</span></button>`;
   };
   openPane("", draw); draw();
   if(NATIVE) checkAppUpdate().then(u => { const a = $("#appver"), b2 = $("#appupd"); if(a) a.textContent = `1.0.${NATIVE_VER.code}　${u ? `新しい版 1.0.${u.n} があります` : "最新です"}`; if(b2 && u){ b2.hidden = false; b2.dataset.url = u.url; } });
@@ -4435,6 +4682,10 @@ function homeGuide(){
 const PALETTES = [["green","常磐色|ときわいろ","#24443A","#2C6A55"],["navy","藍色|あいいろ","#22374F","#2D5B8C"],["ink","墨色|すみいろ","#2F3439","#3F4B56"],["wine","臙脂色|えんじいろ","#4A2A30","#8E3B46"],["fuji","江戸紫|えどむらさき","#33294A","#5E4E8C"],["yamabuki","山吹茶|やまぶきちゃ","#3D3424","#80580A"]];
 function applyPalette(){ const k = ls.get("fd-palette", "green"); if(k === "green") document.documentElement.removeAttribute("data-palette"); else document.documentElement.dataset.palette = k; }
 applyPalette();
+const ECO = () => ls.get("fd-eco", false) === true;
+function applyEco(){ document.body.classList.toggle("eco", ECO()); try { wxfx.sync(); wxmini.sync(); } catch(e){} }
+function applyZoom(){ const z = +ls.get("fd-zoom", 1) || 1; document.documentElement.style.setProperty("--uiz", z); document.documentElement.classList.toggle("zoomed", z !== 1); }
+applyZoom(); setTimeout(applyEco, 0);
 function setPalette(k, btn){
   const go = () => { ls.set("fd-palette", k); applyPalette(); document.querySelectorAll("[data-pal]").forEach(x => x.setAttribute("aria-pressed", x.dataset.pal === k)); };
   if(document.startViewTransition && !REDUCE){
@@ -4644,6 +4895,8 @@ document.addEventListener("click", async (ev) => {
     if(d.ttMode){ e.mode = d.ttMode; ttDraw(); return; }
     if(b.matches("[data-tt-addrow]")){ DAYKEYS.forEach(dk => e.grid[dk].push({})); e.dirty = true; ttDraw(); return; }
     if(b.matches("[data-tt-delrow]")){ e.grid[e.day].pop(); e.dirty = true; ttDraw(); return; }
+    if(b.matches("[data-tt-photo]")){ ttPhoto(); return; }
+    if(d.ttTpl !== undefined){ const t = TT_TPL[+d.ttTpl], M = e.off[e.mode]; M.dismiss = t.dismiss; M.low = t.low.map(([a, z]) => ({start:a, end:z})); M.upper = []; M.blocks = t.blocks.map(([l, a, z]) => ({label:l, start:a, end:z})); e.dirty = true; ttDraw(); toast(`「${t.name}」を入れました。時刻を学校に合わせて直してください`); return; }
     if(b.matches("[data-tt-copyday]")){ if(b.dataset.armed){ DAYKEYS.forEach(dk => e.grid[dk] = clone(e.grid[e.day])); e.dirty = true; ttDraw(); toast("全曜日にコピーしました"); } else { b.dataset.armed = "1"; b.textContent = "もう一度押すとコピー"; } return; }
     const M = e.off[e.mode];
     if(b.matches("[data-tt-addp]")){ const last = [...M.low].reverse().find(Boolean); const st = last ? plusMin(last.end, 5) : "08:45"; M.low.push({start:st, end:plusMin(st, 45)}); if(M.upper.length) M.upper.push({start:st, end:plusMin(st, 45)}); e.dirty = true; ttDraw(); return; }
@@ -4722,7 +4975,7 @@ document.addEventListener("click", async (ev) => {
       toast(NATIVE.saveFile(x.title.replace(/[\\/:*?"<>|]/g, "_") + ".pdf", "application/pdf", b64) ? "「ダウンロード」に保存しました" : "保存できませんでした"); } return; }
   if(d.wxPick){ try { const pl = JSON.parse(d.wxPick); ls.set("fd-wx-place", pl); toast(`天気の場所を「${pl.name}」にしました`); closePane(); fetchWeather(true); } catch(e){} return; }
   if(b.matches("[data-wx-place]")){ wxPlacePane(); return; }
-  if(b.matches("[data-devcal-on]")){ const n = FDN(); if(n) n.requestCalendar(); return; }
+  if(b.matches("[data-devcal-on]")){ const n = FDN(); if(n) n.requestCalendar(); if(d.ok) closePane(); return; }
   if(b.matches("[data-devcal-pick]")){ devCalPane(); return; }
   if(d.devOpen){ const n = FDN(); if(n) n.openCalEvent(d.devOpen); return; }
   if(d.devcalToggle){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); const c = devCfg(); c.on[d.devcalToggle] = on; ls.set("fd-devcal", c); refreshDevice(); return; }
@@ -4748,10 +5001,19 @@ document.addEventListener("click", async (ev) => {
   if(d.act === "navmore"){ navMorePane(); return; }
   if(d.act === "backup"){ backupPane(); return; }
   if(d.act === "changelog"){ changelogOpen(); return; }
+  if(d.act === "onboard"){ closePane(); setTimeout(onboardOpen, 300); return; }
   if(d.glance){ if(d.glance === "full"){ ui.todayFull = true; schedule(); } else if(d.glance === "on"){ ui.todayFull = false; schedule(); } else if(d.glance === "wx"){ ui.todayFull = true; ui.heroFlip = true; schedule(); setTimeout(() => { try { sizeFlip(); wxmini.sync(); } catch(e){} }, 50); } return; }
   if(d.act === "storage"){ storagePane(); return; }
   if(d.stor){ storageAct(b); return; }
   if(d.demo){ demoAct(d.demo); return; }
+  if(d.carry){ carryAct(d.carry, b); return; }
+  if(d.act === "privacy"){ privacyPane(); return; }
+  if(d.act === "otherdev"){ otherDevPane(); return; }
+  if(d.share){ shareLink(d.share); return; }
+  if(b.matches("[data-autobk]")){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); ls.set("fd-autobk", on); return; }
+  if(b.matches("[data-bk-later]")){ ls.set("fd-bk-later", addDays(todayS(), 7)); ui.bkNudge = false; schedule(); return; }
+  if(b.matches("[data-eco]")){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); ls.set("fd-eco", on); applyEco(); return; }
+  if(d.zoom){ ls.set("fd-zoom", +d.zoom); applyZoom(); b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); return; }
   if(b.matches("[data-ics-pick]")){ icsPick(); return; }
   if(b.matches("[data-ics-go]")){ icsImport(b); return; }
   if(d.icsSc){ const [i, k] = d.icsSc.split(":"); icsPending[+i].scope = k; b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); return; }
@@ -4775,6 +5037,7 @@ document.addEventListener("click", async (ev) => {
   if(d.pomo || d.pomoTask !== undefined || d.pomoCfg){ pomo.click(b); return; }
   if(d.act === "install"){ if(installEvt){ installEvt.prompt(); installEvt = null; } closePane(); return; }
   if(d.act === "syncnow"){ toast("同期しています…"); await store.pull("sync"); toast(syncState === "ok" ? "同期しました" : "同期できませんでした"); return; }
+  if((d.act === "notifyperm" || b.matches("[data-devcal-on]")) && !d.ok){ permPane(d.act === "notifyperm" ? "notif" : "cal"); return; }
   if(d.act === "notifyperm" && NATIVE){ NATIVE.requestNotifications(); return; }
   if(d.act === "widgetguide"){ widgetGuide(); return; }
   if(d.native && NATIVE){
@@ -4968,7 +5231,7 @@ document.addEventListener("submit", async (ev) => {
         await saveOv(s, ov); break; }
       case "pair": {
         const u = (v.u||"").trim(), t = (v.t||"").trim();
-        if(!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(u) || t.length < 40){ toast("URL か合言葉が正しくありません"); return; }
+        if(!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(u) || t.length < 40){ toast("URL か接続キーが正しくありません"); return; }
         ls.set("fd-api", u); ls.set("fd-token", t); location.reload(); return; }
       case "ask": {
         if(!(v.text||"").trim()) return;
@@ -5104,7 +5367,7 @@ const concierge = (() => {
         const gait = has("walkR") ? (tgt.dash ? "dash" : "walk") : "run";
         const want = (Math.abs(dy) > Math.abs(dx) * 1.4 && has("hop")) ? "hop" : gait + (left ? "L" : "R");
         if(clip !== want){ clip = want; fi = 0; } }
-    } else if(!drag && !bubOpen && !thinking && cfg.level !== "calm" && !reduce && now > nextMove && now > quietUntil && !(document.body.classList.contains("pane-open") && document.body.dataset.mode !== "main-l")){
+    } else if(!drag && !bubOpen && !thinking && cfg.level !== "calm" && !document.body.classList.contains("eco") && !reduce && now > nextMove && now > quietUntil && !(document.body.classList.contains("pane-open") && document.body.dataset.mode !== "main-l")){
       tgt = pickTarget(); tgt.dash = Math.hypot(tgt.x - pos.x, tgt.y - pos.y) > 260 && Math.random() < .6;
     }
     draw();
@@ -5308,6 +5571,22 @@ function ttSetupPane(tab){
   DAYKEYS.forEach(dk => { ttEd.grid[dk] = ttEd.grid[dk] || []; while(ttEd.grid[dk].length < NP()) ttEd.grid[dk].push({}); });
   openPane("", ttDraw); ttDraw();
 }
+const TT_TPL = [
+  {name:"45分授業（小学校の例）", dismiss:"15:30", low:[["08:45","09:30"],["09:40","10:25"],["10:45","11:30"],["11:40","12:25"],["13:30","14:15"],["14:25","15:10"]], blocks:[["朝の会","08:30","08:40"],["中休み","10:25","10:45"],["給食・昼休み","12:25","13:30"],["帰りの会","15:10","15:25"]]},
+  {name:"50分授業（中学校の例）", dismiss:"15:50", low:[["08:50","09:40"],["09:50","10:40"],["10:50","11:40"],["11:50","12:40"],["13:30","14:20"],["14:30","15:20"]], blocks:[["朝のHR","08:35","08:45"],["昼休み","12:40","13:30"],["帰りのHR","15:25","15:40"]]},
+  {name:"40分授業（短縮の例）", dismiss:"12:40", low:[["08:45","09:25"],["09:35","10:15"],["10:30","11:10"],["11:20","12:00"]], blocks:[["朝の会","08:30","08:40"],["中休み","10:15","10:30"],["帰りの会","12:00","12:15"]]}];
+async function ttPhoto(){
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";
+  inp.onchange = async () => { const f = inp.files[0]; if(!f || !ttEd) return; toast("読み取っています…（30秒ほど）");
+    try {
+      const r = await sample.json(`この画像は学校の時間割表です。月〜金の各時限の教科を読み取り、次のJSONだけを返してください。{"mon":[{"subject":"国語","cls":""}, ...], "tue":[...], "wed":[...], "thu":[...], "fri":[...]} 1時間目から順に並べ、空きコマは {} にしてください。クラス名（例 4-2）が書かれていれば cls に入れます。読めない所は {} にします。`, {images:[f], modelTier:"default"});
+      const g = r && (r.mon || r.grid) ? (r.grid || r) : null; if(!g){ toast("読み取れませんでした"); return; }
+      DAYKEYS.forEach(dk => { const a = Array.isArray(g[dk]) ? g[dk] : []; ttEd.grid[dk] = a.map(c => c && c.subject ? {subject:String(c.subject).slice(0, 20), cls:String(c.cls || "").slice(0, 10), kind:/会|部会|会議/.test(c.subject) ? "meeting" : "class"} : {}); });
+      const n = Math.max(...DAYKEYS.map(dk => ttEd.grid[dk].length)); DAYKEYS.forEach(dk => { while(ttEd.grid[dk].length < n) ttEd.grid[dk].push({}); });
+      ttEd.dirty = true; ttEd.tab = "grid"; ttDraw(); toast("読み取りました。まちがいがないか確かめてから保存してください");
+    } catch(e){ toast("読み取れませんでした"); } };
+  inp.click();
+}
 function ttDraw(){
   const e = ttEd; if(!e) return;
   const tabs = `<div class="seg" role="group" aria-label="設定の種類">${[["grid","時間割"],["times","授業時間"],["csv","CSV・シート"]].map(([k,l]) => `<button type="button" data-tt-tab="${k}" aria-pressed="${e.tab===k}">${l}</button>`).join("")}</div>`;
@@ -5315,7 +5594,7 @@ function ttDraw(){
   if(e.tab === "grid"){
     const rows = e.grid[e.day];
     const subs = [...new Set(["国語","算数","生活","音楽","図画工作","体育","道徳","学級活動","特別活動","英語","情報探究","総合", ...DAYKEYS.flatMap(dk => e.grid[dk].map(c => c && c.subject).filter(Boolean))])];
-    body = `<div class="seg mini" role="group" aria-label="曜日" style="margin-bottom:12px;display:flex">${DAYKEYS.map((dk, i) => `<button type="button" data-tt-day="${dk}" aria-pressed="${e.day===dk}" style="flex:1">${DAYJP[i]}</button>`).join("")}</div>
+    body = (sample && !DEMO() ? `<div class="tt-tpl"><b>写真から読み取る</b><small>紙やホワイトボードの時間割を撮ると、AI が表にします。読み取ったあとに確認して直せます</small><div class="acts"><button type="button" class="chip accent" data-tt-photo>${ico("camera")} 写真を選ぶ</button></div></div>` : "") + `<div class="seg mini" role="group" aria-label="曜日" style="margin-bottom:12px;display:flex">${DAYKEYS.map((dk, i) => `<button type="button" data-tt-day="${dk}" aria-pressed="${e.day===dk}" style="flex:1">${DAYJP[i]}</button>`).join("")}</div>
       <datalist id="ttsubs">${subs.map(x => `<option value="${esc(x)}">`).join("")}</datalist>
       ${rows.map((c, i) => { c = c || {}; const k = c.subject ? (c.kind || "class") : "free";
         return `<div class="ttrow"><span class="pno num">${i+1}</span>
@@ -5326,8 +5605,9 @@ function ttDraw(){
       <p class="hint" style="margin-top:10px">クラスは他学年・他クラスの授業のときだけ入れます（例：4-2）。自分のクラスなら空欄で大丈夫です。</p>`;
   } else if(e.tab === "times"){
     const M = e.off[e.mode] = e.off[e.mode] || {label:MODEJP[e.mode], dismiss:"", low:[], upper:[], blocks:[]};
+    const tpl = `<div class="tt-tpl"><b>ひな形から作る</b><small>近いものを選んでから、時刻だけ直すと早いです</small><div class="acts">${TT_TPL.map((t, i) => `<button type="button" class="chip" data-tt-tpl="${i}">${t.name}</button>`).join("")}</div></div>`;
     const showUp = !!e.showUpper || (M.upper || []).some((t, i) => t && (!M.low[i] || t.start !== M.low[i].start || t.end !== M.low[i].end));
-    body = `<div class="seg mini" role="group" aria-label="時程" style="margin-bottom:12px;display:flex">${MODES.map(k => `<button type="button" data-tt-mode="${k}" aria-pressed="${e.mode===k}" style="flex:1">${MODEJP[k]}</button>`).join("")}</div>
+    body = tpl + `<div class="seg mini" role="group" aria-label="時程" style="margin-bottom:12px;display:flex">${MODES.map(k => `<button type="button" data-tt-mode="${k}" aria-pressed="${e.mode===k}" style="flex:1">${MODEJP[k]}</button>`).join("")}</div>
       <div class="frow"><div class="field"><label>この時程の名前</label><input class="input" value="${esc(M.label)}" data-tt="off.${e.mode}.label"></div>
         <div class="field"><label>下校</label><input class="input" type="time" value="${esc(M.dismiss)}" data-tt="off.${e.mode}.dismiss"></div></div>
       <div class="sec" style="margin-top:4px">授業</div>
@@ -5658,7 +5938,7 @@ function calendarsPane(){
 }
 function schoolStatusText(){
   const c = schoolCache();
-  if(schoolState === "auth") return "合言葉が無効です。学校の Apps Script で pair() をやり直してください";
+  if(schoolState === "auth") return "接続キーが無効です。学校の Apps Script で pair() をやり直してください";
   if(schoolState === "blocked") return "学校の設定で接続が止められています（「追加の手順」を参照）";
   if(!c.at) return "まだ取り込んでいません";
   const d = new Date(c.at); return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())} に取り込み　${schoolEvents().filter(e => e.date >= todayS()).length}件`;
@@ -5723,7 +6003,7 @@ function demoData(){
   };
   const grid = {mon:[c("国語"), c("算数"), c("体育"), c("理科"), c("音楽")], tue:[c("算数"), c("国語"), c("社会"), c("図工"), c("図工")], wed:[c("学年会", "meeting"), c("国語"), c("算数"), {}, c("総合")],
     thu:[c("国語"), c("算数"), c("理科"), c("体育"), c("道徳")], fri:[c("社会"), c("国語"), {}, c("算数"), c("学活")]};
-  return {rev:1, cols, cfg:{timetable:{grid}}};
+  return {rev:1, cols, cfg:{timetable:{grid}}, ttOrig:JSON.stringify({grid})};
 }
 async function demoCall(body){
   let st = ls.get("fd-demo-state", null); if(!st){ st = demoData(); ls.set("fd-demo-state", st); }
@@ -5823,6 +6103,7 @@ async function loadConciergeArt(){
         const b64 = await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.readAsDataURL(blob); });
         window.FoldDeskNative.setConciergeArt(b64); } } catch(e){} }
   } catch(e){}
+  document.body.classList.toggle("cc-noart", !document.getElementById("cc").classList.contains("art"));
 }
 
 async function uploadConciergeArt(file){
@@ -5958,7 +6239,7 @@ function setupView(){
   return `<div class="setup">
     <div class="logo big" aria-hidden="true"></div>
     <h1>Fold Desk</h1>
-    ${pairError ? `<p class="lead" style="color:var(--warn);font-weight:700">${esc(pairError)}</p>` : ""}<p class="lead">${syncState === "auth" ? "接続の合言葉が無効になりました。新しい接続リンクで、もう一度つないでください。" : syncState === "locked" ? "接続の失敗が続いたため、10分間ロックしています。" : "最初に、あなたの Google アカウントの保管場所とつなぎます。"}</p>
+    ${pairError ? `<p class="lead" style="color:var(--warn);font-weight:700">${esc(pairError)}</p>` : ""}<p class="lead">${syncState === "auth" ? "接続の接続キーが無効になりました。新しい接続リンクで、もう一度つないでください。" : syncState === "locked" ? "接続の失敗が続いたため、10分間ロックしています。" : "最初に、あなたの Google アカウントの保管場所とつなぎます。"}</p>
     <div class="card try-card"><b>まずは試してみる</b><p>アカウントがなくても、見本のデータで全部の画面をさわれます。入れたものはこのスマホの中だけに残ります。</p><button class="btn primary" data-demo="start">お試しで使ってみる</button></div>
     <div class="card" style="text-align:left">
       <b class="setup-h">自分のデータでつなぐ（3ステップ）</b>
@@ -5968,7 +6249,7 @@ function setupView(){
       <li><span><b>スマホで開く</b>：このスマホでメールのボタンを開くと、自動でつながります。つながったら、そのメールは削除してください。</span></li></ol>
       <details style="margin-top:14px"><summary class="hint" style="cursor:pointer">手動で入力する</summary>
         <form data-form="pair" style="margin-top:10px"><div class="field"><label for="pu">ウェブアプリの URL</label><input id="pu" name="u" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec"></div>
-        <div class="field"><label for="pt">合言葉</label><input id="pt" name="t" type="password" autocomplete="off"></div>
+        <div class="field"><label for="pt">接続キー</label><input id="pt" name="t" type="password" autocomplete="off"></div>
         <div class="btns"><button class="btn primary" type="submit">接続</button></div></form></details>
     </div></div>`;
 }

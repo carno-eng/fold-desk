@@ -161,6 +161,19 @@ class Bridge(
         } catch (_: Exception) { try { ctx.contentResolver.delete(s.first, null, null) } catch (_: Exception) { }; false }
     }
 
+    /** Finishes a save and removes the file saved last time under the same key (keeps only the newest automatic backup). */
+    @JavascriptInterface fun saveCloseReplace(id: String, key: String): Boolean {
+        val s = openSaves[id] ?: return false
+        val prefs = ctx.getSharedPreferences("fd_saves", android.content.Context.MODE_PRIVATE)
+        val safeKey = key.replace(Regex("[^a-z0-9_-]"), "").take(20)
+        if (!saveClose(id, true)) return false
+        prefs.getString("last_$safeKey", null)?.let { old ->
+            if (old != s.first.toString()) try { ctx.contentResolver.delete(Uri.parse(old), null, null) } catch (_: Exception) { }
+        }
+        prefs.edit().putString("last_$safeKey", s.first.toString()).apply()
+        return true
+    }
+
     /** Saves a generated file (e.g. CSV export) into Downloads. */
     @JavascriptInterface fun saveFile(name: String, mime: String, b64: String): Boolean {
         if (Build.VERSION.SDK_INT < 29) return false
