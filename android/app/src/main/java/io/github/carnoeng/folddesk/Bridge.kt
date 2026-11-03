@@ -93,6 +93,8 @@ class Bridge(
             "window" -> WindowWidget::class.java; "add" -> AddWidget::class.java; else -> return false }
         return try { android.appwidget.AppWidgetManager.getInstance(ctx).requestPinAppWidget(android.content.ComponentName(ctx, cls), null, null) } catch (_: Exception) { false }
     }
+    /** Keep the screen on while a timer runs (only while the app is in front). */
+    @JavascriptInterface fun keepAwake(on: Boolean) { main.post { activity?.window?.let { w -> if (on) w.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) else w.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) } } }
     @JavascriptInterface fun overlayHide(on: Boolean) { OverlayService.hidden = on }
     @JavascriptInterface fun timerGet(): String = Timer.get(ctx).toString()
     @JavascriptInterface fun timerSet(json: String) { Timer.set(ctx, json) }

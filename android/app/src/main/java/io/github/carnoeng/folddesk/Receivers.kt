@@ -22,7 +22,7 @@ class AlarmReceiver : BroadcastReceiver() {
                 if (!MainActivity.foreground) Notifier.show(c, i.getIntExtra("code", 1000), t, b)
             }
             Pomo.A_END, Pomo.A_PAUSE, Pomo.A_RESUME, Pomo.A_STOP, Pomo.A_GO, Pomo.A_SKIP -> Pomo.action(c, i.action!!)
-            Timer.A_END, Timer.A_PAUSE, Timer.A_RESUME, Timer.A_STOP -> Timer.action(c, i.action!!)
+            Timer.A_END, Timer.A_PAUSE, Timer.A_RESUME, Timer.A_STOP, Timer.A_ADD -> Timer.action(c, i.action!!)
             ACTION_SNOOZE -> {
                 val code = i.getIntExtra("code", 1000)
                 androidx.core.app.NotificationManagerCompat.from(c).cancel(code)

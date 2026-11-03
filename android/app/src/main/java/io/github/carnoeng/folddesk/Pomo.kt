@@ -142,6 +142,7 @@ object Timer {
     const val A_PAUSE = "io.github.carnoeng.folddesk.TIMER_PAUSE"
     const val A_RESUME = "io.github.carnoeng.folddesk.TIMER_RESUME"
     const val A_STOP = "io.github.carnoeng.folddesk.TIMER_STOP"
+    const val A_ADD = "io.github.carnoeng.folddesk.TIMER_ADD"
     private const val ID = 79; private const val ID_ALERT = 80
     private fun prefs(c: Context) = c.getSharedPreferences("fd", Context.MODE_PRIVATE)
     fun get(c: Context): JSONObject = try { JSONObject(prefs(c).getString("timer", null) ?: "{}") } catch (_: Exception) { JSONObject() }
@@ -172,6 +173,8 @@ object Timer {
             A_PAUSE -> if (s.optLong("end") > 0) s.put("left", maxOf(1000, s.optLong("end") - now)).put("end", 0)
             A_RESUME -> if (s.optLong("end") == 0L && s.optLong("left") > 0) s.put("end", now + s.optLong("left")).put("left", 0)
             A_STOP -> s.put("end", 0).put("left", 0).put("done", false)
+            A_ADD -> if (s.optLong("end") > 0) s.put("end", s.optLong("end") + 60_000).put("full", s.optLong("full") + 60_000)
+                     else if (s.optLong("left") > 0) s.put("left", s.optLong("left") + 60_000).put("full", s.optLong("full") + 60_000)
         }
         NotificationManagerCompat.from(c).cancel(ID_ALERT); put(c, s); apply(c)
     }
@@ -193,7 +196,7 @@ object Timer {
             .setContentTitle(if (end > 0) (s.optString("label").ifEmpty { "タイマー" }) else "タイマー 一時停止中  %d:%02d".format(rem / 60_000, (rem / 1000) % 60))
             .setContentText(if (end > 0) "のこり時間" else "再開で続きから").setOngoing(true).setOnlyAlertOnce(true).setSilent(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC).setCategory(NotificationCompat.CATEGORY_STOPWATCH).setPriority(NotificationCompat.PRIORITY_LOW).setContentIntent(open(c))
-        if (end > 0) b.setWhen(end).setShowWhen(true).setUsesChronometer(true).setChronometerCountDown(true).setProgress(1000, (1000 * (full - rem) / full).toInt(), false).addAction(0, "一時停止", pi(c, A_PAUSE, 91))
+        if (end > 0) b.setWhen(end).setShowWhen(true).setUsesChronometer(true).setChronometerCountDown(true).setProgress(1000, (1000 * (full - rem) / full).toInt(), false).addAction(0, "＋1分", pi(c, A_ADD, 94)).addAction(0, "一時停止", pi(c, A_PAUSE, 91))
         else b.setShowWhen(false).addAction(0, "再開", pi(c, A_RESUME, 92))
         b.addAction(0, "やめる", pi(c, A_STOP, 93))
         try { nm.notify(ID, b.build()) } catch (_: SecurityException) { }

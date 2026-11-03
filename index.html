@@ -1205,6 +1205,16 @@ body.pane-fresh #pane :is(.group,.card,.wgal,.navedit,#picklist,.evdocs) > :is(.
 .stor-bar i{display:block;height:100%}
 i.sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:0}
 .chip.danger{color:var(--warn)}
+
+/* ================= v36: timer adjust ================= */
+.cd-plus{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:8px;width:100%}
+.cd-plus button{height:56px;border-radius:14px;font:inherit;font-size:19px;font-weight:800;background:var(--surface-2);color:var(--fg);border:0}
+.cd-plus button.pri{background:var(--accent);color:var(--accent-ink)}
+.cd-plus button:active{transform:scale(.97)}
+.big-plus{display:flex;gap:14px;justify-content:center;margin-top:4vh}
+.big-plus[hidden]{display:none}
+.big-plus button{min-width:140px;height:64px;border-radius:18px;border:0;font:inherit;font-size:24px;font-weight:800;color:#fff;background:rgba(255,255,255,.16)}
+.big-plus button:active{background:rgba(255,255,255,.3)}
 </style>
 </head>
 <body>
@@ -2077,7 +2087,7 @@ const cdown = (() => {
   function start(){ const r = st.left || st.full; st.end = Date.now() + r; st.left = 0; st.done = false; save(); buzz(20); beep(0); }
   function pause(){ if(!st.end) return; st.left = remain(); st.end = 0; save(); }
   function reset(){ st.end = 0; st.left = 0; st.done = false; save(); }
-  function add(ms){ if(st.end){ st.end += ms; st.full += ms; } else if(state() === "pause"){ st.left = Math.max(1000, st.left + ms); st.full = Math.max(st.full, st.left); } else { st.full = Math.max(1000, st.full + ms); st.done = false; } save(); }
+  function add(ms){ if(state() === "done"){ st.full = Math.max(1000, ms); st.end = Date.now() + st.full; st.left = 0; st.done = false; save(); return; } if(st.end){ st.end += ms; st.full += ms; } else if(state() === "pause"){ st.left = Math.max(1000, st.left + ms); st.full = Math.max(st.full, st.left); } else { st.full = Math.max(1000, st.full + ms); st.done = false; } save(); }
   function finish(){ st.end = 0; st.left = 0; st.done = true; save(); ring(); }
   function adopt(n){ if(!n || !n.at || n.at <= st.at) return; const was = st.end; st = Object.assign(load(), n); try { localStorage.setItem(K, JSON.stringify(st)); } catch(e){} if(was && st.done) ring(); run(); paintTimer(true); }
   function ring(){
@@ -2124,7 +2134,8 @@ function cdBody(){
     : `<button class="btn primary" data-cd="start">${ico("play")} スタート</button>${s0 === "done" ? `<button class="btn" data-cd="reset">もとに戻す</button>` : ""}`;
   return `<div class="pomo cd ${s0 === "done" ? "done" : ""}" id="cd">
     <div class="pomo-ring cd-ring">${ringSVG("cd-arc", "#2C6A55", "#2C6A55", "cd-g")}<div class="in"><b id="cd-time"></b><small id="cd-lab"></small></div></div>
-    <div class="cd-adj">${["-60", "-10", "+10", "+60"].map(v => `<button class="chip" data-cd="add:${v}">${v.replace("60", "1分").replace("10", "10秒")}</button>`).join("")}</div>
+    <div class="cd-plus">${[["-60", "−1分"], ["+60", "＋1分"], ["+300", "＋5分"]].map(([v, l]) => `<button class="${v === "+60" ? "pri" : ""}" data-cd="add:${v}">${l}</button>`).join("")}</div>
+    <div class="cd-adj">${[["-10", "−10秒"], ["+10", "＋10秒"]].map(([v, l]) => `<button class="chip" data-cd="add:${v}">${l}</button>`).join("")}</div>
     <div class="pomo-btns" id="cd-btns">${btns}</div>
     ${s0 === "run" ? "" : `<div class="cd-adj">${pre.map(([m, l]) => `<button class="chip" data-cd="set:${m * 60}" aria-pressed="${c.st.full === m * 60000}">${l}</button>`).join("")}</div>
     <div class="cd-in"><input class="input" id="cd-m" type="number" inputmode="numeric" min="0" max="600" value="${Math.floor(c.st.full / 60000)}" aria-label="分"><span>分</span>
@@ -2151,13 +2162,14 @@ function vTimer(){
 }
 function bigClock(which){
   bigWhich = which; let el = document.getElementById("bigclock");
-  if(!el){ el = document.createElement("div"); el.id = "bigclock"; el.setAttribute("role", "timer"); el.innerHTML = `<b></b><small></small><i></i><span class="hint2">タップでもとの画面に戻ります</span>`; document.body.appendChild(el);
-    el.addEventListener("click", () => { document.body.classList.remove("bigclock-on"); bigWhich = ""; el.classList.remove("done"); try { document.fullscreenElement && document.exitFullscreen(); } catch(e){} }); }
+  if(!el){ el = document.createElement("div"); el.id = "bigclock"; el.setAttribute("role", "timer"); el.innerHTML = `<b></b><small></small><div class="big-plus"><button data-bigadd="60">＋1分</button><button data-bigadd="300">＋5分</button></div><i></i><span class="hint2">何もないところをタップでもとの画面に戻ります</span>`; document.body.appendChild(el);
+    el.addEventListener("click", e => { const a = e.target.closest("[data-bigadd]"); if(a){ e.stopPropagation(); if(bigWhich === "cd"){ cdown.add(+a.dataset.bigadd * 1000); el.classList.remove("done"); buzz(10); toast(`${+a.dataset.bigadd / 60}分のばしました`); paintBig(); } return; } document.body.classList.remove("bigclock-on"); bigWhich = ""; el.classList.remove("done"); try { document.fullscreenElement && document.exitFullscreen(); } catch(e){} }); }
   el.classList.remove("done"); document.body.classList.add("bigclock-on"); try { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); } catch(e){}
   if(!window.__bigIv) window.__bigIv = setInterval(() => { if(bigWhich) paintBig(); }, 200);
   paintBig();
 }
 function paintBig(){
+  const bp = document.querySelector("#bigclock .big-plus"); if(bp) bp.hidden = bigWhich !== "cd";
   const el = document.getElementById("bigclock"); if(!el || !bigWhich) return;
   let t = "", l = "", pc = 0, cls = "";
   if(bigWhich === "cd"){ const r = cdown.remain(); t = tfmt(r); l = cdown.st.label || (cdown.state() === "done" ? "おしまい" : cdown.state() === "run" ? "のこり" : "一時停止"); pc = cdown.st.full ? 1 - r / cdown.st.full : 0; }
@@ -2428,6 +2440,15 @@ function glanceTick(){
   const f = document.getElementById("gl-fill"); if(f) f.style.width = (g.frac * 100).toFixed(1) + "%";
   const sec = n.closest(".glance"); if(sec){ sec.classList.toggle("soon", g.soon); sec.classList.toggle("last", g.last); }
 }
+let awakeOn = false, wakeLock = null;
+function syncAwake(){
+  const on = !!((cdown && cdown.st && cdown.st.end) || (pomo && pomo.state && pomo.state.end) || (swatch && swatch.st && swatch.st.start)) && !document.hidden;
+  if(on === awakeOn) return; awakeOn = on;
+  if(NATIVE && NATIVE.keepAwake){ try { NATIVE.keepAwake(on); } catch(e){} return; }
+  try { if(on && navigator.wakeLock) navigator.wakeLock.request("screen").then(l => { wakeLock = l; }).catch(() => {}); else if(!on && wakeLock){ wakeLock.release().catch(() => {}); wakeLock = null; } } catch(e){}
+}
+setInterval(syncAwake, 1000);
+document.addEventListener("visibilitychange", () => { awakeOn = null; syncAwake(); });
 function rollText(el, v){ v = String(v); if(!el || el.textContent === v) return; el.textContent = v; if(REDUCE) return; el.classList.remove("roll"); void el.offsetWidth; el.classList.add("roll"); }
 function tick(){
   applyMood(); glanceTick();
@@ -2667,7 +2688,7 @@ function vToday(){
   const m = document.body.dataset.mode;
   if(m === "main-l" && document.body.classList.contains("wide") && !document.body.classList.contains("pane-open"))
     return `${head}<div class="grid today">${hero}${briefCard()}<div class="stack">${todayDocsCard()}${periodsCard}</div><div class="stack">${prepCard}${tasksCard}${followCard()}${memoCard}</div><div class="stack">${evCard}${peopleCard}</div></div>`;
-  if(m === "cover-p" && ls.get("fd-glance", true) !== false && ui.todayFull !== true) return glanceView();
+  if(m === "cover-p" && (ui.todayFull === false || (ui.todayFull == null && ls.get("fd-glance-first", false) === true))) return glanceView();
   if(m === "cover-p") return `${head.replace('<h1>今日</h1>', '<h1>今日</h1><button class="pill-btn" data-glance="on">ひと目</button>')}<div class="grid today">${hero}${todayDocsCard()}${tip}${briefCard()}${periodsCard}${prepCard}${tasksCard}${followCard()}${evCard}${memoCard}${peopleCard}</div>`;
   return `${head}<div class="grid today">${hero}${briefCard()}<div class="stack">${todayDocsCard()}${periodsCard}${memoCard}</div><div class="stack">${prepCard}${tasksCard}${followCard()}${evCard}${peopleCard}</div></div>`;
 }
@@ -3793,6 +3814,7 @@ function settingsPane(){
         <div class="setrow"><span class="main"><b>スター付きメールをタスクに</b><small>タスクを完了すると Gmail のスターも外します</small></span><button class="switch" role="switch" aria-checked="${G().starred}" data-g-toggle="starred" aria-label="スター付きメールをタスクに"></button></div>
         <div class="setrow"><span class="main"><b>Gmail を AI で読む</b><small id="g-ai">やること・予定・返信待ちを1時間ごとに取り出します</small></span><button class="switch" role="switch" aria-checked="${G().gmailAi}" data-g-toggle="gmailAi" aria-label="Gmail を AI で読む"></button></div>
         <div class="setrow"><span class="main"><b>予定から時程を自動で切り替える</b><small>「短縮」「朝会」などの名前の終日予定がある日は、その時程にします（手で選んだ日はそのまま）</small></span><button class="switch" role="switch" aria-checked="${pref("autoMode") !== false}" data-pref-switch="autoMode" aria-label="予定から時程を自動で切り替える"></button></div>
+        <div class="setrow"><span class="main"><b>閉じた画面は「ひと目」から始める</b><small>Foldを閉じて開いたとき、いまの授業と残り時間だけを大きく表示（オフでも「今日」の右上から切り替えられます）</small></span><button class="switch" role="switch" aria-checked="${ls.get("fd-glance-first", false) === true}" data-glance-first aria-label="ひと目から始める"></button></div>
         <div class="setrow"><span class="main"><b>「今日」の背景を天気と時間で変える</b><small>雨・雪・雲・朝焼け・夕焼け・星空などを動きで表示。鳥や飛行機、流れ星もときどき（オフで電池を節約）</small></span><button class="switch" role="switch" aria-checked="${ls.get("fd-wxfx", true) !== false}" data-wxfx-toggle aria-label="天気の背景"></button></div>
         <div class="setrow"><span class="main"><b>背景のお試し</b><small>天気と時間帯を選んで見た目を確認</small></span><button class="chip" data-wxfx-try>試す</button></div>
         <div class="setrow"><span class="main"><b>同じ名前の予定をまとめる</b><small>同じ日・同じ名前の予定（個人・学校・メールから・手入力）を1つにして表示</small></span><button class="switch" role="switch" aria-checked="${pref("mergeEvents") !== false}" data-pref-switch="mergeEvents" aria-label="同じ名前の予定をまとめる"></button></div>
@@ -4158,6 +4180,7 @@ document.addEventListener("click", async (ev) => {
   if(d.glance){ if(d.glance === "full"){ ui.todayFull = true; schedule(); } else if(d.glance === "on"){ ui.todayFull = false; schedule(); } else if(d.glance === "wx"){ ui.todayFull = true; ui.heroFlip = true; schedule(); setTimeout(() => { try { sizeFlip(); wxmini.sync(); } catch(e){} }, 50); } return; }
   if(d.act === "storage"){ storagePane(); return; }
   if(d.stor){ storageAct(b); return; }
+  if(b.matches("[data-glance-first]")){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); ls.set("fd-glance-first", on); ui.todayFull = null; schedule(); return; }
   if(d.pin){ const ok = NATIVE && NATIVE.pinWidget && NATIVE.pinWidget(d.pin); toast(ok ? "ホーム画面に置く確認が出ます" : "このホーム画面ではアプリから置けません。長押し →「ウィジェット」から置いてください"); return; }
   if(d.act === "navedit"){ document.body.classList.remove("rail-peek"); navEditPane(); return; }
   if(d.act === "railtog"){ const r = navCfg().rail; if(document.body.classList.contains("rail-peek")){ document.body.classList.remove("rail-peek"); setRail("mini"); } else setRail(r === "full" ? "mini" : r === "mini" ? "hide" : "full"); buzz(8); toast({full:"横のバー：名前つき", mini:"横のバー：アイコンだけ", hide:"横のバー：しまいました（左上か左はしから出せます）"}[navCfg().rail]); rebuildNav(); return; }
