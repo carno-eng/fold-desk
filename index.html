@@ -1177,6 +1177,34 @@ body.pane-fresh #pane :is(.group,.card,.wgal,.navedit,#picklist,.evdocs) > :is(.
 .flipcard .face{align-self:start}
 .flip-inner{transition:transform .6s var(--ease-io),height .45s var(--ease-out)!important}
 .hero.front{min-height:0!important}
+
+/* ================= v35: glance (cover screen) and storage ================= */
+.glance{position:relative;background:var(--board);color:var(--chalk);border-radius:22px;padding:22px 20px 30px;margin-bottom:12px;overflow:hidden;
+  min-height:calc(100dvh - 300px);display:flex;flex-direction:column;justify-content:center}
+.glance::after{content:"";position:absolute;left:16px;right:16px;bottom:0;height:7px;border-radius:3px 3px 0 0;background:var(--wood);box-shadow:inset 0 2px 0 rgba(255,255,255,.18)}
+.gl-lab{font-size:15px;font-weight:700;opacity:.8}
+.gl-title{font-size:clamp(24px,8vw,34px);font-weight:800;line-height:1.2;margin-top:2px;word-break:auto-phrase}
+.gl-big{display:flex;align-items:baseline;gap:6px;margin-top:18px}
+.gl-big b{font-family:var(--f-num);font-weight:700;font-size:clamp(84px,30vw,128px);line-height:.9;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.gl-big span{font-size:24px;font-weight:700;opacity:.85}
+.gl-until{font-size:15px;font-weight:700;opacity:.8;margin-top:6px}
+.gl-bar{height:8px;border-radius:4px;background:rgba(255,255,255,.14);margin-top:18px;overflow:hidden}
+.gl-bar i{display:block;height:100%;border-radius:4px;background:var(--chalk);transition:width 1s linear}
+.glance.soon .gl-bar i,.glance.soon .gl-big b{color:var(--chalk-y);background:none}
+.glance.soon .gl-bar i{background:var(--chalk-y)}
+.glance.last .gl-big b{color:#FF9A8F}
+.gl-next{display:flex;align-items:baseline;gap:8px;margin-top:20px;font-size:17px}
+.gl-next small{opacity:.75;font-weight:700}
+.gl-next b{font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.gl-next span{opacity:.8;font-weight:700}
+.gl-chips{display:flex;flex-direction:column;gap:8px}
+.gl-chip{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;background:var(--surface);border:1px solid var(--line);font:inherit;font-size:16px;color:var(--fg);text-align:left}
+.gl-chip svg{width:22px;height:22px;color:var(--accent);flex:none}
+.gl-chip span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stor-bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--surface-2);margin:2px 0 12px}
+.stor-bar i{display:block;height:100%}
+i.sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:0}
+.chip.danger{color:var(--warn)}
 </style>
 </head>
 <body>
@@ -2357,9 +2385,52 @@ function sizeFlip(){
   const h = face.offsetHeight + "px"; if(inner.style.height !== h) inner.style.height = h;
 }
 addEventListener("resize", () => requestAnimationFrame(sizeFlip));
+/* ひと目: on the folded phone, just now / how long / next, big enough to read at a glance */
+function glanceCalc(){
+  const st = currentState(), d = new Date(), sec = d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds(), t = todayS();
+  const its = (dayItems(t) || []).filter(x => !x.cancelled).sort((a, b) => mins(a.start) - mins(b.start));
+  let lab = "", title = "", left = null, frac = 0, until = "", next = null;
+  if(st.weekend){ lab = "今日"; title = "授業はありません"; }
+  else if(st.cur){ lab = "いま"; title = itemText(st.cur); const a = mins(st.cur.start) * 60, b = mins(st.cur.end) * 60; left = b - sec; frac = (sec - a) / Math.max(1, b - a); until = `${st.cur.end}まで`; next = st.next; }
+  else if(st.before){ lab = st.started ? "次まで" : "始まりまで"; title = itemText(st.before); const b = mins(st.before.start) * 60, prev = its.filter(x => mins(x.end) * 60 <= sec).pop();
+    const a = prev ? mins(prev.end) * 60 : b - 1800; left = b - sec; frac = (sec - a) / Math.max(1, b - a); until = `${st.before.start}から`; next = its.find(x => mins(x.start) > mins(st.before.start)) || null; }
+  else { lab = "今日の日程は"; title = "おわりました"; }
+  { const parts = title.split("　"); if(parts.length > 1 && /時間目$/.test(parts[0])){ lab = `${lab}　${parts[0]}`; title = parts.slice(1).join(" "); } }
+  const num = left == null ? `${d.getHours()}:${pad(d.getMinutes())}` : left >= 600 ? String(Math.ceil(left / 60)) : `${Math.floor(left / 60)}:${pad(left % 60)}`;
+  const unit = left == null ? "" : left >= 600 ? "分" : "";
+  return {lab, title, num, unit, until, frac:Math.max(0, Math.min(1, frac)), next, soon:left != null && left <= 300, last:left != null && left <= 60};
+}
+function glanceView(){
+  const g = glanceCalc(), t = todayS(), w = wxNow();
+  const evs = S.events.filter(e => e.date === t && e.time && e.time >= `${pad(new Date().getHours())}:${pad(new Date().getMinutes())}`).sort((a, b) => a.time.localeCompare(b.time));
+  const docsT = (docsList || []).filter(d => nextUse(d) === t).length;
+  const pm = pomo.state, chips = [
+    evs[0] ? `<button class="gl-chip" data-open-event="${esc(evs[0].id)}">${ico("events")}<span><b>${esc(evs[0].time)}</b> ${esc(evs[0].title)}</span></button>` : "",
+    docsT ? `<button class="gl-chip" data-go="docs">${ico("docs")}<span>今日の資料 <b>${docsT}</b></span></button>` : "",
+    pm.mode !== "idle" ? `<button class="gl-chip" data-act="pomo">${ico("timer")}<span>${pm.end ? (pm.mode === "focus" ? "集中中" : "休憩中") : "ポモドーロ"}</span></button>` : "",
+    w ? `<button class="gl-chip" data-glance="wx">${ico("today")}<span>${esc(WMO(w.code)[0])} <b>${w.t}°</b>${w.pop != null ? `　雨 ${w.pop}%` : ""}</span></button>` : ""].filter(Boolean).join("");
+  return `<div class="page-h"><h1>今日</h1><button class="pill-btn" data-glance="full">くわしく</button><button class="icon-btn" data-act="settings" aria-label="通知と設定">${ico("bell")}</button></div>
+    <section class="glance ${g.soon ? "soon" : ""} ${g.last ? "last" : ""}" aria-live="off">
+      <div class="gl-lab" id="gl-lab">${esc(g.lab)}</div>
+      <div class="gl-title" id="gl-title">${esc(g.title)}</div>
+      <div class="gl-big"><b id="gl-num" class="num">${esc(g.num)}</b><span id="gl-unit">${esc(g.unit)}</span></div>
+      <div class="gl-until" id="gl-until">${esc(g.until)}</div>
+      <div class="gl-bar"><i id="gl-fill" style="width:${(g.frac * 100).toFixed(1)}%"></i></div>
+      <div class="gl-next" id="gl-next">${g.next ? `<small>次は</small><b>${esc(itemText(g.next))}</b><span class="num">${esc(g.next.start)}</span>` : ""}</div>
+    </section>
+    ${chips ? `<div class="gl-chips">${chips}</div>` : ""}`;
+}
+function glanceTick(){
+  const n = document.getElementById("gl-num"); if(!n) return; const g = glanceCalc();
+  if(n.textContent !== g.num){ if(/^\d+$/.test(g.num)) rollText(n, g.num); else n.textContent = g.num; }
+  const set = (id, v) => { const e = document.getElementById(id); if(e && e.textContent !== v) e.textContent = v; };
+  set("gl-unit", g.unit); set("gl-until", g.until); set("gl-lab", g.lab); set("gl-title", g.title);
+  const f = document.getElementById("gl-fill"); if(f) f.style.width = (g.frac * 100).toFixed(1) + "%";
+  const sec = n.closest(".glance"); if(sec){ sec.classList.toggle("soon", g.soon); sec.classList.toggle("last", g.last); }
+}
 function rollText(el, v){ v = String(v); if(!el || el.textContent === v) return; el.textContent = v; if(REDUCE) return; el.classList.remove("roll"); void el.offsetWidth; el.classList.add("roll"); }
 function tick(){
-  applyMood();
+  applyMood(); glanceTick();
   const arc = document.getElementById("ring-arc"); if(!arc) return;
   const st = currentState(), d = new Date(), sec = d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
   let frac = 0, num = null, sub = null;
@@ -2596,7 +2667,8 @@ function vToday(){
   const m = document.body.dataset.mode;
   if(m === "main-l" && document.body.classList.contains("wide") && !document.body.classList.contains("pane-open"))
     return `${head}<div class="grid today">${hero}${briefCard()}<div class="stack">${todayDocsCard()}${periodsCard}</div><div class="stack">${prepCard}${tasksCard}${followCard()}${memoCard}</div><div class="stack">${evCard}${peopleCard}</div></div>`;
-  if(m === "cover-p") return `${head}<div class="grid today">${hero}${todayDocsCard()}${tip}${briefCard()}${periodsCard}${prepCard}${tasksCard}${followCard()}${evCard}${memoCard}${peopleCard}</div>`;
+  if(m === "cover-p" && ls.get("fd-glance", true) !== false && ui.todayFull !== true) return glanceView();
+  if(m === "cover-p") return `${head.replace('<h1>今日</h1>', '<h1>今日</h1><button class="pill-btn" data-glance="on">ひと目</button>')}<div class="grid today">${hero}${todayDocsCard()}${tip}${briefCard()}${periodsCard}${prepCard}${tasksCard}${followCard()}${evCard}${memoCard}${peopleCard}</div>`;
   return `${head}<div class="grid today">${hero}${briefCard()}<div class="stack">${todayDocsCard()}${periodsCard}${memoCard}</div><div class="stack">${prepCard}${tasksCard}${followCard()}${evCard}${peopleCard}</div></div>`;
 }
 
@@ -2794,6 +2866,44 @@ function shoot(target, gallery){
   inp.onchange = () => { if(inp.files.length) savePhotos(inp.files, gallery && target === "auto" ? "auto" : ui.shotTarget); };
   inp.click();
 }
+const MB = n => n >= 1e9 ? (n / 1e9).toFixed(2) + " GB" : n >= 1e6 ? (n / 1e6).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1e3)) + " KB";
+async function storagePane(){
+  if(!docsList) await loadDocs(); if(!photoList) await loadPhotos();
+  const est = navigator.storage && navigator.storage.estimate ? await navigator.storage.estimate().catch(() => null) : null;
+  const persisted = navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted().catch(() => false) : false;
+  const t = todayS(), docs = docsList || [], phs = photoList || [];
+  const dSize = docs.reduce((a, d) => a + (d.size || 0), 0), pSize = phs.reduce((a, x) => a + (x.size || 0), 0), other = Math.max(0, (est ? est.usage : 0) - dSize - pSize);
+  const pastDocs = docs.filter(d => !nextUse(d) && (d.date && d.date < t || (d.ev || []).length));
+  const months = [...new Set(phs.map(x => x.date.slice(0, 7)))].sort().reverse();
+  const old = n => { const c = new Date(); c.setMonth(c.getMonth() - n); const k = c.toLocaleDateString("sv"); return phs.filter(x => x.date < k); };
+  const tot = Math.max(1, dSize + pSize + other), pc = v => (v / tot * 100).toFixed(1);
+  openPane(`${paneHead("データと容量")}
+    <div class="stor-bar" aria-hidden="true"><i style="width:${pc(dSize)}%;background:var(--accent)"></i><i style="width:${pc(pSize)}%;background:var(--chalk-y)"></i><i style="width:${pc(other)}%;background:var(--muted)"></i></div>
+    <div class="group">
+      <div class="setrow"><span class="main"><b><i class="sw" style="background:var(--accent)"></i>PDF資料</b><small>${docs.length}件</small></span><span class="num">${MB(dSize)}</span></div>
+      <div class="setrow"><span class="main"><b><i class="sw" style="background:var(--chalk-y)"></i>授業の写真</b><small>${phs.length}枚</small></span><span class="num">${MB(pSize)}</span></div>
+      <div class="setrow"><span class="main"><b><i class="sw" style="background:var(--muted)"></i>そのほか</b><small>書き込み・メモ・設定・アプリ本体の保存分</small></span><span class="num">${MB(other)}</span></div>
+    </div>
+    <p class="hint">${est && est.quota ? `このスマホでこのアプリが使える量の ${((est.usage || 0) / est.quota * 100).toFixed(1)}% を使っています。` : ""}${persisted ? "スマホの空きが少なくなっても、自動で消されないようになっています。" : `<button class="chip" data-stor="persist">消されないように設定する</button>`}</p>
+    <div class="sec" style="margin-top:14px">授業の写真を整理</div>
+    ${phs.length ? `<div class="group">${[3, 6, 12].map(n => { const o = old(n); return o.length ? `<div class="setrow"><span class="main"><b>${n}か月より前の写真</b><small>${o.length}枚　${MB(o.reduce((a, x) => a + (x.size || 0), 0))}</small></span><button class="chip danger" data-stor="old:${n}">まとめて削除</button></div>` : ""; }).join("") || `<p class="empty" style="margin:6px 0">3か月より前の写真はありません。</p>`}</div>
+      <div class="group" style="margin-top:8px">${months.map(mo => { const g = phs.filter(x => x.date.startsWith(mo)); return `<div class="setrow"><span class="main"><b>${+mo.slice(0, 4)}年${+mo.slice(5, 7)}月</b><small>${g.length}枚　${MB(g.reduce((a, x) => a + (x.size || 0), 0))}</small></span><button class="chip danger" data-stor="month:${mo}">この月を削除</button></div>`; }).join("")}</div>` : `<p class="empty" style="margin:6px 0">写真はまだありません。</p>`}
+    <div class="sec" style="margin-top:14px">使い終わった資料</div>
+    ${pastDocs.length ? `<p class="hint" style="margin-top:0">使う日やひもづけた予定が過ぎた資料です。</p><div class="group">${pastDocs.map(d => `<div class="setrow"><span class="main"><b>${esc(d.title)}</b><small>${esc([d.date ? md(d.date) : "", MB(d.size || 0), d.inked ? "書き込みあり" : ""].filter(Boolean).join("　"))}</small></span><button class="chip danger" data-stor="doc:${esc(d.id)}">削除</button></div>`).join("")}</div>`
+      : `<p class="empty" style="margin:6px 0">使い終わった資料はありません。</p>`}
+    <p class="hint" style="margin-top:12px">削除は「もう一度押す」で確定します。消したものは元に戻せません。</p>
+    <div class="btns"><button class="btn primary" data-act="close">閉じる</button></div>`);
+}
+async function storageAct(b){
+  const [k, v] = b.dataset.stor.split(/:(.*)/s);
+  if(k === "persist"){ const ok = navigator.storage && navigator.storage.persist ? await navigator.storage.persist().catch(() => false) : false; toast(ok ? "自動で消されないようにしました" : "このスマホでは設定できませんでした"); storagePane(); return; }
+  if(!b.dataset.sure){ b.dataset.sure = "1"; b.textContent = "もう一度押すと削除"; return; }
+  b.disabled = true; let n = 0;
+  if(k === "old" || k === "month"){ const c = new Date(); c.setMonth(c.getMonth() - (+v || 0)); const lim = c.toLocaleDateString("sv");
+    const list = (photoList || []).filter(x => k === "old" ? x.date < lim : x.date.startsWith(v)); for(const x of list){ await PHOTOS.del(x.id).catch(() => {}); n++; } await loadPhotos(); toast(`写真を${n}枚削除しました`); }
+  else if(k === "doc"){ await DOCS.del(v).catch(() => {}); await loadDocs(); toast("資料を削除しました"); }
+  storagePane();
+}
 function photoSavedPane(ids){
   const ps = (photoList || []).filter(p => ids.includes(p.id)); if(!ps.length) return; const p0 = ps[0];
   const same = ps.every(p => p.date === p0.date && p.n === p0.n), per = periodsOf(p0.date);
@@ -2957,7 +3067,7 @@ function evDocsSection(e){
 function vDocs(){
   const dt = ui.docTab || ls.get("fd-doctab", "docs");
   const tabs = `<div class="dtabs" role="tablist"><button role="tab" data-doctab="docs" aria-pressed="${dt === "docs"}">${ico("docs")} PDF資料</button><button role="tab" data-doctab="photos" aria-pressed="${dt === "photos"}">${ico("image")} 授業の写真${(photoList || []).length ? ` <span class="num" style="opacity:.6">${photoList.length}</span>` : ""}</button></div>`;
-  if(dt === "photos") return `<div class="page-h"><h1>資料</h1><button class="pill-btn" data-photo-add>${ico("image")}写真から</button><button class="pill-btn accent" data-photo-shot="auto">${ico("camera")}撮る</button></div>${tabs}${vPhotos()}`;
+  if(dt === "photos") return `<div class="page-h"><h1>資料</h1><button class="icon-btn" data-act="storage" aria-label="データと容量">${ico("gear")}</button><button class="pill-btn" data-photo-add>${ico("image")}写真から</button><button class="pill-btn accent" data-photo-shot="auto">${ico("camera")}撮る</button></div>${tabs}${vPhotos()}`;
   return vDocsInner(tabs);
 }
 function vDocsInner(tabs){
@@ -2976,7 +3086,7 @@ function vDocsInner(tabs){
       <button class="sel" data-doc-sel="${esc(d.id)}" aria-pressed="${!!(ui.docSel && ui.docSel.includes(d.id))}" aria-label="えらぶ"></button>
       ${nextUse(d) ? `<span class="tag">${esc(nextUse(d) === t ? "今日" : nextUse(d) === addDays(t, 1) ? "明日" : md(nextUse(d)))}</span>` : ""}
       <button class="more" data-doc-edit="${esc(d.id)}" aria-label="編集">${ico("dots")}</button></div>`;
-  return `<div class="page-h"><h1>資料</h1><button class="pill-btn accent" data-doc-add>${ico("plus")}PDF を追加</button></div>${tabs}
+  return `<div class="page-h"><h1>資料</h1><button class="icon-btn" data-act="storage" aria-label="データと容量">${ico("gear")}</button><button class="pill-btn accent" data-doc-add>${ico("plus")}PDF を追加</button></div>${tabs}
     ${docsList.length ? `<div class="doc-tools"><input class="doc-search" type="search" placeholder="資料の名前でさがす" data-doc-q aria-label="資料をさがす">
       <select class="input" data-doc-sort aria-label="並べ替え">${DOCSORT.map(([k, l]) => `<option value="${k}" ${k === sortK ? "selected" : ""}>${l}</option>`).join("")}</select></div>
     <div class="doc-cats" role="group" aria-label="分類">${["all", ...cats].map(c => `<button class="chip" data-doc-cat="${esc(c)}" aria-pressed="${cat === c}">${c === "all" ? "" : `<i class="cd" style="background:${catColor(c)}"></i>`}${c === "all" ? "すべて" : esc(c)} <span class="num" style="opacity:.6">${c === "all" ? docsList.length : docsList.filter(d => (d.cat || "未分類") === c).length}</span></button>`).join("")}
@@ -3700,6 +3810,7 @@ function settingsPane(){
       : `<button class="row" data-school-guide style="grid-template-columns:auto 1fr auto"><span class="avatar" style="width:36px;height:36px">${ico("today")}</span><span class="main"><b>学校のアカウントを追加</b><small>学校のカレンダーを、学校のデータのまま並べて表示</small></span><span class="when">${ico("right")}</span></button>`}</div>
 
       <div class="sec">ホーム画面</div>
+      <button class="row" data-act="storage" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left"><span class="avatar" style="width:36px;height:36px">${ico("docs")}</span><span class="main"><b>データと容量</b><small>資料・写真がどれくらい使っているか、整理</small></span><span class="when">${ico("right")}</span></button>
       ${NATIVE ? `<button class="row" data-act="widgetguide" style="grid-template-columns:auto 1fr auto"><span class="avatar" style="width:36px;height:36px">${ico("home")}</span><span class="main"><b>ウィジェットを置く</b><small>今日の時間割・いま／次・タスクと準備</small></span><span class="when">${ico("right")}</span></button>
         <div class="sec" style="margin:14px 0 6px">アプリの外のコンシェルジュ</div>
         <div class="group">
@@ -4044,6 +4155,9 @@ document.addEventListener("click", async (ev) => {
   if(b.matches("[data-g-sync]")){ b.disabled = true; await googleSyncNow(); b.disabled = false; return; }
   if(d.act === "settings"){ document.body.classList.remove("rail-peek"); settingsPane(); return; }
   if(d.act === "navmore"){ navMorePane(); return; }
+  if(d.glance){ if(d.glance === "full"){ ui.todayFull = true; schedule(); } else if(d.glance === "on"){ ui.todayFull = false; schedule(); } else if(d.glance === "wx"){ ui.todayFull = true; ui.heroFlip = true; schedule(); setTimeout(() => { try { sizeFlip(); wxmini.sync(); } catch(e){} }, 50); } return; }
+  if(d.act === "storage"){ storagePane(); return; }
+  if(d.stor){ storageAct(b); return; }
   if(d.pin){ const ok = NATIVE && NATIVE.pinWidget && NATIVE.pinWidget(d.pin); toast(ok ? "ホーム画面に置く確認が出ます" : "このホーム画面ではアプリから置けません。長押し →「ウィジェット」から置いてください"); return; }
   if(d.act === "navedit"){ document.body.classList.remove("rail-peek"); navEditPane(); return; }
   if(d.act === "railtog"){ const r = navCfg().rail; if(document.body.classList.contains("rail-peek")){ document.body.classList.remove("rail-peek"); setRail("mini"); } else setRail(r === "full" ? "mini" : r === "mini" ? "hide" : "full"); buzz(8); toast({full:"横のバー：名前つき", mini:"横のバー：アイコンだけ", hide:"横のバー：しまいました（左上か左はしから出せます）"}[navCfg().rail]); rebuildNav(); return; }
@@ -5279,7 +5393,7 @@ function schoolHandoffPane(){
     <div class="btns"><a class="btn primary" href="${esc(link)}">アプリで接続する</a><button class="btn" data-act="close">このままでよい</button></div>`);
 }
 setTimeout(schoolHandoffPane, 900);
-if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, concierge, dayMode, eventForm, closePane, wxfx, wxmini, pomo, cdown, swatch, get pdfv(){ return pdfv; }, openDoc, savePhotos, get photoList(){ return photoList; }, autoSlot, get phv(){ return phv; }};
+if(location.port === "8765") window.__fdT = {get S(){ return S; }, get evDups(){ return evDups; }, concierge, dayMode, eventForm, closePane, wxfx, wxmini, pomo, cdown, swatch, storagePane, glanceCalc, get pdfv(){ return pdfv; }, openDoc, savePhotos, get photoList(){ return photoList; }, autoSlot, get phv(){ return phv; }};
 })();
 </script>
 </body>
