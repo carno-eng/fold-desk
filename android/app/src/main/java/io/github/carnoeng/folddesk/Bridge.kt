@@ -129,6 +129,38 @@ class Bridge(
         }
     }
 
+    /** Large files (backups) are written in pieces so no single message gets too big. */
+    private val openSaves = java.util.concurrent.ConcurrentHashMap<String, Pair<Uri, java.io.OutputStream>>()
+    @JavascriptInterface fun saveOpen(name: String, mime: String): String {
+        if (Build.VERSION.SDK_INT < 29) return ""
+        val safe = name.replace(Regex("[\\\\/:*?\"<>|]"), "_").take(80)
+        return try {
+            val cv = ContentValues().apply {
+                put(MediaStore.Downloads.DISPLAY_NAME, safe)
+                put(MediaStore.Downloads.MIME_TYPE, "application/octet-stream")
+                put(MediaStore.Downloads.IS_PENDING, 1)
+            }
+            val uri = ctx.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv) ?: return ""
+            val out = ctx.contentResolver.openOutputStream(uri) ?: return ""
+            val id = java.util.UUID.randomUUID().toString()
+            openSaves[id] = uri to out
+            id
+        } catch (_: Exception) { "" }
+    }
+    @JavascriptInterface fun saveWrite(id: String, b64: String): Boolean {
+        val s = openSaves[id] ?: return false
+        return try { s.second.write(Base64.decode(b64, Base64.DEFAULT)); true } catch (_: Exception) { false }
+    }
+    @JavascriptInterface fun saveClose(id: String, keep: Boolean): Boolean {
+        val s = openSaves.remove(id) ?: return false
+        return try {
+            s.second.close()
+            if (keep) ctx.contentResolver.update(s.first, ContentValues().apply { put(MediaStore.Downloads.IS_PENDING, 0) }, null, null)
+            else ctx.contentResolver.delete(s.first, null, null)
+            keep
+        } catch (_: Exception) { try { ctx.contentResolver.delete(s.first, null, null) } catch (_: Exception) { }; false }
+    }
+
     /** Saves a generated file (e.g. CSV export) into Downloads. */
     @JavascriptInterface fun saveFile(name: String, mime: String, b64: String): Boolean {
         if (Build.VERSION.SDK_INT < 29) return false
