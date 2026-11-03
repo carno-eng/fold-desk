@@ -1396,6 +1396,41 @@ body.clv-on #cc,body.clv-on #ccb{display:none!important}
   #clv .cl-card,#clv li,#clv .cl-ver,#clv .clv-board p,#clv .clv-stats span,#clv .cl-sprout span,#clv .clv-note{opacity:1;transform:none}
   #clv .cl-seg,#clv .cl-dot,#clv .cl-day h2 i,#clv .cl-sprout .lf{transform:none}#clv .cl-sprout .st{stroke-dashoffset:0}
 }
+
+/* ================= v40: 個人 / 学校（仕事） ================= */
+:root{--sc-p:#3A78B5;--sc-p-soft:#E1ECF7;--sc-w:#B26A12;--sc-w-soft:#F7E9D4}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--sc-p:#8BB8E8;--sc-p-soft:#1B2B3D;--sc-w:#F0B45A;--sc-w-soft:#3A2B14}}
+:root[data-theme="dark"]{--sc-p:#8BB8E8;--sc-p-soft:#1B2B3D;--sc-w:#F0B45A;--sc-w-soft:#3A2B14}
+.sc-chip{display:inline-block;font-size:11px;font-weight:800;line-height:1;padding:4px 7px 3px;border-radius:6px;margin-right:6px;vertical-align:1px}
+.sc-chip.personal{background:var(--sc-p-soft);color:var(--sc-p)}
+.sc-chip.work{background:var(--sc-w-soft);color:var(--sc-w)}
+.ev-row{position:relative}
+.ev-row.sc-personal .datebox{box-shadow:inset 3px 0 0 var(--sc-p)}
+.ev-row.sc-work .datebox{box-shadow:inset 3px 0 0 var(--sc-w)}
+.prow.xrow.sc-personal .pno{color:var(--sc-p)}
+.prow.xrow.sc-work .pno{color:var(--sc-w)}
+.cal .pips i.personal{background:var(--sc-p)}
+.cal .pips i.work{background:var(--sc-w)}
+.cal .pips i.holiday{background:var(--warn)}
+.cal button[aria-pressed="true"] .pips i{box-shadow:0 0 0 1.5px #fff}
+.sc-filter{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:-6px 0 14px}
+.sc-tg{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:999px;font:inherit;font-size:14px;font-weight:800;background:var(--surface);color:var(--fg);box-shadow:inset 0 0 0 1.5px var(--line);transition:background .2s,box-shadow .2s,opacity .2s}
+.sc-tg i{width:12px;height:12px;border-radius:50%;transition:transform .3s var(--spring)}
+.sc-tg.personal i{background:var(--sc-p)}.sc-tg.work i{background:var(--sc-w)}
+.sc-tg.personal[aria-pressed="true"]{background:var(--sc-p-soft);box-shadow:inset 0 0 0 1.5px var(--sc-p)}
+.sc-tg.work[aria-pressed="true"]{background:var(--sc-w-soft);box-shadow:inset 0 0 0 1.5px var(--sc-w)}
+.sc-tg[aria-pressed="false"]{opacity:.6;text-decoration:line-through}
+.sc-tg[aria-pressed="false"] i{transform:scale(.5)}
+.sc-tg .num{font-family:var(--f-num);font-size:12px;color:var(--muted);font-weight:700}
+.sc-note{font-size:12.5px;color:var(--muted)}
+.sc-seg{display:flex}
+.sc-seg label{flex:1;position:relative;cursor:pointer}
+.sc-seg input{position:absolute;opacity:0;pointer-events:none}
+.sc-seg span{display:block;text-align:center;padding:9px 6px;border-radius:10px;font-weight:700;font-size:14px}
+.sc-seg input:checked + span{background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.sc-seg label.personal input:checked + span{color:var(--sc-p)}
+.sc-seg label.work input:checked + span{color:var(--sc-w)}
+.ics-row{flex-wrap:wrap;gap:8px}
 </style>
 </head>
 <body>
@@ -1709,9 +1744,9 @@ function taskRow(t){
 }
 function eventRow(e){
   const d = parse(e.date);
-  return `<button class="row" data-open-event="${e.id}" style="grid-template-columns:auto 1fr">
+  return `<button class="row ev-row sc-${evScope(e)}" data-open-event="${e.id}" style="grid-template-columns:auto 1fr">
     <span class="datebox ${e.date===todayS()?'today':''}"><b>${d.getDate()}</b><small>${d.getMonth()+1}月 ${WD[d.getDay()]}</small></span>
-    <span class="main"><b>${esc(e.title)}</b><small>${[...new Set([e, ...(evDups[e.id] || [])].map(x => x.account).filter(Boolean))].map(a => `<span class="chip mini ${a === '学校' ? 'accent' : ''}">${esc(a)}</span>`).join("")}${(evDups[e.id] || []).length ? `<span class="chip mini">${(evDups[e.id] || []).length + 1}件</span>` : ''}${docsForEvent(e).length ? `<span class="chip mini accent">資料${docsForEvent(e).length}</span>` : ''}${e.remindMin ? `<span class="bell" style="vertical-align:-2px;margin-right:4px">${ico("bell")}</span>` : ''}${esc([e.time ? e.time + (e.endTime ? "–" + e.endTime : "") : "", e.place, e.kind].filter(Boolean).join("　"))}</small></span>
+    <span class="main"><b>${esc(e.title)}</b><small>${(() => { const sc = [...new Set([e, ...(evDups[e.id] || [])].map(evScope))]; return sc.filter(x => x !== "holiday").map(x => `<span class="sc-chip ${x}">${SCOPE_L[x]}</span>`).join("") || (sc.includes("holiday") ? `<span class="chip mini">休み</span>` : ""); })()}${(evDups[e.id] || []).length ? `<span class="chip mini">${(evDups[e.id] || []).length + 1}件</span>` : ''}${docsForEvent(e).length ? `<span class="chip mini accent">資料${docsForEvent(e).length}</span>` : ''}${e.remindMin ? `<span class="bell" style="vertical-align:-2px;margin-right:4px">${ico("bell")}</span>` : ''}${esc([e.time ? e.time + (e.endTime ? "–" + e.endTime : "") : "", e.place, e.kind].filter(Boolean).join("　"))}</small></span>
   </button>`;
 }
 const openTasks = () => S.tasks.filter(t => t.status !== "done").sort((a,b) => (a.due||"9999").localeCompare(b.due||"9999") || ((a.priority==="high"?0:1)-(b.priority==="high"?0:1)));
@@ -1746,14 +1781,14 @@ function applySchool(c){
 const MODES = ["normal","short","assembly"];
 const DAY_MODES = [...MODES, "off"];
 /* an all-day event of kind 休み (holiday, school closure, substitute day off) means no classes */
-const holidayOf = s => S.events.find(e => e.date === s && !e.time && e.kind === "休み") || null;
+const holidayOf = s => evAll().find(e => e.date === s && !e.time && e.kind === "休み") || null;
 const bandOf = c => { const g = String((c && c.cls) || "").match(/^([0-9])-/); return g && upperGrades().includes(g[1]) ? "upper" : "low"; };
 /* an all-day (or early-morning) event whose name contains a schedule's name, e.g. 「短縮日課」「児童朝会」, switches that day automatically.
    A choice made by hand for the day always wins. */
 const reEsc = x => String(x).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 function autoModeOf(s){
   if(pref("autoMode") === false || !S.events) return null;
-  const evs = S.events.filter(e => e.date === s && (!e.time || e.time < "09:00") && e.kind !== "休み");
+  const evs = evAll().filter(e => e.date === s && (!e.time || e.time < "09:00") && e.kind !== "休み");
   for(const k of ["short", "assembly"]){
     const lb = (OFFICIAL[k] || {}).label; if(!lb) continue;
     const re = new RegExp(reEsc(lb) + (k === "short" ? "|短縮日課|短縮授業|短縮時程" : "|全校朝会|児童朝会"));
@@ -1785,7 +1820,7 @@ function dayItems(dateS){
     if(x.period){ const t = M.low[x.period-1] || M.upper[x.period-1]; if(t){ st = t.start; en = t.end; } }
     if(st) items.push({type:"extra", idx, label:x.title, kind:x.kind, note:x.note, start:st, end: en && mins(en) > mins(st) ? en : plusMin(st, 30)});
   });
-  S.events.filter(e => e.date === dateS && e.time).forEach(e => items.push({type:"event", id:e.id, label:e.title, kind:e.kind, start:e.time, end:evEnd(e)}));
+  S.events.filter(e => e.date === dateS && e.time).forEach(e => items.push({type:"event", id:e.id, label:e.title, kind:e.kind, scope:evScope(e), start:e.time, end:evEnd(e)}));
   if(!items.length) return null;
   return items.sort((a,b) => mins(a.start) - mins(b.start) || (a.type === "block" ? -1 : 1));
 }
@@ -2750,9 +2785,9 @@ function dayCard(dateS){
     if(x.type === "block"){ rows += `<div class="prow block ${isNow?'now':''}"><span class="pno"></span><div class="t">${esc(x.label)}</div><span class="tm">${x.start}–${x.end}</span></div>`; return; }
     if(x.type === "extra" || x.type === "event"){
       const attr = x.type === "extra" ? `data-extra="${dateS}:${x.idx}"` : `data-open-event="${x.id}"`;
-      rows += `<button class="prow xrow ${isNow?'now':''}" ${attr}><span class="pno">${ico(x.type === "extra" ? "plus" : "events")}</span>
-        <div class="t">${esc(x.label)}<small>${esc([x.kind, x.note].filter(Boolean).join("　"))}</small></div><span class="tm">${x.start}<br>${x.end}</span></button>`;
-      if(x.type === "event" && !ui.edit){ const ev = S.events.find(y => y.id === x.id), dl = ev ? docsForEvent(ev) : []; if(dl.length) rows += `<div class="prow-docs">${dl.map(d => `<button class="chip accent" data-doc-open="${esc(d.id)}">${ico("docs")} ${esc(d.title)}</button>`).join("")}</div>`; }
+      rows += `<button class="prow xrow ${isNow?'now':''} ${x.scope ? "sc-" + x.scope : ""}" ${attr}><span class="pno">${ico(x.type === "extra" ? "plus" : "events")}</span>
+        <div class="t">${esc(x.label)}<small>${x.scope && x.scope !== "holiday" ? `<span class="sc-chip ${x.scope}">${SCOPE_L[x.scope]}</span>` : ""}${esc([x.kind, x.note].filter(Boolean).join("　"))}</small></div><span class="tm">${x.start}<br>${x.end}</span></button>`;
+      if(x.type === "event" && !ui.edit){ const ev = evAll().find(y => y.id === x.id), dl = ev ? docsForEvent(ev) : []; if(dl.length) rows += `<div class="prow-docs">${dl.map(d => `<button class="chip accent" data-doc-open="${esc(d.id)}">${ico("docs")} ${esc(d.title)}</button>`).join("")}</div>`; }
       return;
     }
     const k = x.cancelled ? "free" : cellKind(x.cell), ahead = mins(x.end) > nowMin();
@@ -2947,17 +2982,23 @@ function vEvents(){
   const byDate = {}; S.events.forEach(e => (byDate[e.date] = byDate[e.date] || []).push(e));
   let cells = "";
   for(let i=0;i<42;i++){ const d = new Date(start); d.setDate(start.getDate()+i); const s = ymd(d);
-    const n = (byDate[s]||[]).length;
-    cells += `<button data-day="${s}" class="${d.getMonth()!==m-1?'out':''} ${s===t?'today':''}" aria-pressed="${s===ui.calSel}" aria-label="${md(s)} 予定${n}件"><span>${d.getDate()}</span><span class="pips">${"<i></i>".repeat(Math.min(n,3))}</span></button>`; }
+    const n = (byDate[s]||[]).length, dots = (byDate[s]||[]).slice(0, 3).map(e => `<i class="${evScope(e)}"></i>`).join("");
+    cells += `<button data-day="${s}" class="${d.getMonth()!==m-1?'out':''} ${s===t?'today':''}" aria-pressed="${s===ui.calSel}" aria-label="${md(s)} 予定${n}件"><span>${d.getDate()}</span><span class="pips">${dots}</span></button>`; }
   const sel = (byDate[ui.calSel]||[]).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
   const up = S.events.filter(e => e.date >= t).sort((a,b)=>(a.date+(a.time||"")).localeCompare(b.date+(b.time||""))).slice(0,12);
   const cal = `<div class="card"><div class="cal-h"><button class="icon-btn" data-cal="-1" aria-label="前の月">${ico("left")}</button><b>${y}年 ${m}月</b>
       <button class="chip" data-cal="0">今月</button><button class="icon-btn" data-cal="1" aria-label="次の月">${ico("right")}</button></div>
       <div class="cal">${["月","火","水","木","金","土","日"].map(w=>`<div class="wd">${w}</div>`).join("")}${cells}</div></div>`;
   const day = `<div class="card"><h3>${md(ui.calSel)}<button class="more" data-new="event" data-date="${ui.calSel}">この日に追加</button></h3>${sel.length ? sel.map(eventRow).join("") : '<p class="empty">予定はありません。</p>'}</div>`;
-  const list = `<div class="card"><h3>これからの予定</h3>${up.length ? up.map(eventRow).join("") : '<p class="empty">まだ予定がありません。Googleカレンダーの予定は、チャットで頼めば取り込めます。</p>'}</div>`;
-  return `<div class="page-h"><h1>予定</h1><button class="pill-btn accent" data-new="event">${ico("plus")}新規</button></div>
-    <div class="grid two"><div class="stack">${cal}${day}</div><div class="stack">${list}</div></div>`;
+  const list = `<div class="card"><h3>これからの予定</h3>${up.length ? up.map(eventRow).join("") : '<p class="empty">まだ予定がありません。Google カレンダーの「エクスポート」で保存したファイルを、上の「読み込む」から入れられます。</p>'}</div>`;
+  const cfg = evShowCfg(), all = evAll().filter(e => e.date >= t), hidN = k => all.filter(e => evScope(e) === k).length;
+  const show = `<div class="sc-filter" role="group" aria-label="表示する予定">${[["personal", "個人"], ["work", "学校（仕事）"]].map(([k, l]) => `<button class="sc-tg ${k}" data-sc-tg="${k}" aria-pressed="${cfg[k] !== false}"><i></i>${l}<span class="num">${hidN(k)}</span></button>`).join("")}
+    ${cfg.personal === false || cfg.work === false ? `<span class="sc-note">${cfg.personal === false && cfg.work === false ? "どちらも非表示です（休みだけ出ています）" : `${cfg.personal === false ? "個人" : "学校"}の予定を隠しています。「今日」とウィジェットでも隠れます`}</span>` : ""}</div>`;
+  const imps = ls.get("fd-ics-imports", []);
+  const impCard = imps.length ? `<div class="card"><h3>読み込んだカレンダー</h3>${imps.map(x => `<div class="setrow"><span class="main"><b><span class="sc-chip ${x.scope}">${SCOPE_L[x.scope]}</span>${esc(x.name)}</b><small>${x.count}件　${esc(new Date(x.at).toLocaleDateString("ja-JP"))}に読み込み${x.scope === "work" ? "・このスマホの中だけ" : ""}</small></span><button class="chip danger" data-ics-del="${esc(x.id)}">取り消す</button></div>`).join("")}</div>` : "";
+  return `<div class="page-h"><h1>予定</h1><button class="pill-btn" data-ics-pick>${ico("dl")}読み込む</button><button class="pill-btn accent" data-new="event">${ico("plus")}新規</button></div>
+    ${show}
+    <div class="grid two"><div class="stack">${cal}${day}</div><div class="stack">${list}${impCard}</div></div>`;
 }
 
 /* ================= PEOPLE ================= */
@@ -3084,7 +3125,8 @@ const MB = n => n >= 1e9 ? (n / 1e9).toFixed(2) + " GB" : n >= 1e6 ? (n / 1e6).t
 /* ================= 更新履歴 (newest at the top) ================= */
 const CHANGELOG = [
  {day:"11月3日", sub:"火曜日・文化の日", list:[
-  {v:"アプリ内", t:"21:55", big:1, newest:1, h:"更新履歴とテーマカラー", lead:"あなたが今見ているこのページです。", it:[["n","設定から読める「更新履歴」。1.0.0 から今までを、新しい順に"],["n","テーマカラーを6色から。常磐色・藍色・墨色・臙脂色・江戸紫・山吹茶。黒板とボタンの色がいっしょに変わります"]]},
+  {v:"アプリ内", t:"22:40", big:1, newest:1, h:"個人の予定と、学校の予定", lead:"Google カレンダーから持ってきて、ひと目で分けられるように。", it:[["n","Google カレンダーの書き出しファイル（.ics・.zip）を「予定」の「読み込む」から。くり返しの予定や連休もそのまま入る"],["n","予定に「個人」「学校（仕事）」の区分。色と札で見分けられる"],["n","「予定」の上のボタンで、個人・学校の予定をそれぞれ表示／非表示。「今日」とウィジェットにも反映"],["i","学校のカレンダーとして読み込んだ予定は、このスマホの中だけに保存"],["i","テーマカラーの名前を日本の伝統色に。常磐色・藍色・墨色・臙脂色・江戸紫・山吹茶"]]},
+  {v:"アプリ内", t:"21:55", big:1, h:"更新履歴とテーマカラー", lead:"あなたが今見ているこのページです。", it:[["n","設定から読める「更新履歴」。1.0.0 から今までを、新しい順に"],["n","テーマカラーを6色から。常磐色・藍色・墨色・臙脂色・江戸紫・山吹茶。黒板とボタンの色がいっしょに変わります"]]},
   {v:"アプリ内", t:"21:40", h:"重なりを直しました", it:[["f","空の画面のボタンのアイコンが大きくなり、説明の文章に重なっていた問題"],["f","資料の「おすすめ」の並べ替えの枠で、文字の下が切れていた問題"]]},
   {v:"1.0.43", t:"21:20", big:1, h:"使いやすさの総点検", lead:"はじめて触る人の目で、全部の画面を見直しました。", it:[["n","お試しモード。アカウントがなくても見本のデータで全部の画面をさわれる"],["n","バックアップ。資料・書き込み・写真・設定を1つのファイルに書き出して、読み込める"],["i","コンシェルジュは右下のすみっこに。話しかけは少しで閉じ、タイマーや資料を見ている間はおとなしく"],["i","閉じた画面の下のバーは5つ＋「その他」。文字も大きく"],["i","小さいボタンも、指で押せる広さに"],["i","「今日」の時間の帯に、記号の説明"],["i","何もないページに、大きな説明とすぐ追加できるボタン"],["f","「時間割」の見出しが縦に1文字ずつ並んでいた問題"],["f","会議のコマなど、薄くて読みにくかった文字"]]},
   {v:"1.0.42", t:"18:54", big:1, h:"タイマーを、もっと手元で", it:[["n","動いているタイマーに大きな［−1分］［＋1分］［＋5分］。「大きく表示」のままでも延ばせる"],["n","通知から「＋1分」"],["n","タイマー・ポモドーロ・ストップウォッチの間は、画面が消えない"],["i","開いたときはいつもの「今日」から。「ひと目」は右上から"]]},
@@ -3174,7 +3216,151 @@ function changelogOpen(){
 }
 function changelogClose(){ if(!clv) return; const el = clv; clv = null; el.classList.remove("on"); el.classList.add("off"); document.body.classList.remove("clv-on"); setTimeout(() => el.remove(), REDUCE ? 0 : 420); }
 addEventListener("keydown", e => { if(e.key === "Escape" && clv) changelogClose(); });
-const BK_SKIP = /^fd-(token|stoken|api|sapi|school-cache|store-v1|queue-v1|demo|demo-state|fired|talk|wxfx-test|devcal)$/;
+
+/* ================= Google カレンダーの書き出しファイル（.ics / .zip）を読み込む ================= */
+async function unzipIcs(file){
+  const buf = new Uint8Array(await file.arrayBuffer()), dv = new DataView(buf.buffer), out = [];
+  let e = buf.length - 22; while(e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+  if(e < 0) throw new Error("zip");
+  const n = dv.getUint16(e + 10, true); let q = dv.getUint32(e + 16, true);
+  for(let i = 0; i < n; i++){
+    const method = dv.getUint16(q + 10, true), csize = dv.getUint32(q + 20, true), nl = dv.getUint16(q + 28, true), xl = dv.getUint16(q + 30, true), cl = dv.getUint16(q + 32, true), lho = dv.getUint32(q + 42, true);
+    const name = new TextDecoder().decode(buf.subarray(q + 46, q + 46 + nl)); q += 46 + nl + xl + cl;
+    if(!/\.ics$/i.test(name)) continue;
+    const st = lho + 30 + dv.getUint16(lho + 26, true) + dv.getUint16(lho + 28, true), data = buf.subarray(st, st + csize);
+    let text = "";
+    if(method === 0) text = new TextDecoder().decode(data);
+    else if(method === 8 && "DecompressionStream" in window) text = await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text();
+    else continue;
+    out.push({file:name.split("/").pop(), text});
+  }
+  return out;
+}
+function icsTime(prop, val){
+  const m = String(val).match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?(Z)?)?/); if(!m) return null;
+  if(!m[4]) return {date:`${m[1]}-${m[2]}-${m[3]}`, time:"", allDay:true};
+  let d;
+  if(m[7]) d = new Date(Date.UTC(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0)));
+  else {
+    d = new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5]);
+    const tz = (String(prop).match(/TZID=([^;:]+)/) || [])[1];
+    try { if(tz && tz !== Intl.DateTimeFormat().resolvedOptions().timeZone){
+      const asU = Date.UTC(+m[1], m[2] - 1, +m[3], +m[4], +m[5]);
+      const pt = new Intl.DateTimeFormat("en-US", {timeZone:tz, hourCycle:"h23", year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit"}).formatToParts(new Date(asU));
+      const g = k => +pt.find(x => x.type === k).value; d = new Date(asU - (Date.UTC(g("year"), g("month") - 1, g("day"), g("hour"), g("minute")) - asU)); } } catch(e){}
+  }
+  return {date:ymd(d), time:`${pad(d.getHours())}:${pad(d.getMinutes())}`, allDay:false};
+}
+const icsText = v => String(v || "").replace(/\\n/gi, "\n").replace(/\\([,;\\])/g, "$1").trim();
+function parseIcs(text){
+  const lines = String(text).replace(/\r\n[ \t]/g, "").replace(/\n[ \t]/g, "").split(/\r?\n/);
+  let name = "", cur = null; const evs = [];
+  for(const ln of lines){
+    const i = ln.indexOf(":"); if(i < 0) continue;
+    const head = ln.slice(0, i), val = ln.slice(i + 1), key = head.split(";")[0].toUpperCase();
+    if(key === "X-WR-CALNAME" && !cur) name = icsText(val);
+    else if(key === "BEGIN" && val === "VEVENT") cur = {ex:[]};
+    else if(key === "END" && val === "VEVENT"){ if(cur && cur.start && cur.status !== "CANCELLED") evs.push(cur); cur = null; }
+    else if(cur){
+      if(key === "SUMMARY") cur.title = icsText(val);
+      else if(key === "DTSTART") cur.start = icsTime(head, val);
+      else if(key === "DTEND") cur.end = icsTime(head, val);
+      else if(key === "LOCATION") cur.place = icsText(val);
+      else if(key === "DESCRIPTION") cur.note = icsText(val).replace(/<[^>]+>/g, " ").slice(0, 300);
+      else if(key === "UID") cur.uid = val.trim();
+      else if(key === "RRULE") cur.rrule = val.trim();
+      else if(key === "EXDATE") val.split(",").forEach(x => { const t = icsTime(head, x); if(t) cur.ex.push(t.date); });
+      else if(key === "RECURRENCE-ID") cur.recur = icsTime(head, val);
+      else if(key === "STATUS") cur.status = val.trim().toUpperCase();
+    }
+  }
+  return {name, evs};
+}
+function icsDates(ev, from, to){
+  const start = ev.start.date;
+  if(!ev.rrule) return start >= from && start <= to ? [start] : [];
+  const r = Object.fromEntries(ev.rrule.split(";").map(x => x.split("="))), iv = Math.max(1, +(r.INTERVAL || 1)), count = r.COUNT ? +r.COUNT : Infinity;
+  const until = r.UNTIL ? (icsTime("", r.UNTIL) || {}).date || "9999-12-31" : "9999-12-31", ex = new Set(ev.ex);
+  const WDS = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"], byday = r.BYDAY ? r.BYDAY.split(",").map(x => WDS.indexOf(x.slice(-2))).filter(x => x >= 0) : null;
+  const out = []; let n = 0; const cur = parse(start);
+  for(let guard = 0; guard < 7000 && n < count; guard++){
+    let cands = [new Date(cur)];
+    if(r.FREQ === "WEEKLY" && byday && byday.length){ const w0 = new Date(cur); w0.setDate(cur.getDate() - cur.getDay()); cands = byday.map(d => { const x = new Date(w0); x.setDate(w0.getDate() + d); return x; }).filter(x => ymd(x) >= start).sort((a, b) => a - b); }
+    for(const c of cands){ const s0 = ymd(c); if(s0 > until || n >= count) break; n++; if(s0 >= from && s0 <= to && !ex.has(s0)) out.push(s0); }
+    if(ymd(cur) > to || ymd(cur) > until) break;
+    if(r.FREQ === "DAILY") cur.setDate(cur.getDate() + iv); else if(r.FREQ === "WEEKLY") cur.setDate(cur.getDate() + 7 * iv);
+    else if(r.FREQ === "MONTHLY") cur.setMonth(cur.getMonth() + iv); else if(r.FREQ === "YEARLY") cur.setFullYear(cur.getFullYear() + iv); else break;
+  }
+  return out;
+}
+/* turn one calendar into plain app events within a window (30 days ago … 1 year ahead) */
+function icsToEvents(cal){
+  const from = addDays(todayS(), -30), to = addDays(todayS(), 366), moved = new Set(), out = [];
+  cal.evs.filter(e => e.recur && e.uid).forEach(e => moved.add(e.uid + "|" + e.recur.date));
+  cal.evs.forEach(e => {
+    const len = e.end && !e.start.allDay && e.end.date === e.start.date ? e.end.time : "";
+    icsDates(e, from, to).forEach(d => {
+      if(!e.recur && e.uid && e.rrule && moved.has(e.uid + "|" + d)) return;
+      if(e.start.allDay && e.end && e.end.date > addDays(e.start.date, 1)){ // a multi-day all-day event: one per day
+        for(let k = 0, dd = d; k < 31 && dd < addDays(d, diff(e.end.date, e.start.date)); k++, dd = addDays(dd, 1)) out.push({uid:e.uid, title:e.title || "（無題）", date:dd, time:"", endTime:"", place:e.place || "", note:e.note || ""});
+        return; }
+      out.push({uid:e.uid, title:e.title || "（無題）", date:d, time:e.start.time, endTime:len, place:e.place || "", note:e.note || ""});
+    });
+  });
+  return out.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)).slice(0, 800);
+}
+let icsPending = null;
+async function icsPick(){
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = ".ics,.zip,text/calendar,application/zip,*/*"; inp.multiple = true;
+  inp.onchange = async () => {
+    const files = [...inp.files]; if(!files.length) return; toast("読み込んでいます…");
+    const cals = [];
+    for(const f of files){
+      try {
+        if(/\.zip$/i.test(f.name) || f.type === "application/zip"){ for(const x of await unzipIcs(f)) cals.push({file:x.file, ...parseIcs(x.text)}); }
+        else cals.push({file:f.name, ...parseIcs(await f.text())});
+      } catch(e){}
+    }
+    const list = cals.map(c => ({name:c.name || c.file.replace(/\.ics$/i, "").replace(/_[^_]*@.*$/, ""), events:icsToEvents(c)})).filter(c => c.events.length);
+    if(!list.length){ toast("読み込める予定が見つかりませんでした（.ics か、Google カレンダーの .zip を選んでください）"); return; }
+    icsPending = list.map(c => ({...c, scope:/学校|school|\.ac\.jp|\.ed\.jp|職員|学年|校務/i.test(c.name) ? "work" : "personal"}));
+    icsPane();
+  };
+  inp.click();
+}
+function icsPane(){
+  const L = icsPending;
+  openPane(`${paneHead("カレンダーを読み込む")}
+    <p class="empty" style="margin-top:0">30日前から1年先までの予定を入れます。カレンダーごとに、個人か学校（仕事）かを選んでください。</p>
+    <div class="group">${L.map((c, i) => `<div class="setrow ics-row"><span class="main"><b>${esc(c.name)}</b><small>${c.events.length}件　${esc(md(c.events[0].date))}〜${esc(md(c.events[c.events.length - 1].date))}</small></span>
+      <div class="seg mini" role="group" aria-label="${esc(c.name)}の区分">${[["personal", "個人"], ["work", "学校"], ["skip", "入れない"]].map(([k, l]) => `<button type="button" data-ics-sc="${i}:${k}" aria-pressed="${c.scope === k}">${l}</button>`).join("")}</div></div>`).join("")}</div>
+    <div class="group" style="margin-top:10px"><div class="setrow"><span class="main"><b><span class="sc-chip personal">個人</span>は、あなたの Google ドライブに保存</b><small>ほかの予定と同じように同期されます</small></span></div>
+      <div class="setrow"><span class="main"><b><span class="sc-chip work">学校</span>は、このスマホの中だけに保存</b><small>学校のデータを個人のアカウントに入れないためです。バックアップにも入りません</small></span></div></div>
+    <p class="hint">同じ名前・同じ日の予定がすでにあるときは、1つにまとめて表示します。あとから「予定」の下で取り消せます。</p>
+    <div class="btns"><button class="btn" data-act="close">やめる</button><button class="btn primary" data-ics-go>読み込む</button></div>`);
+}
+const icsId = x => { let h = 0; const t = `${x.uid}|${x.date}|${x.time}|${x.title}`; for(let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) | 0; return "ics-" + (h >>> 0).toString(36); };
+async function icsImport(btn){
+  const L = (icsPending || []).filter(c => c.scope !== "skip"); if(!L.length){ closePane(); return; }
+  btn.disabled = true; const imps = ls.get("fd-ics-imports", []), work = ls.get("fd-ics-work", {}); let total = 0;
+  for(const c of L){
+    const id = "imp" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+    if(c.scope === "work"){ work[id] = {name:c.name, at:Date.now(), events:c.events.map(e => ({title:e.title, date:e.date, time:e.time, endTime:e.endTime, place:e.place, note:e.note}))}; }
+    else { for(const e of c.events){ const eid = icsId(e); if(personalEvents.some(x => x.id === eid)) continue;
+      await put("events", eid, {title:e.title, date:e.date, time:e.time, endTime:e.endTime, place:e.place, note:e.note, kind:"", scope:"personal", src:"ics", imp:id}); } }
+    imps.push({id, name:c.name, scope:c.scope, count:c.events.length, at:Date.now()}); total += c.events.length;
+  }
+  ls.set("fd-ics-work", work); ls.set("fd-ics-imports", imps); icsPending = null;
+  mergeEvents(); closePane(); go("events"); schedule(); toast(`${total}件の予定を読み込みました`);
+}
+async function icsUndo(id){
+  const imps = ls.get("fd-ics-imports", []), x = imps.find(y => y.id === id); if(!x) return;
+  if(!confirm(`「${x.name}」から読み込んだ予定（${x.count}件）を取り消します。`)) return;
+  if(x.scope === "work"){ const w = ls.get("fd-ics-work", {}); delete w[id]; ls.set("fd-ics-work", w); }
+  else { for(const e of personalEvents.filter(y => y.imp === id)) await del("events", e.id); }
+  ls.set("fd-ics-imports", imps.filter(y => y.id !== id)); mergeEvents(); schedule(); toast("取り消しました");
+}
+const BK_SKIP = /^fd-(token|stoken|api|sapi|school-cache|ics-work|store-v1|queue-v1|demo|demo-state|fired|talk|wxfx-test|devcal)$/;
 async function saveBig(name, blob){
   if(NATIVE && NATIVE.saveOpen){
     const id = NATIVE.saveOpen(name, "application/octet-stream"); if(!id) return false;
@@ -3367,7 +3553,7 @@ function docsForEvent(e){
   if(!docsList || !e) return []; const ids = new Set([e.id, ...((evDups[e.id] || []).map(x => x.id))]), k = evKey2(e);
   return docsList.filter(d => (d.ev || []).some(x => ids.has(x.id) || evKey2(x) === k));
 }
-function liveEvent(x){ return S.events.find(e => e.id === x.id) || S.events.find(e => evKey2(e) === evKey2(x)) || null; }
+function liveEvent(x){ return evAll().find(e => e.id === x.id) || evAll().find(e => evKey2(e) === evKey2(x)) || null; }
 async function linkDoc(docId, e, on){ setTimeout(() => { try { pushSnapshot(); } catch(x){} }, 300);
   const d = (docsList || []).find(x => x.id === docId); if(!d || !e) return;
   d.ev = (d.ev || []).filter(x => !(x.id === e.id || evKey2(x) === evKey2(e)));
@@ -3432,7 +3618,7 @@ function evPickPane(docId){
     <div class="btns"><button class="btn primary" data-doc-edit="${esc(d.id)}">もどる</button></div>`);
 }
 function docPickPane(evId){
-  const e = S.events.find(x => x.id === evId); if(!e) return; const linked = new Set(docsForEvent(e).map(d => d.id));
+  const e = evAll().find(x => x.id === evId); if(!e) return; const linked = new Set(docsForEvent(e).map(d => d.id));
   const list = sortDocs(docsList || [], "opened").sort((a, b) => linked.has(b.id) - linked.has(a.id) || ((b.date === e.date) - (a.date === e.date)));
   openPane(`${paneHead("資料をひもづける")}<p class="hint" style="margin-top:0">「${esc(e.title)}」（${esc(md(e.date))}）で使う資料をえらびます。</p>
     ${list.length ? `<input class="input" type="search" placeholder="資料をさがす" data-pick-q style="margin-bottom:8px">
@@ -3887,7 +4073,8 @@ function dupNote(e){
 function schoolEventPane(e){
   openPane(`${paneHead(e.account === "学校" ? "学校の予定" : "予定")}
     <div class="group"><div class="setrow"><span class="main"><b>${esc(e.title)}</b><small>${esc([md(e.date), e.time ? e.time + (e.endTime ? "–" + e.endTime : "") : "終日", e.place].filter(Boolean).join("　"))}</small></span><span class="chip mini accent">学校</span></div></div>
-    ${dupNote(e)}${e.device ? `<p class="hint" style="margin-top:10px">スマホのカレンダー${e.calendar ? `「${esc(e.calendar)}」` : ""}（${esc(e.account)}）の予定です。表示しているだけで、Fold Desk のデータには保存していません。変更はカレンダーのアプリで行ってください。</p>`
+    ${dupNote(e)}${e.ics ? `<p class="hint" style="margin-top:10px">読み込んだカレンダー「${esc(e.calendar || "")}」の予定です（学校・仕事）。このスマホの中にだけ保存していて、個人の Google には入れていません。消すときは「予定」の下の「読み込んだカレンダー」から取り消します。</p>`
+      : e.device ? `<p class="hint" style="margin-top:10px">スマホのカレンダー${e.calendar ? `「${esc(e.calendar)}」` : ""}（${esc(e.account)}）の予定です。表示しているだけで、Fold Desk のデータには保存していません。変更はカレンダーのアプリで行ってください。</p>`
       : `<p class="hint" style="margin-top:10px">学校の Google アカウントのカレンダー${e.calendar ? `「${esc(e.calendar)}」` : ""}の予定です。このスマホに表示しているだけで、個人のアカウントには保存していません。変更は学校の Google カレンダーで行ってください。</p>`}
     <div style="margin-top:12px">${evDocsSection(e)}</div>
     <div class="btns">${e.device && e.eid ? `<button class="btn" data-dev-open="${esc(String(e.eid))}">カレンダーで開く</button>` : ""}<button class="btn primary" data-act="close">閉じる</button></div>`);
@@ -3900,6 +4087,7 @@ function eventForm(e = {}){
       <div class="frow"><div class="field"><label for="e-date">日付</label><input id="e-date" type="date" name="date" required value="${esc(e.date||todayS())}"></div>
         <div class="field"><label for="e-time">開始</label><input id="e-time" type="time" name="time" value="${esc(e.time)}"></div></div>
       <div class="frow"><div class="field"><label for="e-end">終了</label><input id="e-end" type="time" name="endTime" value="${esc(e.endTime)}"></div><div class="field"><label for="e-after">放課後</label><button type="button" class="btn" id="e-after" data-preset-after style="padding:10px 12px">16:10〜17:00</button></div></div>
+      <div class="field"><label>区分</label><div class="seg sc-seg" role="radiogroup" aria-label="区分">${[["", "おまかせ"], ["personal", "個人"], ["work", "学校（仕事）"]].map(([k, l]) => `<label class="${k}"><input type="radio" name="scope" value="${k}" ${(e.scope || "") === k ? "checked" : ""}><span>${l}</span></label>`).join("")}</div><small class="hint" style="display:block;margin-top:4px">おまかせ：種類（会議・研修など）から自動で分けます</small></div>
       <div class="frow"><div class="field"><label for="e-kind">種類</label><select id="e-kind" name="kind"><option value="">なし</option>${EKINDS.map(k=>opt(k,e.kind)).join("")}</select></div>
         <div class="field"><label for="e-place">場所</label><input id="e-place" name="place" value="${esc(e.place)}"></div></div>
       <div class="field"><label for="e-rem">通知</label><select id="e-rem" name="remindMin">${[["","いつもの設定"],["-1","なし"],["5","5分前"],["10","10分前"],["15","15分前"],["30","30分前"],["60","1時間前"]].map(([v,l]) => opt(v, e.remindMin ? String(e.remindMin) : "", l)).join("")}</select></div>
@@ -4032,7 +4220,7 @@ function reminderList(fromMs, toMs){
       if(x.type === "period"){ if(cellKind(x.cell) === "free") return; before = pref("classBefore"); title = `${x.n}時間目 ${cellText(x.cell)}`;
         const lp = lastProg(x.cell.subject, x.cell.cls); if(lp) body += lp.next ? ` ・次にやること：${lp.next}` : ` ・前回 ${progLabel(lp)}`; }
       else if(x.type === "extra"){ before = mins(x.start) >= dis && dis ? pref("afterBefore") : pref("classBefore"); title = x.label; }
-      else if(x.type === "event"){ const e = S.events.find(y => y.id === x.id) || {}; before = e.remindMin === -1 ? 0 : (e.remindMin || (mins(x.start) >= dis && dis ? pref("afterBefore") : pref("eventBefore"))); title = x.label; if(e.place) body += ` ・${e.place}`; }
+      else if(x.type === "event"){ const e = evAll().find(y => y.id === x.id) || {}; before = e.remindMin === -1 ? 0 : (e.remindMin || (mins(x.start) >= dis && dis ? pref("afterBefore") : pref("eventBefore"))); title = x.label; if(e.place) body += ` ・${e.place}`; }
       if(!before) return;
       const startAt = atOf(ds, x.start).getTime(), at = startAt - before * 60000;
       out.push({key:`${ds}|${x.type}|${x.start}|${title}`, at, startAt, title, body, lead:`${before}分後に始まります`, go: ds === t ? "today" : null});
@@ -4525,8 +4713,8 @@ document.addEventListener("click", async (ev) => {
   if(d.catnew !== undefined){ const f = $("#dc-c"); f.type = "text"; f.value = ""; b.parentNode.querySelectorAll("[data-catpick]").forEach(x => x.setAttribute("aria-pressed", "false")); f.focus(); return; }
   if(d.pickEv){ evPickPane(d.pickEv); return; }
   if(d.unlinkEv){ const [di, ei] = d.unlinkEv.split("|"); const dd = (docsList || []).find(x => x.id === di); if(dd){ const x = (dd.ev || []).find(y => y.id === ei); if(x){ await linkDoc(di, x, false); } } docEditPane(di); return; }
-  if(d.linkEv){ const [di, ei] = d.linkEv.split("|"); const e = S.events.find(x => x.id === ei); const on = b.getAttribute("aria-pressed") !== "true"; await linkDoc(di, e, on); b.setAttribute("aria-pressed", on); b.textContent = on ? "ひもづけ済み" : "ひもづける"; buzz(8); return; }
-  if(d.linkDoc){ const [di, ei] = d.linkDoc.split("|"); const e = S.events.find(x => x.id === ei); const on = b.getAttribute("aria-pressed") !== "true"; await linkDoc(di, e, on); b.setAttribute("aria-pressed", on); b.textContent = on ? "ひもづけ済み" : "ひもづける"; buzz(8); return; }
+  if(d.linkEv){ const [di, ei] = d.linkEv.split("|"); const e = evAll().find(x => x.id === ei); const on = b.getAttribute("aria-pressed") !== "true"; await linkDoc(di, e, on); b.setAttribute("aria-pressed", on); b.textContent = on ? "ひもづけ済み" : "ひもづける"; buzz(8); return; }
+  if(d.linkDoc){ const [di, ei] = d.linkDoc.split("|"); const e = evAll().find(x => x.id === ei); const on = b.getAttribute("aria-pressed") !== "true"; await linkDoc(di, e, on); b.setAttribute("aria-pressed", on); b.textContent = on ? "ひもづけ済み" : "ひもづける"; buzz(8); return; }
   if(d.evDocs){ docPickPane(d.evDocs); return; }
   if(d.docDel){ const x = (docsList || []).find(y => y.id === d.docDel); if(x && b.dataset.sure){ await DOCS.del(x.id); closePane(); toast("削除しました"); loadDocs(); } else { b.dataset.sure = "1"; b.textContent = "もう一度押すと削除"; } return; }
   if(d.docSave){ const blob = await DOCS.file(d.docSave), x = (docsList || []).find(y => y.id === d.docSave);
@@ -4540,7 +4728,7 @@ document.addEventListener("click", async (ev) => {
   if(d.devcalToggle){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); const c = devCfg(); c.on[d.devcalToggle] = on; ls.set("fd-devcal", c); refreshDevice(); return; }
   if(d.devlab){ const i = d.devlab.lastIndexOf("|"), a = d.devlab.slice(0, i), l = d.devlab.slice(i + 1); const c = devCfg(); c.label[a] = l; ls.set("fd-devcal", c);
     b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); refreshDevice(); return; }
-  if(d.dupClean){ const e = S.events.find(x => x.id === d.dupClean); if(!e) return; const rm = dupRemovable(e); b.disabled = true;
+  if(d.dupClean){ const e = evAll().find(x => x.id === d.dupClean); if(!e) return; const rm = dupRemovable(e); b.disabled = true;
     try {
       if(!e.school){ const fill = {}; ["place", "note", "time", "endTime", "kind"].forEach(k => { if(!e[k]){ const v = rm.map(x => x[k]).find(Boolean); if(v) fill[k] = v; } });
         if(Object.keys(fill).length){ const base = personalEvents.find(x => x.id === e.id); if(base) await put("events", e.id, {...base, ...fill}); } }
@@ -4564,6 +4752,11 @@ document.addEventListener("click", async (ev) => {
   if(d.act === "storage"){ storagePane(); return; }
   if(d.stor){ storageAct(b); return; }
   if(d.demo){ demoAct(d.demo); return; }
+  if(b.matches("[data-ics-pick]")){ icsPick(); return; }
+  if(b.matches("[data-ics-go]")){ icsImport(b); return; }
+  if(d.icsSc){ const [i, k] = d.icsSc.split(":"); icsPending[+i].scope = k; b.parentNode.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); return; }
+  if(d.icsDel){ icsUndo(d.icsDel); return; }
+  if(d.scTg){ const c = evShowCfg(); c[d.scTg] = c[d.scTg] === false; ls.set("fd-evshow", c); mergeEvents(); schedule(); try { pushSnapshot(); } catch(e){} buzz(6); return; }
   if(d.bk){ backupAct(d.bk, b); return; }
   if(b.matches("[data-glance-first]")){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); ls.set("fd-glance-first", on); ui.todayFull = null; schedule(); return; }
   if(d.pin){ const ok = NATIVE && NATIVE.pinWidget && NATIVE.pinWidget(d.pin); toast(ok ? "ホーム画面に置く確認が出ます" : "このホーム画面ではアプリから置けません。長押し →「ウィジェット」から置いてください"); return; }
@@ -4617,7 +4810,7 @@ document.addEventListener("click", async (ev) => {
     else if(d.rem === "h1"){ x = new Date(n.getTime() + 3600e3); }
     f.remindAt.value = x ? iso(x).slice(0,16) : ""; return; }
   if(d.openTask){ const t = S.tasks.find(x => x.id === d.openTask); if(t) taskForm(t); return; }
-  if(d.openEvent){ const e = S.events.find(x => x.id === d.openEvent); if(e) eventForm(e); return; }
+  if(d.openEvent){ const e = evAll().find(x => x.id === d.openEvent); if(e) eventForm(e); return; }
   if(d.openPerson){ personDetail(d.openPerson); return; }
   if(d.editPerson){ const p = S.people.find(x => x.id === d.editPerson); if(p) personForm(p); return; }
   if(d.new === "task"){ taskForm(d.person ? {personIds:[d.person]} : {}); return; }
@@ -4729,8 +4922,8 @@ document.addEventListener("submit", async (ev) => {
           catch(err){ toast(err.code === "offline" ? "オフラインのため入れられませんでした" : "学校のカレンダーに入れられませんでした"); if(btn) btn.disabled = false; return; }
         }
         if(v.dest === "google") v.google = "1";
-        const old = S.events.find(x => x.id === id) || {};
-        const rec = {...old, title:v.title.trim(), date:v.date, time:v.time, endTime:v.endTime||"", kind:v.kind, place:v.place, note:v.note, remindMin: v.remindMin ? +v.remindMin : 0, phone:false, files:safeFiles(v.files)};
+        const old = evAll().find(x => x.id === id) || {};
+        const rec = {...old, title:v.title.trim(), date:v.date, time:v.time, endTime:v.endTime||"", kind:v.kind, scope:v.scope || "", place:v.place, note:v.note, remindMin: v.remindMin ? +v.remindMin : 0, phone:false, files:safeFiles(v.files)};
         if((v.google || old.calId) && paired()){
           try { await gcall("g.saveEvent", {localId:id || "", ev:{title:rec.title, date:rec.date, time:rec.time, endTime:rec.endTime, place:rec.place||"", note:rec.note||"", kind:rec.kind||"", files:rec.files, remindMin:rec.remindMin > 0 ? rec.remindMin : (pref("eventBefore") || 10), calId:old.calId || ""}});
             await store.pull(true); toast("Google カレンダーにも入れました"); if(!id){ ui.calMonth = v.date.slice(0,7); ui.calSel = v.date; } closePane(); return; }
@@ -4966,7 +5159,7 @@ const concierge = (() => {
     const pick = a => a[Math.floor(Math.random() * a.length)];
     // 1) something starts soon (events and inserted items)
     (dayItems(t) || []).filter(x => (x.type === "event" || x.type === "extra") && mins(x.start) - n > 0 && mins(x.start) - n <= 30).forEach(x => {
-      const e = x.type === "event" ? S.events.find(y => y.id === x.id) : null;
+      const e = x.type === "event" ? evAll().find(y => y.id === x.id) : null;
       out.push({key:`soon:${x.start}:${x.label}`, pose:"wave", text:pick([`もうすぐだよ！${x.start}から「${x.label}」です。`, `${x.start}から「${x.label}」。あと${mins(x.start) - n}分だよ〜`, `そろそろ「${x.label}」の時間です！`]) + (e && e.place ? `場所は${e.place}。` : ""), acts: e ? [["開く", () => eventForm(e)]] : [["日程を見る", () => { ui.day = null; go("today"); }]]});
     });
     // 2) a class just ended without a progress note
@@ -5668,10 +5861,30 @@ function schoolEvents(){
    Nothing is deleted or copied: the hidden ones are listed in evDups under the one that is shown. */
 let evDups = {};
 const evKey = t => String(t || "").normalize("NFKC").toLowerCase().replace(/【[^】]*】|\[[^\]]*\]/g, "").replace(/[\s・･、。,.\-ー―〜~()（）\[\]【】「」『』:：]/g, "");
+const evAll = () => S.eventsAll || S.events || [];
+/* 個人 or 学校（仕事）: set by hand, or known from where the event came from, or guessed from its 種類 */
+const WORK_KINDS = /学校行事|学年|会議|研修|出張|外部|授業|行事/;
+function evScope(e){
+  if(!e) return "personal";
+  if(e.kind === "休み" && !e.time) return "holiday";
+  if(e.scope === "work" || e.scope === "personal") return e.scope;
+  if(e.school || e.account === "学校") return "work";
+  if(e.kind === "プライベート") return "personal";
+  return WORK_KINDS.test(e.kind || "") ? "work" : "personal";
+}
+const SCOPE_L = {personal:"個人", work:"学校", holiday:"休み"};
+const evShowCfg = () => ({personal:true, work:true, ...ls.get("fd-evshow", {})});
+function evShown(e){ const sc = evScope(e); return sc === "holiday" || evShowCfg()[sc] !== false; }
+/* calendars read from a Google Calendar export (.ics / .zip). 学校（仕事） ones stay on this phone only */
+function icsWorkEvents(){
+  const st = ls.get("fd-ics-work", {}); const out = [];
+  Object.entries(st).forEach(([imp, x]) => (x.events || []).forEach((e, i) => out.push({...e, id:`icsw:${imp}:${i}`, account:"学校", school:true, ro:true, ics:true, calendar:x.name, imp})));
+  return out;
+}
 function mergeEvents(){
-  const all = personalEvents.concat(schoolEvents(), devEv);
+  const all = personalEvents.concat(schoolEvents(), devEv, icsWorkEvents());
   evDups = {};
-  if(S.prefs && S.prefs.mergeEvents === false){ S.events = all; return; }
+  if(S.prefs && S.prefs.mergeEvents === false){ S.eventsAll = all; S.events = all.filter(evShown); return; }
   const rank = e => (e.school ? 0 : e.calId ? 30 : 20) + (e.time ? 2 : 0) + (e.place ? 1 : 0);
   const groups = new Map(), out = [];
   for(const e of all){
@@ -5681,7 +5894,7 @@ function mergeEvents(){
     if(hit){ hit.m.push(e); if(!hit.time) hit.time = e.time; } else { g.push({time:e.time, m:[e]}); groups.set(key, g); }
   }
   groups.forEach(g => g.forEach(n => { n.m.sort((a, b) => rank(b) - rank(a)); out.push(n.m[0]); if(n.m.length > 1) evDups[n.m[0].id] = n.m.slice(1); }));
-  S.events = out;
+  S.eventsAll = out; S.events = out.filter(evShown);
 }
 let schoolBusy = false;
 async function refreshSchool(force){
