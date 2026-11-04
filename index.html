@@ -1940,6 +1940,36 @@ body.classroom{background:#16221D}
 .cm-wx b{font-size:5vh;font-weight:700;line-height:1}
 .cm-wx p{font-size:2.6vh;color:var(--ink2)}
 @media (max-aspect-ratio:4/3){.cm-main{grid-template-columns:1fr;gap:3vh}.cm-day{border-left:0;padding-left:0}.cm-subj{font-size:10vh}}
+
+/* ================= v49: panels and a thick time bar ================= */
+.cm{--panel:rgba(244,242,234,.07);--panel2:rgba(244,242,234,.12);padding:3.6vh 3.6vw 3.8vh;gap:2.2vh}
+.cm-top{border-bottom:0;padding:1.6vh 2vw;background:var(--panel);border-radius:2vh;align-items:center}
+.cm-main{gap:2.2vw;padding:0;align-items:stretch}
+.cm-now{background:var(--panel);border-radius:2.4vh;padding:4vh 3vw;align-content:center}
+.cm-day{border-left:0;padding:3vh 2.2vw;background:var(--panel);border-radius:2.4vh}
+.cm-day li{border-radius:1.2vh;padding:.45vh .9vw .45vh 1vw}
+.cm-day li.cur{background:var(--panel2);border-left-color:var(--acc)}
+.cm-foot{border-top:0;padding-top:0;gap:2.2vw}
+.cm-f{background:var(--panel);border-radius:2vh;padding:2vh 2vw!important;border-left:0!important}
+.cm-line{display:none}
+.cm-bar{max-width:100%;margin-top:.4vh}
+.cm-track{position:relative;height:4.2vh;border-radius:2.1vh;background:rgba(0,0,0,.22);box-shadow:inset 0 0 0 .25vh rgba(244,242,234,.25);overflow:hidden}
+.cm-track i{position:absolute;left:0;top:0;bottom:0;background:var(--acc);border-radius:inherit;transition:width 1s linear}
+.cm.warn .cm-track i{background:#F08A5D}
+.cm-main{overflow:hidden;min-height:0}
+.cm-now{padding:3vh 2.6vw;gap:1.5vh;overflow:hidden;min-height:0}
+.cm-eye{font-size:3.6vh}
+.cm-subj{font-size:11.5vh}
+.cm-subj.long{font-size:8.5vh}
+.cm-min{font-size:4vh}.cm-min b{font-size:9vh}
+.cm-mint{font-size:3.4vh}
+.cm-prog{font-size:2.9vh}
+.cm-next{font-size:3.6vh;margin-top:.4vh}
+.cm-day{padding:2.4vh 1.8vw;overflow:hidden;min-height:0}
+.cm-day li{font-size:3.1vh}
+.cm-day li.block{font-size:2.1vh}
+.cm-foot{min-height:0}
+.cm-ends{display:flex;justify-content:space-between;margin-top:.8vh;font-size:2.6vh;color:var(--ink2)}
 </style>
 </head>
 <body>
@@ -2135,7 +2165,7 @@ let tabDownAt = 0;
 document.addEventListener("pointerdown", e => { if(e.button !== 0) return; const t = e.target.closest && e.target.closest(".tab[data-go]"); if(!t || t.closest("#pane")) return;
   tabDownAt = performance.now(); if(t.dataset.go !== view) go(t.dataset.go); }, true);
 document.addEventListener("click", e => { const t = e.target.closest && e.target.closest(".tab[data-go]"); if(t && performance.now() - tabDownAt < 700){ e.stopPropagation(); e.preventDefault(); } }, true);
-const BUILD = "fd-shell-v55";
+const BUILD = "fd-shell-v56";
 let updWaiting = false;
 async function checkBuild(){
   if(!/^fd-shell-v\d+$/.test(BUILD)) return;
@@ -3690,7 +3720,8 @@ const MB = n => n >= 1e9 ? (n / 1e9).toFixed(2) + " GB" : n >= 1e6 ? (n / 1e6).t
 /* ================= 更新履歴 (newest at the top) ================= */
 const CHANGELOG = [
  {day:"11月4日", sub:"水曜日・だれでも使える日", list:[
-  {v:"アプリ内", t:"深夜", big:1, newest:1, h:"教室モニターを見やすく", it:[["i","教室のうしろからでも読めるように、いまの授業と残り時間を1つの大きな見出しに。時間割は右に静かな表で、天気・明日・予定は下の1行に"],["i","学校向けのユニバーサルデザインの書体（BIZ UDPゴシック）。色は白・うすい白・黄色の3つだけ。枠と光る飾りをやめた"]]},
+  {v:"アプリ内", t:"深夜", big:1, newest:1, h:"教室モニターに区切りと太いバー", it:[["i","いま・時間割・天気などをうすい板で区切って、どこに何があるかすぐわかるように"],["i","残り時間のバーを太くして、始まりと終わりの時刻を両はしに。残り3分でオレンジに"]]},
+  {v:"アプリ内", t:"深夜", big:1, h:"教室モニターを見やすく", it:[["i","教室のうしろからでも読めるように、いまの授業と残り時間を1つの大きな見出しに。時間割は右に静かな表で、天気・明日・予定は下の1行に"],["i","学校向けのユニバーサルデザインの書体（BIZ UDPゴシック）。色は白・うすい白・黄色の3つだけ。枠と光る飾りをやめた"]]},
   {v:"アプリ内", t:"夜", big:1, h:"教室モニター", lead:"ラズパイやパソコンで、子ども向けの「今日」を出しっぱなしに。", it:[["n","時計・いまの授業と残り時間・次・1日の帯・今日の時間割（授業の続きつき）・天気と窓の空・今日の予定・明日の時間割・これからの予定"],["n","ふりがなつき表示。残り3分で数字が点滅、夜は画面を暗く"],["n","スマホの「通知と設定 → 教室モニター」でクラスの時間割と見せる予定を選び、リンクを作るだけ。教室のパソコンにはアカウントの鍵を入れない"],["n","ラズパイを電源オンで全画面にする手順つき"]]},
   {v:"アプリ内", t:"夕方", big:1, h:"タブを、ぬるぬるに", it:[["i","タブは指がふれた瞬間に切りかわり、ページごとにちがう動きで出てくる。時間割はななめに波のように、予定はカレンダーが週ごとに、タイマーは輪が回って、今日は黒板が上からすとんと"],["i","押したタブのアイコンがぽんとはねる"],["f","窓の空が1分ほどでぼやけていた問題。画面のこまかさに合わせてくっきり描くように"],["f","窓の面からもどったとき、キャラクターが画面の途中に残っていた問題"]]},
   {v:"アプリ内", t:"昼", big:1, h:"窓と掲示板を仕上げ", it:[["n","1日の帯に学校の時間（朝から下校まで）。日の出・日の入りは太陽の印で、正しい位置に"],["n","掲示板の紙を長押しで「明日にまわす」「はがす」"],["n","窓の空をタップすると、鳥や飛行機が通ることも"],["i","時刻と天気は窓の下の小さな黒板に。窓は景色だけ"],["i","広い画面では窓と掲示板を横に並べる。キャラクターは窓辺に座る"],["i","掲示板は今日の分を6枚まで、残りは「ほか○件」。黒板の右はしに窓の目印"],["i","ほかのタブから「今日」にもどると、いつも黒板から"],["f","窓の面で戻るボタンを押すとアプリが閉じていた問題"],["f","省エネ中に窓が青い四角になっていた問題、文字「特大」で掲示板がくずれる問題"]]},
@@ -4144,7 +4175,7 @@ function classroomView(){
     <section class="cm-main">
       <div class="cm-now">${eyebrow ? `<p class="cm-eye">${eyebrow}</p>` : ""}<h1 class="cm-subj ${main.replace(/<rt>.*?<\/rt>|<[^>]+>/g, "").length > 6 ? "long" : ""}">${main}</h1>
         ${minutes ? `<div class="cm-rest">${minutes}</div>` : ""}
-        ${frac !== null ? `<div class="cm-line"><i style="width:${(frac * 100).toFixed(1)}%"></i></div>` : ""}
+        ${frac !== null ? `<div class="cm-bar"><div class="cm-track"><i style="width:${(frac * 100).toFixed(1)}%"></i></div><div class="cm-ends num"><span>${st.cur.start}</span><span>${st.cur.end}</span></div></div>` : ""}
         ${sub ? `<p class="cm-prog">${sub}</p>` : ""}${nextLine}</div>
       <div class="cm-day"><h2>${J("きょうの じかんわり", "今日の時間割")}</h2><ol>${rows}</ol></div>
     </section>
