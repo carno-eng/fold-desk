@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>Fold Desk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=BIZ+UDPGothic:wght@400;700&display=swap">
 <style>
 /* Fold Desk v6 — Apple HIG: clarity (large titles, one accent), deference (glass chrome over content), depth (springs, sheets).
    Four shapes: cover portrait = floating glass tab bar; cover landscape / main portrait = icon rail; main landscape = sidebar + docked pane. */
@@ -1870,6 +1870,76 @@ body.classroom{background:#16221D}
 .cls-ed td .input{padding:8px 6px;font-size:14px;min-width:0;width:100%;box-sizing:border-box}
 .cmd{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:12px;background:#111;color:#E8EEEA;margin:8px 0}
 .cmd code{flex:1;min-width:0;font-size:12px;line-height:1.6;word-break:break-all;font-family:ui-monospace,monospace}
+
+/* ================= v48: 教室モニター, calm and readable from the back of the room ================= */
+.cm{--ink:#F4F2EA;--ink2:rgba(244,242,234,.62);--ink3:rgba(244,242,234,.32);--acc:#F2C94C;--rule:rgba(244,242,234,.14);
+  position:fixed;inset:0;z-index:40;box-sizing:border-box;max-width:none!important;margin:0!important;width:auto!important;display:grid;grid-template-rows:auto 1fr auto;
+  padding:4.5vh 5vw 5vh;background:var(--board);color:var(--ink);
+  font-family:"BIZ UDPGothic","Zen Kaku Gothic New",system-ui,sans-serif;font-size:2.8vh;line-height:1.35;overflow:hidden}
+.cm.dim{filter:brightness(.4)}
+.cm .num{font-family:"BIZ UDPGothic",var(--f-num),sans-serif;font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.cm p,.cm h1,.cm h2,.cm h3,.cm ol{margin:0}
+.cm ruby rt{font-size:.38em;font-weight:400;color:var(--ink2);letter-spacing:.04em}
+/* top line: date left, clock right, on one baseline */
+.cm-top{display:flex;align-items:baseline;gap:2.4vw;padding-bottom:2.6vh;border-bottom:1px solid var(--rule)}
+.cm-date{display:flex;align-items:baseline;gap:1.2vw;white-space:nowrap}
+.cm-date b{font-size:4.4vh;font-weight:700}
+.cm-date span{font-size:3vh;color:var(--ink2)}
+.cm-tag{font-size:2.4vh!important;color:var(--board)!important;background:var(--acc);padding:.2vh .8vw;border-radius:.6vh;font-weight:700}
+.cm-class{font-size:3vh;color:var(--ink2);white-space:nowrap}
+.cm .cm-clock{margin-left:auto;font-size:6.4vh;font-weight:700;letter-spacing:.01em;line-height:1;user-select:none}
+/* main: the one big message, and today's list beside it */
+.cm-main{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:5vw;align-items:center;min-height:0;padding:3vh 0}
+.cm-now{display:grid;align-content:center;gap:2.2vh}
+.cm-eye{font-size:4.2vh;font-weight:700;color:var(--ink2)}
+.cm-subj{font-size:14vh;font-weight:700;line-height:1.08;letter-spacing:.02em}
+.cm-subj ruby rt{font-size:.24em}
+.cm-subj.long{font-size:10vh}
+.cm-rest{display:flex;align-items:baseline;gap:1.2vw;margin-top:.6vh}
+.cm-min{font-size:4.6vh;font-weight:700}
+.cm-min b{font-size:11vh;font-weight:700;color:var(--acc);margin-right:.4vw;line-height:1}
+.cm-mint{font-size:4vh;color:var(--ink2)}
+.cm.warn .cm-min b{animation:cmWarn 1.2s ease-in-out infinite}
+@keyframes cmWarn{50%{opacity:.35}}
+.cm-line{height:.9vh;max-width:62vw;background:var(--rule);border-radius:1vh;overflow:hidden}
+.cm-line i{display:block;height:100%;background:var(--ink);border-radius:inherit;transition:width 1s linear}
+.cm-prog{font-size:3.2vh;color:var(--acc);display:flex;gap:1.2vw;align-items:baseline}
+.cm-prog span{font-size:2.6vh;color:var(--ink2)}
+.cm-next{display:flex;align-items:baseline;gap:1.2vw;margin-top:1.4vh;font-size:4vh;white-space:nowrap}
+.cm-next > span:first-child{color:var(--ink2);font-size:3.2vh}
+.cm-next b{font-weight:700}
+.cm-next .cm-at{color:var(--ink2);font-size:3.2vh}
+/* today's list: a quiet table, numbers and times in their own columns */
+.cm-day{align-self:stretch;display:flex;flex-direction:column;min-height:0;padding-left:3vw;border-left:1px solid var(--rule)}
+.cm-day h2{font-size:2.8vh;font-weight:700;color:var(--ink2);margin-bottom:1.4vh;letter-spacing:.06em}
+.cm-day ol{list-style:none;padding:0;display:flex;flex-direction:column;justify-content:space-between;flex:1;min-height:0}
+.cm-day ol{overflow:hidden}
+.cm-day li{display:grid;grid-template-columns:3.2vh 1fr auto;align-items:baseline;gap:1.4vw;padding:.25vh 0 .25vh 1vw;font-size:3.4vh;border-left:.5vh solid transparent;white-space:nowrap}
+.cm-day li.block{font-size:2.3vh;color:var(--ink2)}
+.cm-day li.block ruby rt{display:none}
+.cm-day li.past{color:var(--ink3)}
+.cm-day li.past .cm-t{color:var(--ink3)}
+.cm-day li.cur{border-left-color:var(--acc);font-weight:700}
+.cm-day li.cur.block{color:var(--ink)}
+.cm-n{font-size:.8em;color:var(--ink2);text-align:right;font-weight:700}
+.cm-t{font-size:.72em;color:var(--ink2)}
+.cm-day li.none{font-size:3.2vh;color:var(--ink2);grid-template-columns:1fr}
+/* footer: three short facts, separated by thin rules */
+.cm-foot{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:0;padding-top:2.6vh;border-top:1px solid var(--rule)}
+.cm-f{padding:0 2.6vw;border-left:1px solid var(--rule);min-width:0}
+.cm-f:first-child{padding-left:0;border-left:0}
+.cm-f h3{display:flex;align-items:baseline;gap:1vw;font-size:2.6vh;font-weight:700;color:var(--ink2);margin-bottom:.8vh;white-space:nowrap}
+.cm-f h3 em{font-style:normal;color:var(--board);background:var(--acc);font-size:2.1vh;padding:0 .6vw;border-radius:.5vh}
+.cm-f p{font-size:2.9vh;display:flex;gap:1vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cm-f p > span{color:var(--ink2);flex:none}
+.cm-acc{color:var(--acc)!important}
+.cm-tm{display:block!important;white-space:normal!important;line-height:1.9}
+.cm-tm i{font-style:normal;color:var(--ink3);margin:0 .3vw}
+.cm-wx{display:flex;align-items:center;gap:1.4vw}
+.cm-ic{width:7vh;height:7vh;flex:none}.cm-ic svg{width:100%;height:100%;overflow:visible}
+.cm-wx b{font-size:5vh;font-weight:700;line-height:1}
+.cm-wx p{font-size:2.6vh;color:var(--ink2)}
+@media (max-aspect-ratio:4/3){.cm-main{grid-template-columns:1fr;gap:3vh}.cm-day{border-left:0;padding-left:0}.cm-subj{font-size:10vh}}
 </style>
 </head>
 <body>
@@ -2065,7 +2135,7 @@ let tabDownAt = 0;
 document.addEventListener("pointerdown", e => { if(e.button !== 0) return; const t = e.target.closest && e.target.closest(".tab[data-go]"); if(!t || t.closest("#pane")) return;
   tabDownAt = performance.now(); if(t.dataset.go !== view) go(t.dataset.go); }, true);
 document.addEventListener("click", e => { const t = e.target.closest && e.target.closest(".tab[data-go]"); if(t && performance.now() - tabDownAt < 700){ e.stopPropagation(); e.preventDefault(); } }, true);
-const BUILD = "fd-shell-v54";
+const BUILD = "fd-shell-v55";
 let updWaiting = false;
 async function checkBuild(){
   if(!/^fd-shell-v\d+$/.test(BUILD)) return;
@@ -3620,7 +3690,8 @@ const MB = n => n >= 1e9 ? (n / 1e9).toFixed(2) + " GB" : n >= 1e6 ? (n / 1e6).t
 /* ================= 更新履歴 (newest at the top) ================= */
 const CHANGELOG = [
  {day:"11月4日", sub:"水曜日・だれでも使える日", list:[
-  {v:"アプリ内", t:"夜", big:1, newest:1, h:"教室モニター", lead:"ラズパイやパソコンで、子ども向けの「今日」を出しっぱなしに。", it:[["n","時計・いまの授業と残り時間・次・1日の帯・今日の時間割（授業の続きつき）・天気と窓の空・今日の予定・明日の時間割・これからの予定"],["n","ふりがなつき表示。残り3分で数字が点滅、夜は画面を暗く"],["n","スマホの「通知と設定 → 教室モニター」でクラスの時間割と見せる予定を選び、リンクを作るだけ。教室のパソコンにはアカウントの鍵を入れない"],["n","ラズパイを電源オンで全画面にする手順つき"]]},
+  {v:"アプリ内", t:"深夜", big:1, newest:1, h:"教室モニターを見やすく", it:[["i","教室のうしろからでも読めるように、いまの授業と残り時間を1つの大きな見出しに。時間割は右に静かな表で、天気・明日・予定は下の1行に"],["i","学校向けのユニバーサルデザインの書体（BIZ UDPゴシック）。色は白・うすい白・黄色の3つだけ。枠と光る飾りをやめた"]]},
+  {v:"アプリ内", t:"夜", big:1, h:"教室モニター", lead:"ラズパイやパソコンで、子ども向けの「今日」を出しっぱなしに。", it:[["n","時計・いまの授業と残り時間・次・1日の帯・今日の時間割（授業の続きつき）・天気と窓の空・今日の予定・明日の時間割・これからの予定"],["n","ふりがなつき表示。残り3分で数字が点滅、夜は画面を暗く"],["n","スマホの「通知と設定 → 教室モニター」でクラスの時間割と見せる予定を選び、リンクを作るだけ。教室のパソコンにはアカウントの鍵を入れない"],["n","ラズパイを電源オンで全画面にする手順つき"]]},
   {v:"アプリ内", t:"夕方", big:1, h:"タブを、ぬるぬるに", it:[["i","タブは指がふれた瞬間に切りかわり、ページごとにちがう動きで出てくる。時間割はななめに波のように、予定はカレンダーが週ごとに、タイマーは輪が回って、今日は黒板が上からすとんと"],["i","押したタブのアイコンがぽんとはねる"],["f","窓の空が1分ほどでぼやけていた問題。画面のこまかさに合わせてくっきり描くように"],["f","窓の面からもどったとき、キャラクターが画面の途中に残っていた問題"]]},
   {v:"アプリ内", t:"昼", big:1, h:"窓と掲示板を仕上げ", it:[["n","1日の帯に学校の時間（朝から下校まで）。日の出・日の入りは太陽の印で、正しい位置に"],["n","掲示板の紙を長押しで「明日にまわす」「はがす」"],["n","窓の空をタップすると、鳥や飛行機が通ることも"],["i","時刻と天気は窓の下の小さな黒板に。窓は景色だけ"],["i","広い画面では窓と掲示板を横に並べる。キャラクターは窓辺に座る"],["i","掲示板は今日の分を6枚まで、残りは「ほか○件」。黒板の右はしに窓の目印"],["i","ほかのタブから「今日」にもどると、いつも黒板から"],["f","窓の面で戻るボタンを押すとアプリが閉じていた問題"],["f","省エネ中に窓が青い四角になっていた問題、文字「特大」で掲示板がくずれる問題"]]},
   {v:"アプリ内", t:"深夜", big:1, h:"窓と掲示板", lead:"「今日」を左になぞると、サイコロが転がるように面が変わります。", it:[["n","窓：いまの空（天気・時間帯）と、日の出から日の入りまでの1日の様子"],["n","掲示板：今日使う資料がピンで貼られ、期限のタスクは付箋に。これから1週間の資料も小さく"],["i","天気の面を黒板とチョークの見た目に。ポモドーロの輪は赤をやめてテーマ色に"],["i","背景の空を落ち着いた色に。「新しくなりました」は上に出すように"],["i","タスクと予定の入力は、大事なところだけを先に。残りは「くわしく」に"],["i","設定に目次。ボタンの見た目をそろえ、資料の検索欄を広く"],["f","開いた直後の「朝のまとめ」が見出しに重なっていた問題"]]},
@@ -4019,7 +4090,7 @@ async function clsDecode(s0){
 }
 let CLS = null, clsPreview = false;
 const KANA = {"国語":"こくご","算数":"さんすう","生活":"せいかつ","音楽":"おんがく","図画工作":"ずがこうさく","図工":"ずこう","体育":"たいいく","道徳":"どうとく","学級活動":"がっきゅうかつどう","学活":"がっかつ","特別活動":"とくべつかつどう","英語":"えいご","外国語":"がいこくご","外国語活動":"がいこくごかつどう","情報探究":"じょうほうたんきゅう","総合":"そうごう","理科":"りか","社会":"しゃかい","書写":"しょしゃ","家庭":"かてい","図書":"としょ",
-  "朝の会":"あさのかい","帰りの会":"かえりのかい","朝のHR":"あさのかい","帰りのHR":"かえりのかい","中休み":"なかやすみ","昼休み":"ひるやすみ","給食":"きゅうしょく","給食・昼休み":"きゅうしょく・ひるやすみ","清掃":"そうじ","掃除":"そうじ","整理整頓・清掃":"せいり・そうじ","掃除・支度":"そうじ・したく","朝会":"ちょうかい","休み":"やすみ"};
+  "朝の会":"あさのかい","帰りの会":"かえりのかい","中休み":"なかやすみ","昼休み":"ひるやすみ","給食":"きゅうしょく","給食・昼休み":"きゅうしょく・ひるやすみ","清掃":"そうじ","掃除":"そうじ","整理整頓・清掃":"せいり・そうじ","掃除・支度":"そうじ・したく","朝会":"ちょうかい","休み":"やすみ"};
 const WDK = ["にちようび", "げつようび", "かようび", "すいようび", "もくようび", "きんようび", "どようび"];
 const rb = (t, on) => { t = String(t || ""); const k = KANA[t]; return on && k ? `<ruby>${esc(t)}<rt>${esc(k)}</rt></ruby>` : esc(t); };
 function clsDayItems(c, dateS){
@@ -4039,51 +4110,48 @@ function clsNow(c){
 }
 function classroomView(){
   const c = CLS, K = c.kana !== false, now = new Date(), t = todayS(), st = clsNow(c), w = c.wx !== false ? wxNow() : null;
-  const hhmm = `${now.getHours()}:${pad(now.getMinutes())}`, J = (a, b) => K ? a : b;
-  const name = (x, small) => x.type === "period" ? (x.sub ? rb(x.sub, K) : J("あき", "空き")) : rb(x.label, K);
-  const pn = x => x.type === "period" ? `<span class="cl-pn">${x.n}</span>` : `<span class="cl-pn blk"></span>`;
-  let big = "", left = "", nxt = "", frac = 0, warn = false;
-  if(st.off){ big = J("きょうは おやすみ", "今日はお休み"); }
-  else if(st.cur){ const end = mins(st.cur.end), start = mins(st.cur.start), rest = Math.max(0, Math.ceil(end - st.m)); frac = Math.min(1, (st.m - start) / Math.max(1, end - start)); warn = rest <= 3;
-    big = `${st.cur.type === "period" ? `<small>${st.cur.n}${J("じかんめ", "時間目")}</small>` : ""}${name(st.cur)}`; left = `${J("あと", "あと")} <b class="num">${rest}</b> ${J("ぷん", "分")}`; }
-  else if(st.before){ big = J("おはよう！", "おはようございます"); const nx = st.next; if(nx) left = `${name(nx)} ${J("まで", "まで")} <b class="num">${Math.max(0, Math.ceil(mins(nx.start) - st.m))}</b> ${J("ぷん", "分")}`; }
-  else if(st.after){ big = J("きょうも おつかれさま", "今日もおつかれさま"); left = J("また あした！", "また明日！"); }
-  else { big = J("つぎの じゅんびを しよう", "次の準備をしよう"); }
-  if(st.next && !st.off && !st.after) nxt = `<div class="cl-next"><small>${J("つぎは", "次は")}</small><b>${st.next.type === "period" ? `${st.next.n}${J("じかんめ", "時間目")} ` : ""}${name(st.next)}</b><span class="num">${st.next.start}</span></div>`;
-  const prog = c.prog || {}, dayL = st.day ? st.day.items : [];
-  const list = dayL.length ? dayL.map(x => { const past = mins(x.end) <= st.m, isCur = st.cur && st.cur.start === x.start && st.cur.type === x.type, pg = x.type === "period" && x.sub && prog[x.sub];
-      return `<div class="cl-row ${x.type} ${past ? "past" : ""} ${isCur ? "cur" : ""}">${pn(x)}<span class="cl-sub">${name(x)}${pg ? `<em>${esc(pg)}</em>` : ""}</span><span class="cl-tm num">${x.start}</span></div>`; }).join("")
-    : `<div class="cl-empty">${J("きょうは じゅぎょうが ありません", "今日は授業がありません")}</div>`;
-  // tomorrow (next school day)
+  const J = (a, b) => K ? a : b, nm = x => x.type === "period" ? (x.sub ? rb(x.sub, K) : J("あき", "空き")) : rb(x.label, K);
+  const dayL = st.day ? st.day.items : [], prog = c.prog || {};
+  let eyebrow = "", main = "", minutes = "", frac = null, sub = "", warn = false;
+  if(st.off){ eyebrow = ""; main = J("きょうは おやすみ", "今日はお休み"); }
+  else if(st.cur){ const end = mins(st.cur.end), start = mins(st.cur.start), rest = Math.max(0, Math.ceil(end - st.m));
+    frac = Math.min(1, Math.max(0, (st.m - start) / Math.max(1, end - start))); warn = rest <= 3;
+    eyebrow = st.cur.type === "period" ? `${st.cur.n}${J("じかんめ", "時間目")}` : J("いまは", "いまは");
+    main = nm(st.cur); minutes = `<span class="cm-min"><b class="num">${rest}</b>${J("ぷん", "分")}</span><span class="cm-mint">${J("のこり", "のこり")}</span>`;
+    const pg = st.cur.type === "period" && st.cur.sub && prog[st.cur.sub]; if(pg) sub = `<span>${J("きょうの べんきょう", "今日の学習")}</span>${esc(String(pg).replace(/^つぎ：/, ""))}`; }
+  else if(st.before){ eyebrow = J("おはようございます", "おはようございます"); main = st.next ? nm(st.next) : "";
+    if(st.next) minutes = `<span class="cm-min"><b class="num">${Math.max(0, Math.ceil(mins(st.next.start) - st.m))}</b>${J("ぷん", "分")}</span><span class="cm-mint">${J("で はじまります", "で始まります")}</span>`; }
+  else if(st.after){ eyebrow = J("きょうも おつかれさまでした", "今日もおつかれさまでした"); main = J("また あした", "また明日"); }
+  else { main = J("つぎの じゅんび", "次の準備"); }
+  const nextLine = st.next && !st.off && !st.after && !st.before ? `<p class="cm-next"><span>${J("つぎ", "次")}</span>${st.next.type === "period" ? `<span class="num">${st.next.n}</span>` : ""}<b>${nm(st.next)}</b><span class="num cm-at">${st.next.start}</span></p>` : "";
+  const rows = dayL.length ? dayL.map(x => { const past = mins(x.end) <= st.m, cur = st.cur && st.cur.start === x.start && st.cur.type === x.type;
+      return `<li class="${x.type} ${past ? "past" : ""} ${cur ? "cur" : ""}"><span class="cm-n num">${x.type === "period" ? x.n : ""}</span><span class="cm-s">${nm(x)}</span><span class="cm-t num">${x.start}</span></li>`; }).join("")
+    : `<li class="none">${J("じゅぎょうは ありません", "授業はありません")}</li>`;
   let nd = addDays(t, 1), tries = 0; while(!clsDayItems(c, nd) && tries++ < 6) nd = addDays(nd, 1);
-  const tm = clsDayItems(c, nd), tmD = parse(nd);
-  const tmList = tm ? tm.items.filter(x => x.type === "period").map(x => `<span class="cl-chip">${x.n} ${x.sub ? rb(x.sub, K) : J("あき", "空き")}</span>`).join("") : "";
-  const evs = (c.ev || []).filter(e => e.d >= t).slice(0, 6);
-  const evToday = evs.filter(e => e.d === t), evSoon = evs.filter(e => e.d > t).slice(0, 3);
-  const md2 = d => { const x = parse(d); return `${x.getMonth() + 1}/${x.getDate()}(${"日月火水木金土"[x.getDay()]})`; };
-  const wxHtml = w ? (() => { const [lab, kind] = WMO(w.code); const rain = w.rainAt;
-      return `<div class="cl-wx"><span class="cl-wxi">${wxIcon(kind, w.day)}</span><span><b class="num">${w.t}℃</b><small>${esc(lab)}　${w.hi}° / ${w.lo}°</small>${rain ? `<em>${J(`${rain.h}じごろ あめ。かさを わすれずに`, `${rain.h}時ごろ雨。傘を忘れずに`)}</em>` : w.pop >= 50 ? `<em>${J("あめが ふるかも", "雨が降るかも")}</em>` : ""}</span></div>`; })() : "";
-  const modeTag = st.day && st.day.mode !== "normal" ? `<span class="cl-mode">${esc(st.day.label)}${J("じてい", "時程")}</span>` : "";
-  // the whole day as a strip
-  let strip = "";
-  if(dayL.length){ const s0 = mins(dayL[0].start) - 5, s1 = Math.max(...dayL.map(x => mins(x.end)), mins(st.day.dismiss) || 0) + 5, span = s1 - s0;
-    strip = `<div class="cl-strip">${dayL.map(x => `<i class="${x.type} ${mins(x.end) <= st.m ? "past" : ""}" style="left:${(mins(x.start) - s0) / span * 100}%;width:${(mins(x.end) - mins(x.start)) / span * 100}%">${x.type === "period" ? x.n : ""}</i>`).join("")}${st.m >= s0 && st.m <= s1 ? `<b class="cl-nowl" style="left:${(st.m - s0) / span * 100}%"></b>` : ""}</div>`; }
+  const tm = clsDayItems(c, nd), tmD = parse(nd), wdS = d => K ? WDK[d.getDay()].replace("ようび", "") : "日月火水木金土"[d.getDay()];
+  const evs = (c.ev || []).filter(e => e.d >= t), evT = evs.filter(e => e.d === t), evN = evs.filter(e => e.d > t).slice(0, 2);
+  const md2 = d => { const x = parse(d); return `${x.getMonth() + 1}/${x.getDate()}`; };
+  const wx = w ? (() => { const [lab, kind] = WMO(w.code); const note = w.rainAt ? J(`${w.rainAt.h}じごろから あめ`, `${w.rainAt.h}時ごろから雨`) : w.pop >= 50 ? J("あめが ふるかも", "雨が降るかも") : "";
+      return `<div class="cm-f cm-wx"><span class="cm-ic">${wxIcon(kind, w.day)}</span><div><b class="num">${w.t}°</b><p>${esc(lab)}<span class="num"> ${w.hi}° / ${w.lo}°</span></p>${note ? `<p class="cm-acc">${note}</p>` : ""}</div></div>`; })() : "";
+  const foot = [wx,
+    tm ? `<div class="cm-f"><h3>${J("あした", "明日")}<span class="num">${tmD.getMonth() + 1}/${tmD.getDate()}（${wdS(tmD)}）</span>${tm.mode !== "normal" ? `<em>${esc(tm.label)}</em>` : ""}</h3><p class="cm-tm">${tm.items.filter(x => x.type === "period").map(x => x.sub ? rb(x.sub, K) : J("あき", "空き")).join('<i>・</i>')}</p></div>` : "",
+    evT.length || evN.length ? `<div class="cm-f"><h3>${J("よてい", "予定")}</h3>${evT.map(e => `<p><span class="cm-acc">${J("きょう", "今日")}</span>${esc(e.t)}</p>`).join("")}${evN.map(e => `<p><span class="num">${md2(e.d)}</span>${esc(e.t)}</p>`).join("")}</div>` : ""].filter(Boolean).join("");
   const dim = now.getHours() >= 19 || now.getHours() < 6;
-  return `<div class="cls ${dim ? "dim" : ""} ${warn ? "warn" : ""}">
-    <header class="cl-top"><div class="cl-date"><b>${now.getMonth() + 1}${J("がつ", "月")}${now.getDate()}${J("にち", "日")}</b><span>${K ? WDK[now.getDay()] : "日月火水木金土"[now.getDay()] + "曜日"}</span>${modeTag}</div>
-      ${c.name ? `<div class="cl-name">${esc(c.name)}</div>` : ""}<div class="cl-clock num" data-cls-hold>${hhmm}</div></header>
-    <main class="cl-grid">
-      <section class="cl-now"><div class="cl-big">${big}</div>${left ? `<div class="cl-left">${left}</div>` : ""}
-        ${st.cur ? `<div class="cl-bar"><i style="width:${(frac * 100).toFixed(1)}%"></i></div>` : ""}${nxt}${strip}</section>
-      <section class="cl-list"><h2>${J("きょうの じかんわり", "今日の時間割")}</h2>${list}</section>
-      <section class="cl-side">${c.wx !== false ? `<div class="cl-win"><canvas class="winsky" aria-hidden="true"></canvas><i class="win-bar v"></i><i class="win-bar h"></i></div>${wxHtml}` : ""}
-        ${evToday.length ? `<div class="cls-card"><h3>${J("きょうの よてい", "今日の予定")}</h3>${evToday.map(e => `<p><span class="num">${esc(e.tm || "")}</span>${esc(e.t)}</p>`).join("")}</div>` : ""}
-        ${tm ? `<div class="cls-card"><h3>${J("あした", "明日")} <small>${tmD.getMonth() + 1}/${tmD.getDate()}（${K ? WDK[tmD.getDay()].replace("ようび", "") : "日月火水木金土"[tmD.getDay()]}）${tm.mode !== "normal" ? " " + esc(tm.label) : ""}</small></h3><div class="cl-chips">${tmList}</div></div>` : ""}
-        ${evSoon.length ? `<div class="cls-card"><h3>${J("これからの よてい", "これからの予定")}</h3>${evSoon.map(e => `<p><span class="num">${md2(e.d)}</span>${esc(e.t)}</p>`).join("")}</div>` : ""}</section>
-    </main><i class="cl-tray" aria-hidden="true"></i>
+  const mode = st.day && st.day.mode !== "normal" ? `<span class="cm-tag">${esc(st.day.label)}</span>` : "";
+  return `<div class="cm ${dim ? "dim" : ""} ${warn ? "warn" : ""}">
+    <header class="cm-top"><p class="cm-date"><b>${now.getMonth() + 1}${J("がつ", "月")}${now.getDate()}${J("にち", "日")}</b><span>${K ? WDK[now.getDay()] : "日月火水木金土"[now.getDay()] + "曜日"}</span>${mode}</p>
+      ${c.name ? `<p class="cm-class">${esc(c.name)}</p>` : ""}<p class="cm-clock num" data-cls-hold>${now.getHours()}:${pad(now.getMinutes())}</p></header>
+    <section class="cm-main">
+      <div class="cm-now">${eyebrow ? `<p class="cm-eye">${eyebrow}</p>` : ""}<h1 class="cm-subj ${main.replace(/<rt>.*?<\/rt>|<[^>]+>/g, "").length > 6 ? "long" : ""}">${main}</h1>
+        ${minutes ? `<div class="cm-rest">${minutes}</div>` : ""}
+        ${frac !== null ? `<div class="cm-line"><i style="width:${(frac * 100).toFixed(1)}%"></i></div>` : ""}
+        ${sub ? `<p class="cm-prog">${sub}</p>` : ""}${nextLine}</div>
+      <div class="cm-day"><h2>${J("きょうの じかんわり", "今日の時間割")}</h2><ol>${rows}</ol></div>
+    </section>
+    ${foot ? `<footer class="cm-foot">${foot}</footer>` : ""}
     ${clsPreview ? `<button class="cl-exit" data-cls-exit>プレビューを閉じる</button>` : ""}</div>`;
 }
-const clsky = makeSky({sel:".cl-win canvas.winsky", cond:() => !!CLS && CLS.wx !== false});
+const clsky = makeSky({sel:".cm canvas.winsky", cond:() => false});
 async function clsBoot(){
   const raw = CLS_RAW_NEW || (!paired() ? localStorage.getItem("fd-class-raw") : null); if(!raw) return;
   const c = await clsDecode(raw); if(!c){ if(CLS_RAW_NEW) toast("教室モニターのリンクを読み取れませんでした"); return; }
@@ -4119,7 +4187,7 @@ function classPane(){
     <div class="field"><label>クラスの名前（画面の上に出ます）</label><input class="input" data-cls-f="name" value="${esc(clsEd.name)}" placeholder="例：1ねん1くみ"></div>
     <div class="group">
       <div class="setrow"><span class="main"><b>ふりがなをつける</b><small>教科や「なかやすみ」などにふりがな。時刻の言葉もひらがなに</small></span><button class="switch" role="switch" aria-checked="${clsEd.kana}" data-cls-sw="kana"></button></div>
-      <div class="setrow"><span class="main"><b>天気と窓の空</b></span><button class="switch" role="switch" aria-checked="${clsEd.wx}" data-cls-sw="wx"></button></div>
+      <div class="setrow"><span class="main"><b>天気</b></span><button class="switch" role="switch" aria-checked="${clsEd.wx}" data-cls-sw="wx"></button></div>
       <div class="setrow"><span class="main"><b>授業の続き</b><small>「授業の進度」の次にやること（例：くじらぐも 音読発表）</small></span><button class="switch" role="switch" aria-checked="${clsEd.prog}" data-cls-sw="prog"></button></div></div>
     <div class="sec">クラスの時間割</div>
     <p class="hint" style="margin-top:0">あなたの時間割から、自分のクラスの授業を入れてあります。ほかの先生の授業の時間も、教科を入れてください。</p>
@@ -4141,7 +4209,7 @@ async function clsPayload(){
   for(let i = 0; i < 45; i++){ const d = addDays(t, i); if(S.days && S.days[d]) days[d] = S.days[d]; else { const am = isWeekday(d) ? autoModeOf(d) : null; if(am) days[d] = am.mode; } if(holidayOf(d)) holi.push(d); }
   const off = {}; Object.entries(OFFICIAL).forEach(([k, M]) => { off[k] = {label:M.label, dismiss:M.dismiss || "", low:(M.low || []).map(x => x ? {start:x.start, end:x.end} : null), blocks:(M.blocks || []).map(b => ({label:b.label, start:b.start, end:b.end}))}; });
   const grid = {}; DAYKEYS.forEach(dk => { grid[dk] = (clsEd.grid[dk] || []).map(x => x ? {s:x} : {}); });
-  const prog = {}; if(clsEd.prog) new Set(Object.values(clsEd.grid).flat().filter(Boolean)).forEach(sub => { const lp = lastProg(sub, ""); if(lp && (lp.next || lp.unit)) prog[sub] = lp.next ? `つぎ：${lp.next}` : progLabel(lp); });
+  const prog = {}; if(clsEd.prog) new Set(Object.values(clsEd.grid).flat().filter(Boolean)).forEach(sub => { const lp = lastProg(sub, ""); if(lp && (lp.next || lp.unit)) prog[sub] = lp.next || progLabel(lp); });
   const pl = wxPlace();
   return {v:1, at:new Date().toISOString(), name:clsEd.name.trim().slice(0, 30), kana:clsEd.kana, wx:clsEd.wx, place:{name:pl.name, lat:pl.lat, lon:pl.lon}, grid, off, days, holi, prog, ev:clsEd.evs.filter(e => e.on).map(e => ({d:e.d, tm:e.tm, t:e.t.slice(0, 40)}))};
 }
