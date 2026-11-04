@@ -1795,7 +1795,82 @@ body:not([data-mode="cover-p"]) .face-peek{top:40%}
 #view.tx-tasks .card .row:nth-child(6),#view.tx-docs .doc:nth-child(5),#view.tx-memo .grid > .card:nth-child(5),#view.tx-people .pgrid > :nth-child(5){animation-delay:175ms}
 #view.tx-tasks .card .row:nth-child(7),#view.tx-docs .doc:nth-child(6),#view.tx-memo .grid > .card:nth-child(6),#view.tx-people .pgrid > :nth-child(6){animation-delay:210ms}
 #view.tx-tasks .card .row:nth-child(8),#view.tx-docs .doc:nth-child(7),#view.tx-memo .grid > .card:nth-child(7),#view.tx-people .pgrid > :nth-child(7){animation-delay:245ms}
-#view.tx-tasks .card .row:nth-child(9),#view.tx-docs .doc:nth-child(8),#view.tx-memo .grid > .card:nth-child(8),#view.tx-people .pgrid > :nth-child(8){animation-delay:245ms}</style>
+#view.tx-tasks .card .row:nth-child(9),#view.tx-docs .doc:nth-child(8),#view.tx-memo .grid > .card:nth-child(8),#view.tx-people .pgrid > :nth-child(8){animation-delay:245ms}
+/* ================= v47: 教室モニター ================= */
+body.classroom #tabbar,body.classroom #fab,body.classroom #rail,body.classroom #railhandle,body.classroom #cc,body.classroom #ccb,body.classroom #banner,body.classroom #news,body.classroom .face-peek,body.classroom #wxfx{display:none!important}
+body.classroom #app{grid-template-columns:1fr!important}
+body.classroom #view{grid-column:1/-1;padding:0!important;overflow:hidden;zoom:1!important}
+body.classroom{background:#16221D}
+.cls{position:fixed;inset:0;z-index:40;max-width:none!important;margin:0!important;width:auto!important;height:100vh;height:100dvh;box-sizing:border-box;display:grid;grid-template-rows:auto 1fr;gap:1.6vh;padding:2.4vh 2.6vw 4.4vh;background:var(--board);color:var(--chalk);font-size:1.55vw;overflow:hidden}
+.cls.dim{filter:brightness(.45)}
+.cls .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.cl-top{display:flex;align-items:center;gap:2vw}
+.cl-date{display:flex;align-items:baseline;gap:1vw}
+.cl-date b{font-size:3.2vw;font-weight:900;letter-spacing:.02em;white-space:nowrap}
+.cl-date span,.cl-name,.cl-next,.cl-next b,.cl-row .cl-tm,.cl-list h2,.cls-card h3{white-space:nowrap}
+.cl-next b{overflow:hidden;text-overflow:ellipsis}
+.cl-date span{font-size:2vw;font-weight:800;opacity:.85}
+.cl-mode{font-size:1.3vw;font-weight:900;color:#3A2E00;background:var(--chalk-y);padding:.2vw .8vw;border-radius:.6vw}
+.cl-name{font-size:2vw;font-weight:900;padding:.3vw 1.2vw;border-radius:.6vw;box-shadow:inset 0 0 0 .18vw rgba(245,243,236,.5)}
+.cl-clock{margin-left:auto;font-size:6vw;font-weight:700;letter-spacing:-.02em;line-height:1;user-select:none;cursor:default}
+.cl-grid{display:grid;grid-template-columns:1.25fr 1fr .95fr;gap:2vw;min-height:0}
+.cl-grid > section{min-height:0}
+.cl-now{display:flex;flex-direction:column;justify-content:center;gap:2vh;padding:2vw;border-radius:1.4vw;box-shadow:inset 0 0 0 .2vw rgba(245,243,236,.18)}
+.cl-big{font-size:5.4vw;font-weight:900;line-height:1.25}
+.cl-big small{display:block;font-size:2.4vw;font-weight:800;color:var(--chalk-y)}
+.cl-big ruby rt,.cl-list ruby rt,.cl-chip ruby rt{font-size:.42em;font-weight:700;opacity:.9}
+.cl-left{font-size:3vw;font-weight:800}
+.cl-left b{font-size:5.6vw;color:var(--chalk-y);margin:0 .3vw}
+.cls.warn .cl-left b{animation:clWarn 1s ease-in-out infinite}
+@keyframes clWarn{50%{opacity:.45}}
+.cl-bar{height:1.4vw;border-radius:1vw;background:rgba(245,243,236,.15);overflow:hidden}
+.cl-bar i{display:block;height:100%;background:var(--chalk-y);border-radius:inherit;transition:width 1s linear}
+.cl-next{display:flex;align-items:baseline;gap:1vw;font-size:2.2vw;font-weight:800}
+.cl-next small{font-size:1.6vw;opacity:.8}.cl-next span{margin-left:auto;opacity:.85}
+.cl-strip{position:relative;height:2.6vw;margin-top:1vh}
+.cl-strip i{position:absolute;top:.4vw;bottom:.4vw;border-radius:.5vw;background:rgba(245,243,236,.85);color:var(--board);font-style:normal;font-size:1.2vw;font-weight:900;display:grid;place-items:center;font-family:var(--f-num)}
+.cl-strip i.block{top:1vw;bottom:1vw;background:rgba(245,243,236,.3)}
+.cl-strip i.past{opacity:.35}
+.cl-nowl{position:absolute;top:-.2vw;bottom:-.2vw;width:.35vw;margin-left:-.17vw;border-radius:.2vw;background:var(--chalk-y);box-shadow:0 0 .8vw var(--chalk-y)}
+.cl-list{display:flex;flex-direction:column;gap:.5vh;overflow:hidden}
+.cl-list h2,.cls-card h3{margin:0 0 .6vh;font-size:1.6vw;font-weight:900;color:var(--chalk-y)}
+.cls-card h3 small{font-size:1.2vw;color:var(--chalk);opacity:.8;font-weight:800}
+.cl-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:1vw;padding:.7vh 1vw;border-radius:.8vw;font-size:2.1vw;font-weight:800}
+.cl-row.block{font-size:1.5vw;opacity:.75;padding:.2vh 1vw}
+.cl-row.past{opacity:.35}
+.cl-row.cur{background:rgba(245,243,236,.14);box-shadow:inset .35vw 0 0 var(--chalk-y)}
+.cl-pn{display:grid;place-items:center;width:2.6vw;height:2.6vw;border-radius:50%;background:var(--chalk);color:var(--board);font-family:var(--f-num);font-weight:900;font-size:1.5vw}
+.cl-pn.blk{width:2.6vw;height:.3vw;border-radius:.2vw;background:rgba(245,243,236,.4)}
+.cl-sub{display:grid;line-height:1.3}
+.cl-sub em{font-style:normal;font-size:1.25vw;font-weight:700;color:var(--chalk-y);opacity:.95}
+.cl-tm{font-size:1.5vw;opacity:.8}
+.cl-empty{font-size:2vw;opacity:.8;padding:2vh 0}
+.cl-side{display:flex;flex-direction:column;gap:1.4vh;overflow:hidden}
+.cl-win{position:relative;flex:none;height:22vh;border-radius:1vw;overflow:hidden;background:#6E8FB8;box-shadow:0 0 0 .6vw var(--wood)}
+.cl-win canvas{position:absolute;inset:0;width:100%;height:100%}
+.cl-win .win-bar{position:absolute;background:var(--wood)}
+.cl-win .win-bar.v{top:0;bottom:0;left:50%;width:.5vw;margin-left:-.25vw}.cl-win .win-bar.h{left:0;right:0;top:45%;height:.5vw}
+.cl-wx{display:flex;align-items:center;gap:1vw;margin-top:.6vh}
+.cl-wxi{width:4.4vw;height:4.4vw;flex:none}.cl-wxi svg{width:100%;height:100%;overflow:visible}
+.cl-wx > span:last-child{display:grid}
+.cl-wx b{font-size:3vw;font-weight:800;line-height:1}
+.cl-wx small{font-size:1.3vw;font-weight:700;opacity:.85}
+.cl-wx em{font-style:normal;font-size:1.35vw;font-weight:900;color:var(--chalk-y)}
+.cls-card{padding:1vw 1.2vw;border-radius:1vw;box-shadow:inset 0 0 0 .18vw rgba(245,243,236,.2)}
+.cls-card p{margin:.3vh 0;font-size:1.45vw;font-weight:800;display:flex;gap:.8vw}
+.cls-card p span{opacity:.8;flex:none}
+.cl-chips{display:flex;flex-wrap:wrap;gap:.5vw}
+.cl-chip{font-size:1.35vw;font-weight:800;padding:.4vw .8vw;border-radius:.6vw;background:rgba(245,243,236,.12)}
+.cl-tray{position:absolute;left:2vw;right:2vw;bottom:0;height:1.4vh;border-radius:.4vw .4vw 0 0;background:var(--wood)}
+.cl-exit{position:fixed;right:16px;bottom:16px;z-index:50;padding:12px 18px;border-radius:14px;background:var(--surface);color:var(--fg);font:inherit;font-weight:800;box-shadow:var(--shadow-lg)}
+@media (max-aspect-ratio:1/1){ .cls{font-size:2.4vw}.cl-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto 1fr}.cl-now{grid-column:1/-1} }
+.cls-ed{overflow-x:auto}
+.cls-ed table{border-collapse:separate;border-spacing:4px;min-width:420px}
+.cls-ed th{font-size:13px;color:var(--muted);font-weight:800}
+.cls-ed td .input{padding:8px 6px;font-size:14px;min-width:0;width:100%;box-sizing:border-box}
+.cmd{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-radius:12px;background:#111;color:#E8EEEA;margin:8px 0}
+.cmd code{flex:1;min-width:0;font-size:12px;line-height:1.6;word-break:break-all;font-family:ui-monospace,monospace}
+</style>
 </head>
 <body>
 
@@ -1825,6 +1900,8 @@ function demoCarry(){
     if(n || tt) localStorage.setItem("fd-demo-carry", JSON.stringify({cols, tt, n}));
   } catch(e){}
 }
+let CLS_RAW_NEW = null;
+try { const cm = location.hash.match(/^#class=([A-Za-z0-9_-]+)/); if(cm){ CLS_RAW_NEW = cm[1]; history.replaceState(null, "", location.pathname + "#classroom"); } } catch(e){}
 try { if(/^#pair=/.test(location.hash) && localStorage.getItem("fd-demo")){ demoCarry(); ["fd-demo", "fd-demo-state", "fd-store-v1", "fd-queue-v1"].forEach(k => localStorage.removeItem(k)); } } catch(e){}
 /* ================= icons ================= */
 /* icons: Material Symbols Rounded (Apache-2.0), outline and filled */
@@ -1988,7 +2065,7 @@ let tabDownAt = 0;
 document.addEventListener("pointerdown", e => { if(e.button !== 0) return; const t = e.target.closest && e.target.closest(".tab[data-go]"); if(!t || t.closest("#pane")) return;
   tabDownAt = performance.now(); if(t.dataset.go !== view) go(t.dataset.go); }, true);
 document.addEventListener("click", e => { const t = e.target.closest && e.target.closest(".tab[data-go]"); if(t && performance.now() - tabDownAt < 700){ e.stopPropagation(); e.preventDefault(); } }, true);
-const BUILD = "fd-shell-v53";
+const BUILD = "fd-shell-v54";
 let updWaiting = false;
 async function checkBuild(){
   if(!/^fd-shell-v\d+$/.test(BUILD)) return;
@@ -2099,6 +2176,8 @@ function renderNav(){
 const TITLES = {today:"今日", timetable:"時間割", tasks:"タスク", events:"予定", people:"人", memo:"メモ", docs:"資料", timer:"タイマー"};
 let lastView = null;
 function render(){
+  if(CLS){ const v = $("#view"); const html = classroomView(); if(lastView !== "__cls" || !v.firstChild){ v.innerHTML = html; lastView = "__cls"; } else morphInto(v, html); try { clsky.sync(); wxfx.sync(); wxmini.sync(); } catch(e){} return; }
+  if(lastView === "__cls") lastView = null;
   renderNav();
   const v = $("#view");
   const changed = lastView !== view; lastView = view;
@@ -2681,13 +2760,13 @@ function makeSky(opt = {}){
   }
   function sync(){
     if(opt.sel){
-      const want = view === "today" && ui.todayFace === "window";
+      const want = opt.cond ? opt.cond() : !CLS && view === "today" && ui.todayFace === "window";
       if(want && (REDUCE || ECO())){ if(raf){ cancelAnimationFrame(raf); raf = 0; } setTimeout(still, 60); return; }
       const on2 = want && !REDUCE && !ECO();
       if(on2 && !raf){ last = 0; raf = requestAnimationFrame(frame); } else if(!on2 && raf){ cancelAnimationFrame(raf); raf = 0; cv = null; }
       return;
     }
-    const on = view === "today" && ui.todayFace !== "window" && paired() && ls.get("fd-wxfx", true) !== false && !ECO() && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const on = !CLS && view === "today" && ui.todayFace !== "window" && paired() && ls.get("fd-wxfx", true) !== false && !ECO() && !matchMedia("(prefers-reduced-motion: reduce)").matches;
     if(on){ ensure(); if(!raf){ last = 0; raf = requestAnimationFrame(frame); } }
     else if(raf){ cancelAnimationFrame(raf); raf = 0; }
     document.body.classList.toggle("wxfx-on", on);
@@ -3541,7 +3620,8 @@ const MB = n => n >= 1e9 ? (n / 1e9).toFixed(2) + " GB" : n >= 1e6 ? (n / 1e6).t
 /* ================= 更新履歴 (newest at the top) ================= */
 const CHANGELOG = [
  {day:"11月4日", sub:"水曜日・だれでも使える日", list:[
-  {v:"アプリ内", t:"夕方", big:1, newest:1, h:"タブを、ぬるぬるに", it:[["i","タブは指がふれた瞬間に切りかわり、ページごとにちがう動きで出てくる。時間割はななめに波のように、予定はカレンダーが週ごとに、タイマーは輪が回って、今日は黒板が上からすとんと"],["i","押したタブのアイコンがぽんとはねる"],["f","窓の空が1分ほどでぼやけていた問題。画面のこまかさに合わせてくっきり描くように"],["f","窓の面からもどったとき、キャラクターが画面の途中に残っていた問題"]]},
+  {v:"アプリ内", t:"夜", big:1, newest:1, h:"教室モニター", lead:"ラズパイやパソコンで、子ども向けの「今日」を出しっぱなしに。", it:[["n","時計・いまの授業と残り時間・次・1日の帯・今日の時間割（授業の続きつき）・天気と窓の空・今日の予定・明日の時間割・これからの予定"],["n","ふりがなつき表示。残り3分で数字が点滅、夜は画面を暗く"],["n","スマホの「通知と設定 → 教室モニター」でクラスの時間割と見せる予定を選び、リンクを作るだけ。教室のパソコンにはアカウントの鍵を入れない"],["n","ラズパイを電源オンで全画面にする手順つき"]]},
+  {v:"アプリ内", t:"夕方", big:1, h:"タブを、ぬるぬるに", it:[["i","タブは指がふれた瞬間に切りかわり、ページごとにちがう動きで出てくる。時間割はななめに波のように、予定はカレンダーが週ごとに、タイマーは輪が回って、今日は黒板が上からすとんと"],["i","押したタブのアイコンがぽんとはねる"],["f","窓の空が1分ほどでぼやけていた問題。画面のこまかさに合わせてくっきり描くように"],["f","窓の面からもどったとき、キャラクターが画面の途中に残っていた問題"]]},
   {v:"アプリ内", t:"昼", big:1, h:"窓と掲示板を仕上げ", it:[["n","1日の帯に学校の時間（朝から下校まで）。日の出・日の入りは太陽の印で、正しい位置に"],["n","掲示板の紙を長押しで「明日にまわす」「はがす」"],["n","窓の空をタップすると、鳥や飛行機が通ることも"],["i","時刻と天気は窓の下の小さな黒板に。窓は景色だけ"],["i","広い画面では窓と掲示板を横に並べる。キャラクターは窓辺に座る"],["i","掲示板は今日の分を6枚まで、残りは「ほか○件」。黒板の右はしに窓の目印"],["i","ほかのタブから「今日」にもどると、いつも黒板から"],["f","窓の面で戻るボタンを押すとアプリが閉じていた問題"],["f","省エネ中に窓が青い四角になっていた問題、文字「特大」で掲示板がくずれる問題"]]},
   {v:"アプリ内", t:"深夜", big:1, h:"窓と掲示板", lead:"「今日」を左になぞると、サイコロが転がるように面が変わります。", it:[["n","窓：いまの空（天気・時間帯）と、日の出から日の入りまでの1日の様子"],["n","掲示板：今日使う資料がピンで貼られ、期限のタスクは付箋に。これから1週間の資料も小さく"],["i","天気の面を黒板とチョークの見た目に。ポモドーロの輪は赤をやめてテーマ色に"],["i","背景の空を落ち着いた色に。「新しくなりました」は上に出すように"],["i","タスクと予定の入力は、大事なところだけを先に。残りは「くわしく」に"],["i","設定に目次。ボタンの見た目をそろえ、資料の検索欄を広く"],["f","開いた直後の「朝のまとめ」が見出しに重なっていた問題"]]},
   {v:"アプリ内", t:"夜", big:1, h:"AI なしで、ぜんぶ無料に", lead:"別の申し込みや料金がいる機能をやめて、スマホの中だけで動くようにしました。", it:[["i","「ひとことで入れる」は、日付・時刻・「〜まで」・「○時間目」をスマホの中で読み取る方式に。「明日16時 学年会」「金曜までに見積もり確認」「3時間目 補教 2-1」など"],["i","メモの「振り分け」も同じ方式で、だれでも使える"],["i","名刺は、スマホの中で読んだ文字を決まりにそって整理"],["i","AI の鍵が必要だった「時間割を写真から読む」と「Gmail を AI で読む」はやめました"]]},
@@ -3921,6 +4001,174 @@ async function shareLink(k){
   if(k === "send" && navigator.share){ try { await navigator.share({title:"Fold Desk の接続リンク", url}); return; } catch(e){ if(e && e.name === "AbortError") return; } }
   try { await navigator.clipboard.writeText(url); toast("コピーしました。送ったあとは消してください"); }
   catch(e){ toast("コピーできませんでした"); }
+}
+
+/* ================= 教室モニター（ラズパイなどで、子ども向けに出しっぱなし） =================
+   Only what the children need travels in the link: their class timetable, the school's times, school events, the next step of each lesson and the weather place.
+   No key to the personal data is ever put on the classroom computer. */
+const b64u = u8 => { let b = ""; for(let i = 0; i < u8.length; i += 0x8000) b += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(b).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); };
+const unb64u = s0 => { const b = atob(s0.replace(/-/g, "+").replace(/_/g, "/")); const u = new Uint8Array(b.length); for(let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+async function clsEncode(obj){
+  const raw = new TextEncoder().encode(JSON.stringify(obj));
+  if("CompressionStream" in window){ const z = new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate-raw"))).arrayBuffer()); return "z" + b64u(z); }
+  return "j" + b64u(raw);
+}
+async function clsDecode(s0){
+  try { const u = unb64u(s0.slice(1)); const t = s0[0] === "z" ? await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text() : new TextDecoder().decode(u);
+    const o = JSON.parse(t); return o && o.v === 1 ? o : null; } catch(e){ return null; }
+}
+let CLS = null, clsPreview = false;
+const KANA = {"国語":"こくご","算数":"さんすう","生活":"せいかつ","音楽":"おんがく","図画工作":"ずがこうさく","図工":"ずこう","体育":"たいいく","道徳":"どうとく","学級活動":"がっきゅうかつどう","学活":"がっかつ","特別活動":"とくべつかつどう","英語":"えいご","外国語":"がいこくご","外国語活動":"がいこくごかつどう","情報探究":"じょうほうたんきゅう","総合":"そうごう","理科":"りか","社会":"しゃかい","書写":"しょしゃ","家庭":"かてい","図書":"としょ",
+  "朝の会":"あさのかい","帰りの会":"かえりのかい","朝のHR":"あさのかい","帰りのHR":"かえりのかい","中休み":"なかやすみ","昼休み":"ひるやすみ","給食":"きゅうしょく","給食・昼休み":"きゅうしょく・ひるやすみ","清掃":"そうじ","掃除":"そうじ","整理整頓・清掃":"せいり・そうじ","掃除・支度":"そうじ・したく","朝会":"ちょうかい","休み":"やすみ"};
+const WDK = ["にちようび", "げつようび", "かようび", "すいようび", "もくようび", "きんようび", "どようび"];
+const rb = (t, on) => { t = String(t || ""); const k = KANA[t]; return on && k ? `<ruby>${esc(t)}<rt>${esc(k)}</rt></ruby>` : esc(t); };
+function clsDayItems(c, dateS){
+  const d = parse(dateS), w = d.getDay(); if(w < 1 || w > 5 || (c.holi || []).includes(dateS)) return null;
+  const mode = (c.days || {})[dateS] || "normal"; if(mode === "off") return null;
+  const M = c.off[mode] || c.off.normal, grid = (c.grid || {})[DAYKEYS[w - 1]] || [], out = [];
+  (M.low || []).forEach((t, i) => { if(!t) return; const cell = grid[i] || {}; out.push({type:"period", n:i + 1, sub:cell.s || "", start:t.start, end:t.end}); });
+  (M.blocks || []).forEach(b => out.push({type:"block", label:b.label, start:b.start, end:b.end}));
+  return {mode, label:M.label, dismiss:M.dismiss, items:out.sort((a, b) => mins(a.start) - mins(b.start))};
+}
+function clsNow(c){
+  const t = todayS(), day = clsDayItems(c, t), n = new Date(), m = n.getHours() * 60 + n.getMinutes() + n.getSeconds() / 60;
+  if(!day) return {off:true, day};
+  const it = day.items, cur = it.find(x => m >= mins(x.start) && m < mins(x.end)), next = it.find(x => mins(x.start) > m);
+  const first = it[0] ? mins(it[0].start) : 0, last = Math.max(mins(day.dismiss) || 0, ...it.map(x => mins(x.end)));
+  return {day, cur, next, m, before:m < first, after:m >= last};
+}
+function classroomView(){
+  const c = CLS, K = c.kana !== false, now = new Date(), t = todayS(), st = clsNow(c), w = c.wx !== false ? wxNow() : null;
+  const hhmm = `${now.getHours()}:${pad(now.getMinutes())}`, J = (a, b) => K ? a : b;
+  const name = (x, small) => x.type === "period" ? (x.sub ? rb(x.sub, K) : J("あき", "空き")) : rb(x.label, K);
+  const pn = x => x.type === "period" ? `<span class="cl-pn">${x.n}</span>` : `<span class="cl-pn blk"></span>`;
+  let big = "", left = "", nxt = "", frac = 0, warn = false;
+  if(st.off){ big = J("きょうは おやすみ", "今日はお休み"); }
+  else if(st.cur){ const end = mins(st.cur.end), start = mins(st.cur.start), rest = Math.max(0, Math.ceil(end - st.m)); frac = Math.min(1, (st.m - start) / Math.max(1, end - start)); warn = rest <= 3;
+    big = `${st.cur.type === "period" ? `<small>${st.cur.n}${J("じかんめ", "時間目")}</small>` : ""}${name(st.cur)}`; left = `${J("あと", "あと")} <b class="num">${rest}</b> ${J("ぷん", "分")}`; }
+  else if(st.before){ big = J("おはよう！", "おはようございます"); const nx = st.next; if(nx) left = `${name(nx)} ${J("まで", "まで")} <b class="num">${Math.max(0, Math.ceil(mins(nx.start) - st.m))}</b> ${J("ぷん", "分")}`; }
+  else if(st.after){ big = J("きょうも おつかれさま", "今日もおつかれさま"); left = J("また あした！", "また明日！"); }
+  else { big = J("つぎの じゅんびを しよう", "次の準備をしよう"); }
+  if(st.next && !st.off && !st.after) nxt = `<div class="cl-next"><small>${J("つぎは", "次は")}</small><b>${st.next.type === "period" ? `${st.next.n}${J("じかんめ", "時間目")} ` : ""}${name(st.next)}</b><span class="num">${st.next.start}</span></div>`;
+  const prog = c.prog || {}, dayL = st.day ? st.day.items : [];
+  const list = dayL.length ? dayL.map(x => { const past = mins(x.end) <= st.m, isCur = st.cur && st.cur.start === x.start && st.cur.type === x.type, pg = x.type === "period" && x.sub && prog[x.sub];
+      return `<div class="cl-row ${x.type} ${past ? "past" : ""} ${isCur ? "cur" : ""}">${pn(x)}<span class="cl-sub">${name(x)}${pg ? `<em>${esc(pg)}</em>` : ""}</span><span class="cl-tm num">${x.start}</span></div>`; }).join("")
+    : `<div class="cl-empty">${J("きょうは じゅぎょうが ありません", "今日は授業がありません")}</div>`;
+  // tomorrow (next school day)
+  let nd = addDays(t, 1), tries = 0; while(!clsDayItems(c, nd) && tries++ < 6) nd = addDays(nd, 1);
+  const tm = clsDayItems(c, nd), tmD = parse(nd);
+  const tmList = tm ? tm.items.filter(x => x.type === "period").map(x => `<span class="cl-chip">${x.n} ${x.sub ? rb(x.sub, K) : J("あき", "空き")}</span>`).join("") : "";
+  const evs = (c.ev || []).filter(e => e.d >= t).slice(0, 6);
+  const evToday = evs.filter(e => e.d === t), evSoon = evs.filter(e => e.d > t).slice(0, 3);
+  const md2 = d => { const x = parse(d); return `${x.getMonth() + 1}/${x.getDate()}(${"日月火水木金土"[x.getDay()]})`; };
+  const wxHtml = w ? (() => { const [lab, kind] = WMO(w.code); const rain = w.rainAt;
+      return `<div class="cl-wx"><span class="cl-wxi">${wxIcon(kind, w.day)}</span><span><b class="num">${w.t}℃</b><small>${esc(lab)}　${w.hi}° / ${w.lo}°</small>${rain ? `<em>${J(`${rain.h}じごろ あめ。かさを わすれずに`, `${rain.h}時ごろ雨。傘を忘れずに`)}</em>` : w.pop >= 50 ? `<em>${J("あめが ふるかも", "雨が降るかも")}</em>` : ""}</span></div>`; })() : "";
+  const modeTag = st.day && st.day.mode !== "normal" ? `<span class="cl-mode">${esc(st.day.label)}${J("じてい", "時程")}</span>` : "";
+  // the whole day as a strip
+  let strip = "";
+  if(dayL.length){ const s0 = mins(dayL[0].start) - 5, s1 = Math.max(...dayL.map(x => mins(x.end)), mins(st.day.dismiss) || 0) + 5, span = s1 - s0;
+    strip = `<div class="cl-strip">${dayL.map(x => `<i class="${x.type} ${mins(x.end) <= st.m ? "past" : ""}" style="left:${(mins(x.start) - s0) / span * 100}%;width:${(mins(x.end) - mins(x.start)) / span * 100}%">${x.type === "period" ? x.n : ""}</i>`).join("")}${st.m >= s0 && st.m <= s1 ? `<b class="cl-nowl" style="left:${(st.m - s0) / span * 100}%"></b>` : ""}</div>`; }
+  const dim = now.getHours() >= 19 || now.getHours() < 6;
+  return `<div class="cls ${dim ? "dim" : ""} ${warn ? "warn" : ""}">
+    <header class="cl-top"><div class="cl-date"><b>${now.getMonth() + 1}${J("がつ", "月")}${now.getDate()}${J("にち", "日")}</b><span>${K ? WDK[now.getDay()] : "日月火水木金土"[now.getDay()] + "曜日"}</span>${modeTag}</div>
+      ${c.name ? `<div class="cl-name">${esc(c.name)}</div>` : ""}<div class="cl-clock num" data-cls-hold>${hhmm}</div></header>
+    <main class="cl-grid">
+      <section class="cl-now"><div class="cl-big">${big}</div>${left ? `<div class="cl-left">${left}</div>` : ""}
+        ${st.cur ? `<div class="cl-bar"><i style="width:${(frac * 100).toFixed(1)}%"></i></div>` : ""}${nxt}${strip}</section>
+      <section class="cl-list"><h2>${J("きょうの じかんわり", "今日の時間割")}</h2>${list}</section>
+      <section class="cl-side">${c.wx !== false ? `<div class="cl-win"><canvas class="winsky" aria-hidden="true"></canvas><i class="win-bar v"></i><i class="win-bar h"></i></div>${wxHtml}` : ""}
+        ${evToday.length ? `<div class="cls-card"><h3>${J("きょうの よてい", "今日の予定")}</h3>${evToday.map(e => `<p><span class="num">${esc(e.tm || "")}</span>${esc(e.t)}</p>`).join("")}</div>` : ""}
+        ${tm ? `<div class="cls-card"><h3>${J("あした", "明日")} <small>${tmD.getMonth() + 1}/${tmD.getDate()}（${K ? WDK[tmD.getDay()].replace("ようび", "") : "日月火水木金土"[tmD.getDay()]}）${tm.mode !== "normal" ? " " + esc(tm.label) : ""}</small></h3><div class="cl-chips">${tmList}</div></div>` : ""}
+        ${evSoon.length ? `<div class="cls-card"><h3>${J("これからの よてい", "これからの予定")}</h3>${evSoon.map(e => `<p><span class="num">${md2(e.d)}</span>${esc(e.t)}</p>`).join("")}</div>` : ""}</section>
+    </main><i class="cl-tray" aria-hidden="true"></i>
+    ${clsPreview ? `<button class="cl-exit" data-cls-exit>プレビューを閉じる</button>` : ""}</div>`;
+}
+const clsky = makeSky({sel:".cl-win canvas.winsky", cond:() => !!CLS && CLS.wx !== false});
+async function clsBoot(){
+  const raw = CLS_RAW_NEW || (!paired() ? localStorage.getItem("fd-class-raw") : null); if(!raw) return;
+  const c = await clsDecode(raw); if(!c){ if(CLS_RAW_NEW) toast("教室モニターのリンクを読み取れませんでした"); return; }
+  if(paired() && CLS_RAW_NEW){ clsPreview = true; } else { try { localStorage.setItem("fd-class-raw", raw); } catch(e){} }
+  CLS = c; document.body.classList.add("classroom");
+  if(c.place && !clsPreview) ls.set("fd-wx-place", c.place);
+  fetchWeather(true); lastView = null; schedule();
+  try { if(navigator.wakeLock) { const get = () => navigator.wakeLock.request("screen").catch(() => {}); get(); document.addEventListener("visibilitychange", () => { if(!document.hidden) get(); }); } } catch(e){}
+  setInterval(() => { if(CLS && !document.hidden) render(); }, 1000);
+  setInterval(() => { if(CLS) fetchWeather(); }, 20 * 60e3);
+}
+/* hold the clock for 3 seconds to take the classroom screen off this computer */
+(() => { let tm = 0; document.addEventListener("pointerdown", e => { if(!CLS || !e.target.closest("[data-cls-hold]")) return; tm = setTimeout(() => {
+    if(confirm("この画面の教室モニターをやめますか？（このパソコンから時間割の情報を消します）")){ try { localStorage.removeItem("fd-class-raw"); } catch(e){} location.hash = ""; location.reload(); } }, 3000); });
+  ["pointerup", "pointercancel", "pointerleave"].forEach(ev => document.addEventListener(ev, () => clearTimeout(tm))); })();
+document.addEventListener("click", e => { if(e.target.closest && e.target.closest("[data-cls-exit]")){ CLS = null; clsPreview = false; document.body.classList.remove("classroom"); lastView = null; schedule(); } });
+
+/* on the phone: make the link */
+const KIDS_EV = /遠足|運動会|発表会|参観|検定|漢検|集会|校外学習|避難訓練|健康診断|身体測定|始業式|終業式|入学式|卒業式|朝会|プール|お弁当|弁当|短縮|休み|祝日|休業|学芸会|音楽会|展覧会|社会科見学|見学|行事|クラブ|委員会|読書|図書/;
+function clsDefaults(){
+  const own = {}; DAYKEYS.forEach(dk => { own[dk] = (tt().grid[dk] || []).map(x => x && x.subject && !x.cls && x.kind !== "meeting" ? x.subject : ""); });
+  const pr = (S.prefs || {}).classroom || {};
+  return {name:pr.name || "", kana:pr.kana !== false, wx:pr.wx !== false, prog:pr.prog !== false, grid:pr.grid || own};
+}
+let clsEd = null;
+function classPane(){
+  clsEd = clsDefaults();
+  const t = todayS(), evs = evAll().filter(e => e.date >= t && e.date <= addDays(t, 30) && evScope(e) !== "personal").sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || "")));
+  clsEd.evs = evs.map(e => ({d:e.date, tm:e.time || "", t:e.title, on:e.kind === "休み" || e.kind === "学校行事" || e.kind === "学年" || KIDS_EV.test(e.title)}));
+  const N = Math.max(...Object.values(OFFICIAL).map(M => (M.low || []).length), 5);
+  openPane(`${paneHead("教室モニター")}
+    <p class="empty" style="margin-top:0">教室のモニター（ラズパイやパソコン）に、子ども向けの「今日」を出しっぱなしにします。時計・いまの授業と残り時間・時間割・授業の続き・学校の予定・天気が出ます。<b>タスク・メール・人・個人の予定は出ません</b>。教室のパソコンには、あなたのアカウントにつながる鍵は入りません。</p>
+    <div class="field"><label>クラスの名前（画面の上に出ます）</label><input class="input" data-cls-f="name" value="${esc(clsEd.name)}" placeholder="例：1ねん1くみ"></div>
+    <div class="group">
+      <div class="setrow"><span class="main"><b>ふりがなをつける</b><small>教科や「なかやすみ」などにふりがな。時刻の言葉もひらがなに</small></span><button class="switch" role="switch" aria-checked="${clsEd.kana}" data-cls-sw="kana"></button></div>
+      <div class="setrow"><span class="main"><b>天気と窓の空</b></span><button class="switch" role="switch" aria-checked="${clsEd.wx}" data-cls-sw="wx"></button></div>
+      <div class="setrow"><span class="main"><b>授業の続き</b><small>「授業の進度」の次にやること（例：くじらぐも 音読発表）</small></span><button class="switch" role="switch" aria-checked="${clsEd.prog}" data-cls-sw="prog"></button></div></div>
+    <div class="sec">クラスの時間割</div>
+    <p class="hint" style="margin-top:0">あなたの時間割から、自分のクラスの授業を入れてあります。ほかの先生の授業の時間も、教科を入れてください。</p>
+    <div class="cls-ed"><table><thead><tr><th></th>${["月","火","水","木","金"].map(x => `<th>${x}</th>`).join("")}</tr></thead><tbody>
+      ${Array.from({length:N}, (_, i) => `<tr><th>${i + 1}</th>${DAYKEYS.map(dk => `<td><input class="input" list="ttsubs2" data-cls-g="${dk}.${i}" value="${esc((clsEd.grid[dk] || [])[i] || "")}"></td>`).join("")}</tr>`).join("")}</tbody></table>
+      <datalist id="ttsubs2">${Object.keys(KANA).slice(0, 22).map(x => `<option value="${esc(x)}">`).join("")}</datalist></div>
+    <div class="sec">子どもに見せる予定（30日先まで）</div>
+    ${clsEd.evs.length ? `<div class="group">${clsEd.evs.map((e, i) => `<label class="setrow"><span class="main"><b>${esc(e.t)}</b><small>${esc(md(e.d))}${e.tm ? " " + esc(e.tm) : ""}</small></span><input type="checkbox" data-cls-ev="${i}" ${e.on ? "checked" : ""} style="width:22px;height:22px"></label>`).join("")}</div>` : `<p class="hint">学校・仕事の予定はありません。</p>`}
+    <p class="hint">時程（通常・短縮など）と、これから45日の時程の切りかえ・お休みの日も入ります。時間割や予定を変えたら、リンクを作り直して教室のパソコンで開き直してください。</p>
+    <div class="btns"><button class="btn" data-cls-do="preview">${ico("play")} 試しに見る</button><button class="btn primary" data-cls-do="link">${ico("share2")} リンクを作る</button></div>
+    <button class="row" data-cls-do="guide" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left;margin-top:10px"><span class="avatar" style="width:36px;height:36px">${ico("home")}</span><span class="main"><b>ラズパイの準備のしかた</b><small>電源を入れたら、この画面が全画面で出るようにする</small></span><span class="when">${ico("right")}</span></button>`);
+}
+document.addEventListener("input", e => { if(!clsEd || !e.target.matches) return;
+  if(e.target.matches("[data-cls-f]")) clsEd[e.target.dataset.clsF] = e.target.value;
+  if(e.target.matches("[data-cls-g]")){ const [dk, i] = e.target.dataset.clsG.split("."); (clsEd.grid[dk] = clsEd.grid[dk] || [])[+i] = e.target.value.trim(); } });
+document.addEventListener("change", e => { if(clsEd && e.target.matches && e.target.matches("[data-cls-ev]")) clsEd.evs[+e.target.dataset.clsEv].on = e.target.checked; });
+async function clsPayload(){
+  const t = todayS(), days = {}, holi = [];
+  for(let i = 0; i < 45; i++){ const d = addDays(t, i); if(S.days && S.days[d]) days[d] = S.days[d]; else { const am = isWeekday(d) ? autoModeOf(d) : null; if(am) days[d] = am.mode; } if(holidayOf(d)) holi.push(d); }
+  const off = {}; Object.entries(OFFICIAL).forEach(([k, M]) => { off[k] = {label:M.label, dismiss:M.dismiss || "", low:(M.low || []).map(x => x ? {start:x.start, end:x.end} : null), blocks:(M.blocks || []).map(b => ({label:b.label, start:b.start, end:b.end}))}; });
+  const grid = {}; DAYKEYS.forEach(dk => { grid[dk] = (clsEd.grid[dk] || []).map(x => x ? {s:x} : {}); });
+  const prog = {}; if(clsEd.prog) new Set(Object.values(clsEd.grid).flat().filter(Boolean)).forEach(sub => { const lp = lastProg(sub, ""); if(lp && (lp.next || lp.unit)) prog[sub] = lp.next ? `つぎ：${lp.next}` : progLabel(lp); });
+  const pl = wxPlace();
+  return {v:1, at:new Date().toISOString(), name:clsEd.name.trim().slice(0, 30), kana:clsEd.kana, wx:clsEd.wx, place:{name:pl.name, lat:pl.lat, lon:pl.lon}, grid, off, days, holi, prog, ev:clsEd.evs.filter(e => e.on).map(e => ({d:e.d, tm:e.tm, t:e.t.slice(0, 40)}))};
+}
+async function clsDo(k){
+  if(k === "guide"){ clsGuide(); return; }
+  try { await putPrefs({classroom:{name:clsEd.name, kana:clsEd.kana, wx:clsEd.wx, prog:clsEd.prog, grid:clsEd.grid}}); } catch(e){}
+  const pay = await clsPayload();
+  if(k === "preview"){ CLS = pay; clsPreview = true; document.body.classList.add("classroom"); closePane(); lastView = null; render(); return; }
+  const url = (/github\.io$/.test(location.hostname) ? location.origin + location.pathname : "https://carno-eng.github.io/fold-desk/") + "#class=" + await clsEncode(pay);
+  if(navigator.share){ try { await navigator.share({title:"教室モニター", url}); return; } catch(e){ if(e && e.name === "AbortError") return; } }
+  try { await navigator.clipboard.writeText(url); toast("リンクをコピーしました。教室のパソコンで開いてください"); } catch(e){ toast("コピーできませんでした"); }
+}
+function clsGuide(){
+  const cmd = `mkdir -p ~/.config/labwc && echo 'chromium --kiosk --noerrdialogs --disable-infobars --no-first-run --password-store=basic https://carno-eng.github.io/fold-desk/#classroom &' >> ~/.config/labwc/autostart`;
+  openPane(`${paneHead("ラズパイの準備")}
+    <ol class="steps">
+      <li><span>ラズパイ（Raspberry Pi OS）の Chromium で、スマホから送った<b>教室モニターのリンク</b>を1回開きます。時間割などがラズパイに保存されます。</span></li>
+      <li><span>画面が消えないようにします：メニュー → 設定 → <b>Raspberry Pi の設定</b> → ディスプレイ → <b>画面のブランク（スクリーンセーバー）をオフ</b>。</span></li>
+      <li><span>電源を入れたら自動で全画面になるようにします。ターミナルを開いて、下の1行を貼り付けて Enter を押します。</span></li>
+    </ol>
+    <div class="cmd"><code>${esc(cmd)}</code><button class="chip" data-copy-cmd>コピー</button></div>
+    <p class="hint">再起動すると、全画面で教室モニターが出ます。全画面をやめるときはキーボードの <b>Alt + F4</b>。古い Raspberry Pi OS（Bullseye）では、この1行が使えないことがあります。そのときは「自動起動」の設定に同じアドレスを入れてください。</p>
+    <ul class="hint" style="padding-left:1.2em;margin:6px 0 0"><li>時間割や予定を変えたら、スマホで「リンクを作る」→ ラズパイでもう一度開くだけで、新しい内容になります。</li>
+      <li>時計を<b>3秒長押し</b>すると、そのパソコンから教室モニターをやめられます。</li>
+      <li>夜7時から朝6時までは、画面を暗くします。</li></ul>
+    <div class="btns"><button class="btn primary" data-act="close">閉じる</button></div>`);
+  setTimeout(() => { const b = document.querySelector("[data-copy-cmd]"); if(b) b.onclick = async () => { try { await navigator.clipboard.writeText(cmd); toast("コピーしました"); } catch(e){ toast("コピーできませんでした"); } }; }, 0);
 }
 const BK_SKIP = /^fd-(token|stoken|api|sapi|school-cache|ics-work|store-v1|queue-v1|demo|demo-state|fired|talk|wxfx-test|devcal)$/;
 async function saveBig(name, blob, replaceKey){
@@ -5008,6 +5256,7 @@ function settingsPane(){
       <div class="sec" style="margin-top:0">接続</div>
       <div class="group">
         <div class="setrow"><span class="main"><b>${syncState === "ok" ? "同期しています" : syncState === "offline" ? "オフライン（あとで同期）" : "確認中"}</b><small>データはあなたの Google Drive にだけ保存されます${store.pending ? `・未送信 ${store.pending} 件` : ""}</small></span><button class="chip accent" data-act="syncnow">今すぐ同期</button></div>
+        <div class="setrow"><span class="main"><b>教室モニター</b><small>ラズパイやパソコンで、子ども向けの「今日」を出しっぱなしに</small></span><button class="chip accent" data-act="classroom">つくる</button></div>
         ${DEMO() ? "" : `<div class="setrow"><span class="main"><b>ほかの端末でも使う</b><small>パソコンやタブレットのブラウザで、同じデータを開けます</small></span><button class="chip accent" data-act="otherdev">つなぐ</button></div>`}
         <div class="setrow"><span class="main"><b>この端末の接続を解除</b><small>スマホをなくした時は Apps Script で rotateToken()</small></span><button class="chip warn" data-act="unpair">解除</button></div>
       </div>
@@ -5505,6 +5754,9 @@ document.addEventListener("click", async (ev) => {
   if(d.stor){ storageAct(b); return; }
   if(d.demo){ demoAct(d.demo); return; }
   if(d.face){ rollFace(d.face); return; }
+  if(d.act === "classroom"){ classPane(); return; }
+  if(d.clsDo){ clsDo(d.clsDo); return; }
+  if(d.clsSw){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); clsEd[d.clsSw] = on; return; }
   if(d.act === "checkbuild"){ toast("確認しています…"); checkBuild().then(() => { if(!updWaiting) toast("最新の版です"); }); return; }
   if(d.boardAct){ boardAct(d.boardAct); return; }
   if(d.carry){ carryAct(d.carry, b); return; }
@@ -6778,6 +7030,7 @@ function sysNotify(r){
 
 /* ================= boot ================= */
 readPairing();
+setTimeout(clsBoot, 0);
 readHash(); setMode();
 db = store; sample = aiShim; sampleImages = true; mcp = calShim; S.local = true;
 COLS.forEach(c => db.collection(c).onSnapshot(snap => { const docs = snap.docs.map(x => ({...x.data(), id:x.id})); if(c === "events"){ personalEvents = docs; mergeEvents(); } else S[c] = docs; schedule(); }));
