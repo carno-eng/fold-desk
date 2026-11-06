@@ -1960,6 +1960,12 @@ body.classroom{background:#16221D}
 .cm-now{padding:3vh 2.6vw;gap:1.5vh;overflow:hidden;min-height:0}
 /* v51: messages from the teacher, right under the date */
 .cm.has-msg{grid-template-rows:auto auto minmax(0,1fr) auto}
+.tt-sets{max-width:420px;margin:-4px 0 14px}
+.tt-sets button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.tt-sets button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:40px}
+.tt-althint{margin:-4px 0 12px}
+.tt .cell small{display:block}
+.tt-new .btns{flex-wrap:wrap}
 .cm-msgs{display:flex;align-items:center;gap:2.4vw;padding:1.8vh 2.4vw;border-radius:2vh;background:rgba(242,201,76,.15);box-shadow:inset 1vh 0 0 var(--acc)}
 .cm-msgh{flex:none;font-size:2.8vh;font-weight:700;color:var(--acc);white-space:nowrap}
 .cm-msgs ul{list-style:none;margin:0;padding:0;display:grid;gap:.8vh;min-width:0}
@@ -2146,7 +2152,7 @@ const VIEWS = [
   {k:"events", l:"予定", i:"events"}, {k:"docs", l:"資料", i:"docs"}, {k:"timer", l:"タイマー", i:"timer"}, {k:"memo", l:"メモ", i:"memo"}, {k:"people", l:"人", i:"people"}
 ];
 let view = "today";
-const ui = { day:null, week:0, edit:false, taskFilter:"open", peopleQ:"", peopleTie:"", calMonth:null, calSel:null, pane:null };
+const ui = { ttSet:"me", day:null, week:0, edit:false, taskFilter:"open", peopleQ:"", peopleTie:"", calMonth:null, calSel:null, pane:null };
 
 let modeW = 0, modeH = 0;
 function setMode(){
@@ -2171,11 +2177,12 @@ addEventListener("resize", () => { setMode(); if(navBuilt) renderNav(); });
     if(sx < 24 && dx > 60 && dy < 60 && !document.body.classList.contains("rail-peek")){ document.body.classList.add("rail-peek"); buzz(6); }
     else if(document.body.classList.contains("rail-peek") && dx < -60 && dy < 60) document.body.classList.remove("rail-peek"); sx = -1; }, {passive:true}); })();
 
-function readHash(){ const k = location.hash.slice(1); if(VIEWS.some(v => v.k === k)){ if(k !== view) ui.todayFace = "main"; view = k; } }
+function readHash(){ const k = location.hash.slice(1); if(VIEWS.some(v => v.k === k)){ if(k !== view){ ui.todayFace = "main"; if(view === "timetable") ui.ttSet = "me"; } view = k; } }
 const REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
 addEventListener("hashchange", () => {
   const prev = view, k = location.hash.slice(1), next = VIEWS.some(v => v.k === k) ? k : prev;
   if(next !== "today") ui.todayFace = "main";
+  if(prev === "timetable" && next !== prev) ui.ttSet = "me";
   const i0 = VIEWS.findIndex(v => v.k === prev), i1 = VIEWS.findIndex(v => v.k === next);
   if(next !== prev && paired() && !document.hidden){
     const v = $("#view"); view = next; cancelAnimationFrame(rafId); rafId = 0; skyPauseUntil = performance.now() + 380;
@@ -2208,7 +2215,7 @@ let tabDownAt = 0;
 document.addEventListener("pointerdown", e => { if(e.button !== 0) return; const t = e.target.closest && e.target.closest(".tab[data-go]"); if(!t || t.closest("#pane")) return;
   tabDownAt = performance.now(); if(t.dataset.go !== view) go(t.dataset.go); }, true);
 document.addEventListener("click", e => { const t = e.target.closest && e.target.closest(".tab[data-go]"); if(t && performance.now() - tabDownAt < 700){ e.stopPropagation(); e.preventDefault(); } }, true);
-const BUILD = "fd-shell-v58";
+const BUILD = "fd-shell-v59";
 let updWaiting = false;
 async function checkBuild(){
   if(!/^fd-shell-v\d+$/.test(BUILD)) return;
@@ -3559,7 +3566,38 @@ function vToday(){
 }
 
 /* ================= TIMETABLE ================= */
+function ttSwitch(){
+  const ex = (S.prefs || {}).ttExtra, cur = ui.ttSet || "me";
+  return `<div class="seg tt-sets" role="group" aria-label="表示する時間割">${[["me", "個人"], ["class", "クラス"], ["extra", ex ? ex.name : "＋ もう1つ"]].map(([k, l]) => `<button type="button" data-ttset="${k}" aria-pressed="${cur === k}">${esc(l)}</button>`).join("")}</div>`;
+}
+const ttAltGrid = k => k === "class" ? clsDefaults().grid : (((S.prefs || {}).ttExtra || {}).grid || {});
+const ttAltName = k => k === "class" ? "クラスの時間割" : (((S.prefs || {}).ttExtra || {}).name || "時間割");
+function vTTAlt(k){
+  const ex = (S.prefs || {}).ttExtra, t = todayS(), st = currentState(), N = OFFICIAL.normal.low, ds = weekDates(ui.week);
+  const nav = `<span class="daynav"><button class="icon-btn" data-week="-1" aria-label="前の週">${ico("left")}</button><button class="chip" data-week="0" aria-pressed="${ui.week===0}">今週</button><button class="icon-btn" data-week="1" aria-label="次の週">${ico("right")}</button></span>`;
+  if(k === "extra" && !ex) return `<div class="page-h"><h1>時間割</h1></div>${ttSwitch()}
+    <div class="card tt-new"><h3>見たい時間割を、もう1つ</h3>
+      <p class="hint" style="margin:0 0 12px">他学年のクラス、専科の先生の時間割、後期の時間割など、よく見るものを1つ入れておけます。ボタンで切りかえるだけで、あなたの時間割は変わりません。</p>
+      <div class="field"><label>名前（ボタンに出ます）</label><input class="input" data-alt-newname maxlength="8" placeholder="例：4-2"></div>
+      <div class="btns"><button class="btn primary" data-alt-new="empty">${ico("plus")} 空から作る</button><button class="btn" data-alt-new="class">クラスの時間割から</button><button class="btn" data-alt-new="me">個人の時間割から</button></div></div>`;
+  const G = ttAltGrid(k), n = Math.max(NP(), ...DAYKEYS.map(dk => (G[dk] || []).length));
+  const mine = {}; DAYKEYS.forEach(dk => { mine[dk] = (tt().grid[dk] || []).map(x => x && x.subject && !x.cls && x.kind !== "meeting" ? x.subject : ""); });
+  const head = `<tr><th></th>${ds.map((s, i) => { const m = dayMode(s); return `<th class="${s===t?'today':''}">${["月","火","水","木","金"][i]}<small class="num">${md(s).replace(/\(.\)/,'')}</small>${m!=="normal"?`<span class="chip mini ${m==='short'?'warn':''}">${OFFICIAL[m].label}</span>`:''}</th>`; }).join("")}</tr>`;
+  const rows = Array.from({length:n}, (_, i) => i).map(pi => `<tr><td class="pn"><b>${pi+1}</b><small>${((N[pi] || {}).start) || ""}</small></td>${DAYKEYS.map((dk, di) => {
+      const sd = ds[di], sub = (G[dk] || [])[pi] || "", kd = !sub ? "free" : JOHO.test(sub) ? "joho" : "class", isToday = sd === t;
+      const isNow = isToday && st.cur && st.cur.type === "period" && st.cur.n === pi+1, off = !(OFFICIAL[dayMode(sd)].low || [])[pi];
+      const me = k === "class" && sub && mine[dk][pi] === sub;
+      return `<td><button class="cell ${kd} ${isToday?'todaycol':''} ${isNow?'now':''} ${off?'off':''}" data-acell="${dk}:${pi}" aria-label="${["月","火","水","木","金"][di]}曜 ${pi+1}時間目 ${esc(sub || "空き")}"><b>${esc(sub)}</b>${me ? `<small>自分</small>` : ""}</button></td>`; }).join("")}</tr>`).join("");
+  const empty = DAYKEYS.every(dk => !(G[dk] || []).some(Boolean));
+  return `<div class="page-h"><h1>時間割</h1>${nav}${k === "class" ? `<button class="pill-btn" data-act="classroom">${ico("tv")}教室モニター</button>` : `<button class="pill-btn" data-alt-edit="name">名前・消す</button>`}<button class="pill-btn accent" data-alt-edit>${ico("tt")}まとめて直す</button></div>
+    ${ttSwitch()}
+    <p class="hint tt-althint">${k === "class" ? `クラスの子どもたちの時間割です。<b>教室のモニターには、この時間割が出ます。</b>「自分」はあなたが受け持つ授業。ほかの先生の授業（専科など）も入れておきましょう。` : `「${esc(ex.name)}」の時間割です。あなたの「今日」や通知には使われません。`}</p>
+    ${empty ? `<div class="card tip" style="margin-bottom:14px"><span class="ic">${ico("tt")}</span><span class="main"><b>まだ空っぽです</b><small>コマをタップするか「まとめて直す」から入れられます</small></span><button class="pill-btn accent" data-alt-edit>入れる</button></div>` : ""}
+    <div class="tt-wrap"><table class="tt">${head}${rows}</table></div>
+    <p class="empty" style="margin-top:6px">コマをタップすると、その曜日をまとめて直せます。時程（通常・短縮など）は、あなたの時間割と同じものを使います。</p>`;
+}
 function vTT(){
+  if(ui.ttSet && ui.ttSet !== "me") return vTTAlt(ui.ttSet);
   const G = tt(), t = todayS(), st = currentState(), N = OFFICIAL.normal.low;
   const ds = weekDates(ui.week);
   const head = `<tr><th></th>${ds.map((s,i) => { const m = dayMode(s); return `<th class="${s===t?'today':''}">${["月","火","水","木","金"][i]}<small class="num">${md(s).replace(/\(.\)/,'')}</small>${m!=="normal"?`<span class="chip mini ${m==='short'?'warn':''}">${OFFICIAL[m].label}</span>`:''}</th>`; }).join("")}</tr>`;
@@ -3575,6 +3613,7 @@ function vTT(){
   DAYKEYS.forEach(dk => (G.grid[dk]||[]).forEach(c => counts[cellKind(c)]++));
   const nChanged = ds.reduce((a,s) => a + Object.keys(((getOv(s)||{}).cells)||{}).length + (((getOv(s)||{}).extra)||[]).length, 0);
   return `<div class="page-h"><h1>時間割</h1><span class="daynav"><button class="icon-btn" data-week="-1" aria-label="前の週">${ico("left")}</button><button class="chip" data-week="0" aria-pressed="${ui.week===0}">今週</button><button class="icon-btn" data-week="1" aria-label="次の週">${ico("right")}</button></span><button class="pill-btn" data-act="periods">時程表</button><button class="pill-btn accent" data-tt-open>${ico("tt")}登録・編集</button></div>
+    ${ttSwitch()}
     ${DAYKEYS.every(dk => !(G.grid[dk] || []).some(c => c && c.subject)) ? `<div class="card tip" style="margin-bottom:14px"><span class="ic">${ico("tt")}</span><span class="main"><b>時間割を登録しましょう</b><small>手で入れるか、Excel・スプレッドシートの表（CSV）から読み込めます</small></span><button class="pill-btn accent" data-tt-open>登録</button></div>` : ""}
     ${nChanged ? `<p class="hint" style="margin:-6px 0 10px">この週は ${nChanged} か所の変更があります（オレンジの点）。</p>` : ''}
     <div class="tt-wrap"><table class="tt">${head}${rows}</table></div>
@@ -3765,7 +3804,8 @@ const MB = n => n >= 1e9 ? (n / 1e9).toFixed(2) + " GB" : n >= 1e6 ? (n / 1e6).t
 /* ================= 更新履歴 (newest at the top) ================= */
 const CHANGELOG = [
  {day:"11月6日", sub:"金曜日・教室とつながる日", list:[
-  {v:"アプリ内", t:"朝", big:1, newest:1, h:"教室モニターが、いつも同じリンクに", lead:"ラズパイで1回開けば、もうリンクを送り直さなくていい。", it:[["n","スマホで「教室に出す」と、「きょうの たいいくは グラウンドです」のようなお知らせが、教室の画面の上に大きく出る。今日いっぱい・時刻まで・あした一日・消すまで、から選べる"],["n","クラスの時間割を、自分の時間割とは別に持てる。専科の授業も入れておけば、教室の画面に出る"],["i","時間割やお知らせを変えると、1分ほどで教室の画面も変わる。つながらないときは、最後の内容を出し続ける"],["i","教室のパソコンが持つのは、教室の画面だけを読む別の鍵。外に出たら、スマホから作り直せる"]]}]},
+  {v:"アプリ内", t:"昼", big:1, newest:1, h:"時間割を切りかえ", lead:"「個人」「クラス」「もう1つ」を、ボタンひとつで。", it:[["n","時間割タブの上のボタンで、自分の時間割・クラスの時間割・好きな時間割（他学年など）を切りかえられる。はじめは、いつも「個人」"],["n","「クラス」の時間割が、そのまま教室のモニターに出る。あなたが受け持つ授業には「自分」の印"],["i","コマをタップすると、その曜日をまとめて直せる"]]},
+  {v:"アプリ内", t:"朝", big:1, h:"教室モニターが、いつも同じリンクに", lead:"ラズパイで1回開けば、もうリンクを送り直さなくていい。", it:[["n","スマホで「教室に出す」と、「きょうの たいいくは グラウンドです」のようなお知らせが、教室の画面の上に大きく出る。今日いっぱい・時刻まで・あした一日・消すまで、から選べる"],["n","クラスの時間割を、自分の時間割とは別に持てる。専科の授業も入れておけば、教室の画面に出る"],["i","時間割やお知らせを変えると、1分ほどで教室の画面も変わる。つながらないときは、最後の内容を出し続ける"],["i","教室のパソコンが持つのは、教室の画面だけを読む別の鍵。外に出たら、スマホから作り直せる"]]}]},
  {day:"11月4日", sub:"水曜日・だれでも使える日", list:[
   {v:"アプリ内", t:"11/5", big:1, h:"大画面モード", it:[["n","「今日」の右上のテレビのボタンで、子ども向けの画面をこの端末でそのまま大きく映せる。予定や時間割の変更もそのまま反映"],["f","教室モニターのリンクが、古いブラウザ（ラズパイの Chromium など）で開けないことがあった問題。読めないときは画面に理由と直し方を出す"]]},
   {v:"アプリ内", t:"深夜", big:1, h:"教室モニターに区切りと太いバー", it:[["i","いま・時間割・天気などをうすい板で区切って、どこに何があるかすぐわかるように"],["i","残り時間のバーを太くして、始まりと終わりの時刻を両はしに。残り3分でオレンジに"]]},
@@ -4346,7 +4386,7 @@ function classPane(){
       <div class="setrow"><span class="main"><b>天気</b></span><button class="switch" role="switch" aria-checked="${clsEd.wx}" data-cls-sw="wx"></button></div>
       <div class="setrow"><span class="main"><b>授業の続き</b><small>「授業の進度」の次にやること（例：くじらぐも 音読発表）</small></span><button class="switch" role="switch" aria-checked="${clsEd.prog}" data-cls-sw="prog"></button></div></div>
     <div class="sec">クラスの時間割</div>
-    <p class="hint" style="margin-top:0">あなたの時間割とは別に、クラスの時間割を持てます。はじめは、あなたが受け持つ授業だけ入っています。ほかの先生の授業（専科など）の時間も、教科を入れてください。あなたの時間割は変わりません。</p>
+    <p class="hint" style="margin-top:0">「時間割」タブの「クラス」と同じものです。あなたの時間割とは別に、クラスの時間割を持てます。はじめは、あなたが受け持つ授業だけ入っています。ほかの先生の授業（専科など）の時間も、教科を入れてください。あなたの時間割は変わりません。</p>
     <div class="cls-ed"><table><thead><tr><th></th>${["月","火","水","木","金"].map(x => `<th>${x}</th>`).join("")}</tr></thead><tbody>
       ${Array.from({length:N}, (_, i) => `<tr><th>${i + 1}</th>${DAYKEYS.map(dk => `<td><input class="input" list="ttsubs2" data-cls-g="${dk}.${i}" value="${esc((clsEd.grid[dk] || [])[i] || "")}"></td>`).join("")}</tr>`).join("")}</tbody></table>
       <datalist id="ttsubs2">${Object.keys(KANA).slice(0, 22).map(x => `<option value="${esc(x)}">`).join("")}</datalist></div>
@@ -6095,6 +6135,11 @@ document.addEventListener("click", async (ev) => {
   if(d.demo){ demoAct(d.demo); return; }
   if(d.face){ rollFace(d.face); return; }
   if(d.act === "classroom"){ classPane(); return; }
+  if(d.ttset){ if(ui.ttSet !== d.ttset){ ui.ttSet = d.ttset; schedule(); } return; }
+  if(d.acell){ const [dk, pi] = d.acell.split(":"); altPane(ui.ttSet, dk, +pi); return; }
+  if(d.altEdit !== undefined){ altPane(ui.ttSet, null, undefined, d.altEdit === "name"); return; }
+  if(d.altNew){ altNew(d.altNew); return; }
+  if(d.altDay || d.altCopyday !== undefined || d.altSave !== undefined || d.altDel !== undefined){ altAct(d); return; }
   if(d.act === "bigscreen"){ if(clsPr().live && clsCanLive()) classPane(); else bigOpen(); return; }
   if(d.clsDo){ clsDo(d.clsDo); return; }
   if(d.clsSw){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); clsEd[d.clsSw] = on; return; }
@@ -6686,6 +6731,47 @@ async function ttPhoto(){
       ttEd.dirty = true; ttEd.tab = "grid"; ttDraw(); toast("読み取りました。まちがいがないか確かめてから保存してください");
     } catch(e){ toast("読み取れませんでした"); } };
   inp.click();
+}
+let altEd = null;
+function altPane(k, dk, pi, nameMode){
+  const ex = (S.prefs || {}).ttExtra || {};
+  altEd = {k, dk:dk || DAYKEYS[Math.min(4, Math.max(0, new Date().getDay() - 1))], grid:clone(ttAltGrid(k)), name:ex.name || "", focus:pi, nameMode:!!nameMode};
+  altDraw();
+}
+function altDraw(){
+  const e = altEd; if(!e) return;
+  const n = Math.max(NP(), ...DAYKEYS.map(d => (e.grid[d] || []).length)), N = OFFICIAL.normal.low, row = e.grid[e.dk] || [];
+  const subs = [...new Set(["国語","算数","生活","音楽","図画工作","体育","道徳","学級活動","特別活動","英語","情報探究","総合", ...DAYKEYS.flatMap(d => (tt().grid[d] || []).map(c => c && c.subject).filter(Boolean)), ...DAYKEYS.flatMap(d => (e.grid[d] || []).filter(Boolean))])];
+  openPane(`${paneHead(e.k === "class" ? "クラスの時間割" : `「${esc(e.name || "もう1つ")}」の時間割`)}
+    ${e.k === "extra" ? `<div class="field"><label>名前（ボタンに出ます）</label><input class="input" data-alt-name maxlength="8" value="${esc(e.name)}"></div>` : ""}
+    <div class="seg mini" role="group" aria-label="曜日" style="margin-bottom:12px;display:flex">${DAYKEYS.map((d, i) => `<button type="button" data-alt-day="${d}" aria-pressed="${e.dk === d}" style="flex:1">${["月","火","水","木","金"][i]}</button>`).join("")}</div>
+    <datalist id="altsubs">${subs.map(x => `<option value="${esc(x)}">`).join("")}</datalist>
+    ${Array.from({length:n}, (_, i) => `<div class="ttrow"><span class="pno num">${i+1}</span><input class="input" list="altsubs" placeholder="空き" value="${esc(row[i] || "")}" data-alt-i="${i}" aria-label="${i+1}時間目" maxlength="12"><small class="hint num" style="min-width:44px;text-align:right">${((N[i] || {}).start) || ""}</small></div>`).join("")}
+    <div class="editfoot"><button type="button" class="pill-btn" data-alt-copyday>この曜日を全曜日にコピー</button></div>
+    <p class="hint">${e.k === "class" ? "保存すると、教室のモニターにも送られます（「いつも同じリンク」を使っているとき、1分ほどで変わります）。" : "あなたの「今日」や通知には使われません。"}</p>
+    <div class="btns"><button class="btn primary" data-alt-save>${ico("check")} 保存</button>${e.k === "extra" ? `<button class="btn danger" data-alt-del>この時間割を消す</button>` : ""}</div>`);
+  setTimeout(() => { const f = e.nameMode ? document.querySelector("[data-alt-name]") : e.focus !== undefined ? document.querySelector(`[data-alt-i="${e.focus}"]`) : null; if(f) f.focus(); e.focus = undefined; e.nameMode = false; }, 280);
+}
+document.addEventListener("input", ev => { const t = ev.target; if(!altEd || !t.matches) return;
+  if(t.matches("[data-alt-i]")){ (altEd.grid[altEd.dk] = altEd.grid[altEd.dk] || [])[+t.dataset.altI] = t.value; }
+  if(t.matches("[data-alt-name]")) altEd.name = t.value; });
+async function altAct(d){
+  const e = altEd;
+  if(d.altDay){ altEd.dk = d.altDay; altDraw(); return; }
+  if(d.altCopyday !== undefined){ const r = (e.grid[e.dk] || []).slice(); DAYKEYS.forEach(x => { e.grid[x] = r.slice(); }); toast("全曜日にコピーしました（保存すると決まります）"); return; }
+  if(d.altSave !== undefined){
+    const grid = {}; DAYKEYS.forEach(x => { grid[x] = (e.grid[x] || []).map(v => String(v || "").trim().slice(0, 12)); while(grid[x].length && !grid[x][grid[x].length - 1]) grid[x].pop(); });
+    if(e.k === "class"){ await putPrefs({classroom:{...clsPr(), grid}}); clsPublish(true).catch(() => {}); toast(clsPr().live ? "保存しました。教室の画面にも送りました" : "クラスの時間割を保存しました"); }
+    else { const name = String(e.name || "").trim().slice(0, 8) || "もう1つ"; await putPrefs({ttExtra:{name, grid}}); toast(`「${name}」を保存しました`); }
+    altEd = null; closePane(); schedule(); return; }
+  if(d.altDel !== undefined){ if(!confirm(`「${(S.prefs.ttExtra || {}).name || "もう1つ"}」の時間割を消しますか？`)) return; await putPrefs({ttExtra:null}); altEd = null; ui.ttSet = "me"; closePane(); schedule(); toast("消しました"); return; }
+}
+async function altNew(from){
+  const inp = document.querySelector("[data-alt-newname]"), name = String(inp && inp.value || "").trim().slice(0, 8);
+  if(!name){ toast("名前を入れてください（例：4-2）"); if(inp) inp.focus(); return; }
+  const grid = {}; DAYKEYS.forEach(dk => { grid[dk] = from === "class" ? (clsDefaults().grid[dk] || []).slice() : from === "me" ? (tt().grid[dk] || []).map(c => c && c.subject ? c.subject : "") : []; });
+  await putPrefs({ttExtra:{name, grid}}); ui.ttSet = "extra"; schedule();
+  setTimeout(() => altPane("extra"), 250);
 }
 function ttDraw(){
   const e = ttEd; if(!e) return;
