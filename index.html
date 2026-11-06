@@ -2215,7 +2215,7 @@ let tabDownAt = 0;
 document.addEventListener("pointerdown", e => { if(e.button !== 0) return; const t = e.target.closest && e.target.closest(".tab[data-go]"); if(!t || t.closest("#pane")) return;
   tabDownAt = performance.now(); if(t.dataset.go !== view) go(t.dataset.go); }, true);
 document.addEventListener("click", e => { const t = e.target.closest && e.target.closest(".tab[data-go]"); if(t && performance.now() - tabDownAt < 700){ e.stopPropagation(); e.preventDefault(); } }, true);
-const BUILD = "fd-shell-v59";
+const BUILD = "fd-shell-v60";
 let updWaiting = false;
 async function checkBuild(){
   if(!/^fd-shell-v\d+$/.test(BUILD)) return;
@@ -4253,7 +4253,7 @@ function classroomView(){
   const c = CLS, K = c.kana !== false, now = new Date(), t = todayS(), st = clsNow(c), w = c.wx !== false ? wxNow() : null;
   const J = (a, b) => K ? a : b, nm = x => x.type === "period" ? (x.sub ? rb(x.sub, K) : J("あき", "空き")) : rb(x.label, K);
   const dayL = st.day ? st.day.items : [], prog = c.prog || {};
-  let eyebrow = "", main = "", minutes = "", frac = null, sub = "", warn = false;
+  let eyebrow = "", main = "", minutes = "", frac = null, sub = "", warn = false, gapEnds = null;
   if(st.off){ eyebrow = ""; main = J("きょうは おやすみ", "今日はお休み"); }
   else if(st.cur){ const end = mins(st.cur.end), start = mins(st.cur.start), rest = Math.max(0, Math.ceil(end - st.m));
     frac = Math.min(1, Math.max(0, (st.m - start) / Math.max(1, end - start))); warn = rest <= 3;
@@ -4263,8 +4263,14 @@ function classroomView(){
   else if(st.before){ eyebrow = J("おはようございます", "おはようございます"); main = st.next ? nm(st.next) : "";
     if(st.next) minutes = `<span class="cm-min"><b class="num">${Math.max(0, Math.ceil(mins(st.next.start) - st.m))}</b>${J("ぷん", "分")}</span><span class="cm-mint">${J("で はじまります", "で始まります")}</span>`; }
   else if(st.after){ eyebrow = J("きょうも おつかれさまでした", "今日もおつかれさまでした"); main = J("また あした", "また明日"); }
-  else { main = J("つぎの じゅんび", "次の準備"); }
-  const nextLine = st.next && !st.off && !st.after && !st.before ? `<p class="cm-next"><span>${J("つぎ", "次")}</span>${st.next.type === "period" ? `<span class="num">${st.next.n}</span>` : ""}<b>${nm(st.next)}</b><span class="num cm-at">${st.next.start}</span></p>` : "";
+  else { main = J("つぎの じゅんび", "次の準備");
+    const prevEnd = dayL.map(x => x.end).filter(e => mins(e) <= st.m).sort((a, b) => mins(b) - mins(a))[0];
+    if(st.next){ const a = prevEnd ? mins(prevEnd) : st.m, z = mins(st.next.start), rest = Math.max(0, Math.ceil(z - st.m));
+      eyebrow = J("つぎは", "次は"); main = nm(st.next); warn = rest <= 3;
+      minutes = `<span class="cm-min"><b class="num">${rest}</b>${J("ぷん", "分")}</span><span class="cm-mint">${J("で はじまります", "で始まります")}</span>`;
+      frac = Math.min(1, Math.max(0, (st.m - a) / Math.max(1, z - a)));
+      gapEnds = [prevEnd || `${pad(Math.floor(st.m / 60))}:${pad(Math.floor(st.m % 60))}`, st.next.start]; } }
+  const nextLine = st.next && !st.off && !st.after && !st.before && st.cur ? `<p class="cm-next"><span>${J("つぎ", "次")}</span>${st.next.type === "period" ? `<span class="num">${st.next.n}</span>` : ""}<b>${nm(st.next)}</b><span class="num cm-at">${st.next.start}</span></p>` : "";
   const rows = dayL.length ? dayL.map(x => { const past = mins(x.end) <= st.m, cur = st.cur && st.cur.start === x.start && st.cur.type === x.type;
       return `<li class="${x.type} ${past ? "past" : ""} ${cur ? "cur" : ""}"><span class="cm-n num">${x.type === "period" ? x.n : ""}</span><span class="cm-s">${nm(x)}</span><span class="cm-t num">${x.start}</span></li>`; }).join("")
     : `<li class="none">${J("じゅぎょうは ありません", "授業はありません")}</li>`;
@@ -4289,7 +4295,7 @@ function classroomView(){
     <section class="cm-main">
       <div class="cm-now">${eyebrow ? `<p class="cm-eye">${eyebrow}</p>` : ""}<h1 class="cm-subj ${main.replace(/<rt>.*?<\/rt>|<[^>]+>/g, "").length > 6 ? "long" : ""}">${main}</h1>
         ${minutes ? `<div class="cm-rest">${minutes}</div>` : ""}
-        ${frac !== null ? `<div class="cm-bar"><div class="cm-track"><i style="width:${(frac * 100).toFixed(1)}%"></i></div><div class="cm-ends num"><span>${st.cur.start}</span><span>${st.cur.end}</span></div></div>` : ""}
+        ${frac !== null ? `<div class="cm-bar"><div class="cm-track"><i style="width:${(frac * 100).toFixed(1)}%"></i></div><div class="cm-ends num"><span>${gapEnds ? gapEnds[0] : st.cur.start}</span><span>${gapEnds ? gapEnds[1] : st.cur.end}</span></div></div>` : ""}
         ${sub ? `<p class="cm-prog">${sub}</p>` : ""}${nextLine}</div>
       <div class="cm-day"><h2>${J("きょうの じかんわり", "今日の時間割")}</h2><ol>${rows}</ol></div>
     </section>
