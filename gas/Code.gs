@@ -144,12 +144,23 @@ function dataFile_(){
 }
 const empty_ = () => ({rev:1, cols:{}, cfg:{}});
 function data_(){
-  const d = JSON.parse(dataFile_().getBlob().getDataAsString() || "{}");
+  /* never treat an empty or unreadable file as "no data": that would overwrite everything on the next save */
+  const t = dataFile_().getBlob().getDataAsString();
+  if(!t || !t.trim()) throw coded_("server", "data file read came back empty");
+  const d = JSON.parse(t);
+  if(!d || typeof d !== "object") throw coded_("server", "data file unreadable");
   d.cols = d.cols || {}; d.cfg = d.cfg || {}; d.rev = d.rev || 1;
   COLS.forEach(c => d.cols[c] = d.cols[c] || {});
   return d;
 }
-function save_(d){ d.rev = (d.rev || 1) + 1; dataFile_().setContent(JSON.stringify(d)); P.setProperty("REV", String(d.rev)); }
+function save_(d){
+  const allow = d.__allowShrink; delete d.__allowShrink;
+  d.rev = (d.rev || 1) + 1;
+  const t = JSON.stringify(d), last = +(P.getProperty("SIZE") || 0);
+  /* safety net: refuse a save that would suddenly throw away most of the data (only a restore may do that) */
+  if(!allow && last > 4000 && t.length < last * 0.4) throw coded_("server", "refused to shrink data from " + last + " to " + t.length);
+  dataFile_().setContent(t); P.setProperty("REV", String(d.rev)); P.setProperty("SIZE", String(t.length));
+}
 function withLock_(fn){
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
@@ -223,6 +234,7 @@ function seed_(d, s, force){
   COLS.forEach(c => d.cols[c] = (s.cols && s.cols[c]) || {});
   Object.keys(d.cols.events).forEach(k => { if(k.indexOf("gc-") === 0) delete d.cols.events[k]; });   // re-imported by importCalendar()
   d.cfg = s.cfg || {};
+  d.__allowShrink = true;
   return 1;
 }
 const now_ = () => new Date().toISOString();
