@@ -10,11 +10,17 @@
  *   3. Deploy > New deployment > Web app (Execute as: Me / Who has access: Anyone)
  *   4. Run pair()   → a pairing link is mailed to you. Open it on the phone, then delete the mail.
  *   Lost phone / leaked link?  Run rotateToken() — the old token stops working immediately.
+ *
+ * Classroom monitor: the phone publishes one small "classroom" document (class timetable, bell times,
+ * messages for the children). A classroom computer reads ONLY that document with a separate read-only
+ * key (CLASS_TOKEN). It can never read or change anything else. Leaked? Make a new key from the app
+ * (教室モニター → 鍵を作り直す) or run rotateClassKey().
  */
 
 const APP_URL = "https://carno-eng.github.io/fold-desk/";           // GitHub Pages URL of the app (filled in by deploy)
 const FOLDER_NAME = "Fold Desk データ";
 const DATA_NAME = "folddesk-data.json";
+const CLASS_NAME = "folddesk-classroom.json";
 const COLS = ["tasks","events","people","orgs","memos","logs","progress","followups","briefs","overrides"];
 const CFG_KEYS = ["timetable","days","prefs","school","google"];
 const ID_RE = /^[A-Za-z0-9_\-.~:@+]{1,200}$/;
@@ -50,6 +56,11 @@ function rotateToken(){
   CacheService.getScriptCache().remove("fails");
   Logger.log("合言葉を変更しました。古い接続は無効です。pair() を実行して接続し直してください。");
 }
+function rotateClassKey(){
+  P.setProperty("CLASS_TOKEN", newToken_());
+  CacheService.getScriptCache().remove("cfails");
+  Logger.log("教室モニターの鍵を作り直しました。アプリで新しい教室用リンクを作り、教室のパソコンで開き直してください。");
+}
 function newToken_(){
   let s = "";
   for(let i = 0; i < 4; i++) s += Utilities.getUuid();
@@ -69,9 +80,19 @@ function doGet(){ return ContentService.createTextOutput(""); }   // reveals not
 function doPost(e){
   const out = o => ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
   const cache = CacheService.getScriptCache();
-  if(+(cache.get("fails") || 0) >= 10) return out({ok:false, code:"locked"});
   let req;
   try { req = JSON.parse(e.postData.contents); } catch(_){ return out({ok:false, code:"bad_request"}); }
+  /* the classroom computer: read-only, its own key, its own lock. Nothing else is reachable with it. */
+  if(req && req.op === "classGet"){
+    if(+(cache.get("cfails") || 0) >= 20) return out({ok:false, code:"locked"});
+    if(!safeEq_(String(req.ckey || ""), P.getProperty("CLASS_TOKEN") || "")){
+      cache.put("cfails", String(+(cache.get("cfails") || 0) + 1), 600);
+      Utilities.sleep(800);
+      return out({ok:false, code:"auth"});
+    }
+    try { return out({ok:true, doc:classGet_(), now:Date.now()}); } catch(err){ return out({ok:false, code:"server"}); }
+  }
+  if(+(cache.get("fails") || 0) >= 10) return out({ok:false, code:"locked"});
   if(!safeEq_(String(req.token || ""), P.getProperty("TOKEN") || "")){
     cache.put("fails", String(+(cache.get("fails") || 0) + 1), 600);
     Utilities.sleep(800);
@@ -86,6 +107,8 @@ function doPost(e){
       case "cal": return out({ok:true, result:cal_(req.tool, req.args || {})});
       case "asset": return out(asset_(String(req.name || "")));
       case "putAsset": return out(putAsset_(String(req.name || ""), String(req.mime || ""), String(req.b64 || "")));
+      case "classKey": return out({ok:true, key:classKey_(!!req.renew)});
+      case "classPut": return out(classPut_(req.doc));
       case "sync": processInbox(); try { syncGoogleTasks(); } catch(_){} importCalendar(); return out(pull_({rev:0}));
       default:
         if(/^g\.[A-Za-z]+$/.test(String(req.op))) return out({ok:true, result:google_(req.op, req.args || {})});
@@ -339,4 +362,38 @@ function asset_(name){
     if(f.getName().indexOf("asset-" + name + ".") === 0){ const b = f.getBlob(); return {ok:true, mime:b.getContentType(), b64:Utilities.base64Encode(b.getBytes())}; }
   }
   return {ok:false, code:"not_found"};
+}
+
+/* ===================== classroom monitor ===================== */
+function classKey_(renew){
+  let k = P.getProperty("CLASS_TOKEN");
+  if(!k || renew){ k = newToken_(); P.setProperty("CLASS_TOKEN", k); }
+  return k;
+}
+function classFile_(){
+  const id = P.getProperty("CLASS_ID");
+  if(id){ try { const f = DriveApp.getFileById(id); if(!f.isTrashed()) return f; } catch(_){} }
+  const it = folder_().getFilesByName(CLASS_NAME);
+  const f = it.hasNext() ? it.next() : folder_().createFile(CLASS_NAME, "null", "application/json");
+  P.setProperty("CLASS_ID", f.getId());
+  return f;
+}
+function classGet_(){
+  const c = CacheService.getScriptCache(), hit = c.get("classdoc");
+  if(hit) return JSON.parse(hit);
+  const t = classFile_().getBlob().getDataAsString() || "null";
+  if(t.length < 90000) c.put("classdoc", t, 21600);
+  return JSON.parse(t);
+}
+function classPut_(doc){
+  if(!doc || doc.v !== 1 || typeof doc !== "object") throw coded_("bad_request");
+  const now = Date.now();
+  doc.msgs = (Array.isArray(doc.msgs) ? doc.msgs : []).filter(m => m && typeof m.text === "string" && (!m.until || Date.parse(m.until) > now))
+    .slice(0, 8).map(m => ({id:String(m.id || "").slice(0, 40), text:m.text.slice(0, 80), from:m.from || "", until:m.until || "", at:m.at || ""}));
+  doc.pub = new Date().toISOString();
+  const t = JSON.stringify(doc);
+  if(t.length > 90000) throw coded_("too_large");
+  withLock_(() => { classFile_().setContent(t); });
+  CacheService.getScriptCache().put("classdoc", t, 21600);
+  return {ok:true, pub:doc.pub};
 }

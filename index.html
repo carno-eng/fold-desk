@@ -1958,6 +1958,39 @@ body.classroom{background:#16221D}
 .cm.warn .cm-track i{background:#F08A5D}
 .cm-main{overflow:hidden;min-height:0}
 .cm-now{padding:3vh 2.6vw;gap:1.5vh;overflow:hidden;min-height:0}
+/* v51: messages from the teacher, right under the date */
+.cm.has-msg{grid-template-rows:auto auto minmax(0,1fr) auto}
+.cm-msgs{display:flex;align-items:center;gap:2.4vw;padding:1.8vh 2.4vw;border-radius:2vh;background:rgba(242,201,76,.15);box-shadow:inset 1vh 0 0 var(--acc)}
+.cm-msgh{flex:none;font-size:2.8vh;font-weight:700;color:var(--acc);white-space:nowrap}
+.cm-msgs ul{list-style:none;margin:0;padding:0;display:grid;gap:.8vh;min-width:0}
+.cm-msgs li{font-size:5vh;font-weight:700;line-height:1.3;animation:cmIn .7s ease both;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cm-msgs.many li{font-size:3.8vh;-webkit-line-clamp:1}
+@keyframes cmIn{from{opacity:0;transform:translateY(1vh)}}
+.cm.has-msg{gap:1.6vh;padding-top:2.8vh;padding-bottom:2.8vh}
+.cm.has-msg .cm-msgs{padding:1.3vh 2.2vw}
+.cm.has-msg .cm-msgs li{font-size:4.3vh}.cm.has-msg .cm-msgs.many li{font-size:3.4vh}
+.cm.has-msg .cm-subj{font-size:9vh;line-height:1.15}.cm.has-msg .cm-subj.long{font-size:7vh}
+.cm.has-msg .cm-eye{font-size:3.4vh}
+.cm.has-msg .cm-min{font-size:3.6vh}.cm.has-msg .cm-min b{font-size:7.4vh}.cm.has-msg .cm-mint{font-size:3.2vh}
+.cm.has-msg .cm-track{height:3.4vh}
+.cm.has-msg .cm-ends{font-size:2.2vh}
+.cm.has-msg .cm-prog{font-size:2.8vh}.cm.has-msg .cm-next{font-size:3.2vh;margin-top:.4vh}
+.cm.has-msg .cm-now{gap:.9vh;padding:2vh 2.4vw}
+.cm.has-msg .cm-day{padding:2vh 2vw}.cm.has-msg .cm-day h2{font-size:2.4vh;margin-bottom:.6vh}
+.cm.has-msg .cm-day li{font-size:2.6vh;padding-top:.15vh;padding-bottom:.15vh}
+.cm.has-msg .cm-day li.block{font-size:2vh}
+.cm.has-msg .cm-f{padding:1.4vh 2vw!important}.cm.has-msg .cm-ic{width:5.6vh;height:5.6vh}.cm.has-msg .cm-wx b{font-size:4.2vh}
+.cm-stale{font-size:2.2vh;color:var(--ink3);white-space:nowrap}
+.cm-wait{color:var(--ink3)!important;margin-top:2vh!important}
+/* phone: the classroom pane */
+.cls-msg textarea{width:100%;box-sizing:border-box;min-height:76px;resize:vertical;font:inherit;font-size:16px}
+.cls-when{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.cls-when label{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;border:1px solid var(--line);font-size:14px;min-height:44px;box-sizing:border-box}
+.cls-when label:has(input:checked){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);font-weight:700}
+.cls-when input[type=radio]{margin:0}
+.cls-when input[type=time]{font:inherit;font-size:14px;border:0;background:transparent;color:inherit}
+.cls-live{padding:14px;border-radius:16px;background:color-mix(in srgb,var(--accent) 8%,transparent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);margin:6px 0 14px}
+.cls-live b{display:block;margin-bottom:4px}
 .cm-eye{font-size:3.6vh}
 .cm-subj{font-size:11.5vh}
 .cm-subj.long{font-size:8.5vh}
@@ -2175,7 +2208,7 @@ let tabDownAt = 0;
 document.addEventListener("pointerdown", e => { if(e.button !== 0) return; const t = e.target.closest && e.target.closest(".tab[data-go]"); if(!t || t.closest("#pane")) return;
   tabDownAt = performance.now(); if(t.dataset.go !== view) go(t.dataset.go); }, true);
 document.addEventListener("click", e => { const t = e.target.closest && e.target.closest(".tab[data-go]"); if(t && performance.now() - tabDownAt < 700){ e.stopPropagation(); e.preventDefault(); } }, true);
-const BUILD = "fd-shell-v57";
+const BUILD = "fd-shell-v58";
 let updWaiting = false;
 async function checkBuild(){
   if(!/^fd-shell-v\d+$/.test(BUILD)) return;
@@ -3465,7 +3498,7 @@ function weekDates(off){ const t = parse(todayS()); const w = (t.getDay()+6) % 7
 
 /* ================= TODAY ================= */
 function vToday(){
-  if(ui.todayFace === "window") return windowFace(`<div class="page-h"><h1>今日</h1><button class="icon-btn" data-act="bigscreen" aria-label="大画面で表示">${ico("tv")}</button><button class="icon-btn" data-act="pomo" aria-label="ポモドーロ">${ico("timer")}</button><button class="icon-btn" data-act="settings" aria-label="通知と設定">${ico("bell")}</button></div>${faceDots()}`);
+  if(ui.todayFace === "window") return windowFace(`<div class="page-h"><h1>今日</h1><button class="icon-btn" data-act="bigscreen" aria-label="教室モニター・大画面">${ico("tv")}</button><button class="icon-btn" data-act="pomo" aria-label="ポモドーロ">${ico("timer")}</button><button class="icon-btn" data-act="settings" aria-label="通知と設定">${ico("bell")}</button></div>${faceDots()}`);
   const t = todayS(), d = new Date(), mode = dayMode(t);
   const items = (dayItems(t) || []).filter(x => !x.cancelled), st = currentState();
   let nowLine = "", nowSub = "";
@@ -3514,7 +3547,7 @@ function vToday(){
       <div class="hero-top"><div style="min-width:0"><div class="eyebrow">${d.getFullYear()}年 ${WD[d.getDay()]}曜日${wxMini()}</div>
       <div class="date"><b class="num">${d.getMonth()+1}月${d.getDate()}日</b></div>
       <div class="now">${esc(nowLine)}<small>${esc(nowSub)}</small></div>${moodBadge}</div>${ring}</div>${modeSeg}${dayBar}</div>${heroBack()}</div></section>`;
-  const head = `<div class="page-h"><h1>今日</h1><button class="icon-btn" data-act="bigscreen" aria-label="大画面で表示">${ico("tv")}</button><button class="icon-btn" data-act="pomo" aria-label="ポモドーロ">${ico("timer")}</button><button class="icon-btn" data-act="settings" aria-label="通知と設定">${ico("bell")}</button></div>${faceDots()}`;
+  const head = `<div class="page-h"><h1>今日</h1><button class="icon-btn" data-act="bigscreen" aria-label="教室モニター・大画面">${ico("tv")}</button><button class="icon-btn" data-act="pomo" aria-label="ポモドーロ">${ico("timer")}</button><button class="icon-btn" data-act="settings" aria-label="通知と設定">${ico("bell")}</button></div>${faceDots()}`;
   const tip = !NATIVE && !ls.get("fd-home-tip-off", false) && document.body.dataset.mode === "cover-p"
     ? `<div class="card span-all tip"><span class="ic">${ico("home")}</span><span class="main"><b>ホーム画面に置く</b><small>アプリのようにワンタップで開けます</small></span><button class="pill-btn accent" data-act="homeguide">方法</button><button class="icon-btn sm" data-act="tipoff" aria-label="閉じる">${ico("close")}</button></div>` : "";
   const m = document.body.dataset.mode;
@@ -3731,8 +3764,10 @@ const MB = n => n >= 1e9 ? (n / 1e9).toFixed(2) + " GB" : n >= 1e6 ? (n / 1e6).t
 
 /* ================= 更新履歴 (newest at the top) ================= */
 const CHANGELOG = [
+ {day:"11月6日", sub:"金曜日・教室とつながる日", list:[
+  {v:"アプリ内", t:"朝", big:1, newest:1, h:"教室モニターが、いつも同じリンクに", lead:"ラズパイで1回開けば、もうリンクを送り直さなくていい。", it:[["n","スマホで「教室に出す」と、「きょうの たいいくは グラウンドです」のようなお知らせが、教室の画面の上に大きく出る。今日いっぱい・時刻まで・あした一日・消すまで、から選べる"],["n","クラスの時間割を、自分の時間割とは別に持てる。専科の授業も入れておけば、教室の画面に出る"],["i","時間割やお知らせを変えると、1分ほどで教室の画面も変わる。つながらないときは、最後の内容を出し続ける"],["i","教室のパソコンが持つのは、教室の画面だけを読む別の鍵。外に出たら、スマホから作り直せる"]]}]},
  {day:"11月4日", sub:"水曜日・だれでも使える日", list:[
-  {v:"アプリ内", t:"11/5", big:1, newest:1, h:"大画面モード", it:[["n","「今日」の右上のテレビのボタンで、子ども向けの画面をこの端末でそのまま大きく映せる。予定や時間割の変更もそのまま反映"],["f","教室モニターのリンクが、古いブラウザ（ラズパイの Chromium など）で開けないことがあった問題。読めないときは画面に理由と直し方を出す"]]},
+  {v:"アプリ内", t:"11/5", big:1, h:"大画面モード", it:[["n","「今日」の右上のテレビのボタンで、子ども向けの画面をこの端末でそのまま大きく映せる。予定や時間割の変更もそのまま反映"],["f","教室モニターのリンクが、古いブラウザ（ラズパイの Chromium など）で開けないことがあった問題。読めないときは画面に理由と直し方を出す"]]},
   {v:"アプリ内", t:"深夜", big:1, h:"教室モニターに区切りと太いバー", it:[["i","いま・時間割・天気などをうすい板で区切って、どこに何があるかすぐわかるように"],["i","残り時間のバーを太くして、始まりと終わりの時刻を両はしに。残り3分でオレンジに"]]},
   {v:"アプリ内", t:"深夜", big:1, h:"教室モニターを見やすく", it:[["i","教室のうしろからでも読めるように、いまの授業と残り時間を1つの大きな見出しに。時間割は右に静かな表で、天気・明日・予定は下の1行に"],["i","学校向けのユニバーサルデザインの書体（BIZ UDPゴシック）。色は白・うすい白・黄色の3つだけ。枠と光る飾りをやめた"]]},
   {v:"アプリ内", t:"夜", big:1, h:"教室モニター", lead:"ラズパイやパソコンで、子ども向けの「今日」を出しっぱなしに。", it:[["n","時計・いまの授業と残り時間・次・1日の帯・今日の時間割（授業の続きつき）・天気と窓の空・今日の予定・明日の時間割・これからの予定"],["n","ふりがなつき表示。残り3分で数字が点滅、夜は画面を暗く"],["n","スマホの「通知と設定 → 教室モニター」でクラスの時間割と見せる予定を選び、リンクを作るだけ。教室のパソコンにはアカウントの鍵を入れない"],["n","ラズパイを電源オンで全画面にする手順つき"]]},
@@ -4127,7 +4162,26 @@ async function clsEncode(obj){
   const raw = new TextEncoder().encode(JSON.stringify(obj));
   return "j" + b64u(raw);
 }
+/* "k" links: never change. They hold only the web-app address and a read-only classroom key */
+const CLS_U_RE = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/;
+let clsLive = null, clsOkAt = 0, clsLiveErr = "", clsPollAt = 0;
+async function clsFetch(){
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 25000);
+  try { const r = await fetch(clsLive.u, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify({op:"classGet", ckey:clsLive.k}), redirect:"follow", cache:"no-store", credentials:"omit", referrerPolicy:"no-referrer", signal:ctl.signal});
+    const j = await r.json();
+    if(!j.ok) return {err:j.code || "server"};
+    if(!j.doc || j.doc.v !== 1) return {err:"empty"};
+    clsOkAt = Date.now(); ls.set("fd-class-doc", {raw:clsLive.raw, doc:j.doc}); return {doc:j.doc};
+  } catch(e){ return {err:"offline"}; } finally { clearTimeout(tm); }
+}
 async function clsDecode(s0){
+  if(s0[0] === "k"){
+    try { const o = JSON.parse(new TextDecoder().decode(unb64u(s0.slice(1)))); if(!CLS_U_RE.test(o.u) || !/^[A-Za-z0-9_-]{40,}$/.test(o.k)) return null;
+      clsLive = {u:o.u, k:o.k, raw:s0}; } catch(e){ return null; }
+    const r = await clsFetch(); if(r.doc) return r.doc;
+    clsLiveErr = r.err; const c = ls.get("fd-class-doc", null);
+    return r.err !== "auth" && r.err !== "empty" && c && c.raw === s0 && c.doc && c.doc.v === 1 ? c.doc : null;
+  }
   try { const u = unb64u(s0.slice(1)); const t = s0[0] === "z" ? await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text() : new TextDecoder().decode(u);
     const o = JSON.parse(t); return o && o.v === 1 ? o : null; } catch(e){ return null; }
 }
@@ -4150,6 +4204,10 @@ function clsNow(c){
   const it = day.items, cur = it.find(x => m >= mins(x.start) && m < mins(x.end)), next = it.find(x => mins(x.start) > m);
   const first = it[0] ? mins(it[0].start) : 0, last = Math.max(mins(day.dismiss) || 0, ...it.map(x => mins(x.end)));
   return {day, cur, next, m, before:m < first, after:m >= last};
+}
+function clsMsgsNow(c){
+  const n = Date.now();
+  return (c.msgs || []).filter(m => m && m.text && (!m.from || Date.parse(m.from) <= n) && (!m.until || Date.parse(m.until) > n)).slice(0, 3);
 }
 function classroomView(){
   const c = CLS, K = c.kana !== false, now = new Date(), t = todayS(), st = clsNow(c), w = c.wx !== false ? wxNow() : null;
@@ -4180,10 +4238,14 @@ function classroomView(){
     tm ? `<div class="cm-f"><h3>${J("あした", "明日")}<span class="num">${tmD.getMonth() + 1}/${tmD.getDate()}（${wdS(tmD)}）</span>${tm.mode !== "normal" ? `<em>${esc(tm.label)}</em>` : ""}</h3><p class="cm-tm">${tm.items.filter(x => x.type === "period").map(x => x.sub ? rb(x.sub, K) : J("あき", "空き")).join('<i>・</i>')}</p></div>` : "",
     evT.length || evN.length ? `<div class="cm-f"><h3>${J("よてい", "予定")}</h3>${evT.map(e => `<p><span class="cm-acc">${J("きょう", "今日")}</span>${esc(e.t)}</p>`).join("")}${evN.map(e => `<p><span class="num">${md2(e.d)}</span>${esc(e.t)}</p>`).join("")}</div>` : ""].filter(Boolean).join("");
   const dim = now.getHours() >= 19 || now.getHours() < 6;
+  const ms = clsMsgsNow(c);
+  const msgs = ms.length ? `<section class="cm-msgs ${ms.length > 1 ? "many" : ""}"><p class="cm-msgh">${J("せんせいから", "先生から")}</p><ul>${ms.map(m => `<li>${esc(m.text)}</li>`).join("")}</ul></section>` : "";
+  const stale = clsLive && !clsPreview && Date.now() - clsOkAt > 20 * 60e3 ? `<span class="cm-stale">更新できていません</span>` : "";
   const mode = st.day && st.day.mode !== "normal" ? `<span class="cm-tag">${esc(st.day.label)}</span>` : "";
-  return `<div class="cm ${dim ? "dim" : ""} ${warn ? "warn" : ""}">
+  return `<div class="cm ${dim ? "dim" : ""} ${warn ? "warn" : ""} ${msgs ? "has-msg" : ""}">
     <header class="cm-top"><p class="cm-date"><b>${now.getMonth() + 1}${J("がつ", "月")}${now.getDate()}${J("にち", "日")}</b><span>${K ? WDK[now.getDay()] : "日月火水木金土"[now.getDay()] + "曜日"}</span>${mode}</p>
-      ${c.name ? `<p class="cm-class">${esc(c.name)}</p>` : ""}<p class="cm-clock num" data-cls-hold>${now.getHours()}:${pad(now.getMinutes())}</p></header>
+      ${c.name ? `<p class="cm-class">${esc(c.name)}</p>` : ""}${stale}<p class="cm-clock num" data-cls-hold>${now.getHours()}:${pad(now.getMinutes())}</p></header>
+    ${msgs}
     <section class="cm-main">
       <div class="cm-now">${eyebrow ? `<p class="cm-eye">${eyebrow}</p>` : ""}<h1 class="cm-subj ${main.replace(/<rt>.*?<\/rt>|<[^>]+>/g, "").length > 6 ? "long" : ""}">${main}</h1>
         ${minutes ? `<div class="cm-rest">${minutes}</div>` : ""}
@@ -4204,6 +4266,14 @@ async function clsBoot(){
 async function clsBoot2(){
   const raw = CLS_RAW_NEW || (!paired() ? localStorage.getItem("fd-class-raw") : null); if(!raw) return;
   const c = await clsDecode(raw);
+  if(!c && clsLive){
+    if(!(paired() && CLS_RAW_NEW)) try { localStorage.setItem("fd-class-raw", raw); } catch(e){}
+    const why = {auth:["教室用の鍵が新しくなっています", "スマホの「教室モニター」で「教室用リンクをコピー」を押し、新しいリンクをこのパソコンで1回開いてください。"],
+      empty:["まだ時間割が届いていません", "スマホの「教室モニター」で「保存して教室に送る」を押してください。1分ほどで出ます。"],
+      locked:["しばらく待っています", "鍵の確認に何度も失敗したため、10分ほど止まっています。"]}[clsLiveErr] || ["インターネットにつながりません", "つながると、自動で表示されます。"];
+    document.body.classList.add("classroom"); clsErr = `<div class="cm"><div class="cm-err"><h1>${why[0]}</h1><p>${why[1]}</p><p class="cm-wait">30秒ごとに、もう一度ためしています。</p></div></div>`; $("#view").innerHTML = clsErr;
+    setTimeout(() => location.reload(), clsLiveErr === "locked" ? 600e3 : 30e3);
+    return; }
   if(!c){ if(CLS_RAW_NEW){ const v = (navigator.userAgent.match(/(Chrom(?:e|ium)|Firefox)\/(\d+)/) || [, "ブラウザ", "?"]);
       document.body.classList.add("classroom"); clsErr = `<div class="cm"><div class="cm-err"><h1>リンクを読み取れませんでした</h1><p>リンクが途中で切れているか、このブラウザ（${esc(v[1])} ${esc(v[2])}）では読めない形でした。</p><ol><li>スマホの「教室モニター」で、もう一度「リンクを作る」を押してください（新しい形のリンクになります）。</li><li>メールやメッセージで送るときは、リンク全体が1つにつながっているか確かめてください。</li><li>それでも開けないときは、ラズパイの Chromium を新しくしてください（ターミナルで <code>sudo apt update && sudo apt full-upgrade</code>）。</li></ol></div></div>`; $("#view").innerHTML = clsErr; }
     return; }
@@ -4214,6 +4284,12 @@ async function clsBoot2(){
   try { if(navigator.wakeLock) { const get = () => navigator.wakeLock.request("screen").catch(() => {}); get(); document.addEventListener("visibilitychange", () => { if(!document.hidden) get(); }); } } catch(e){}
   setInterval(() => { if(CLS && !document.hidden) render(); }, 1000);
   setInterval(() => { if(CLS) fetchWeather(); }, 20 * 60e3);
+  if(clsLive){ clsPollAt = Date.now();
+    setInterval(async () => { const h = new Date().getHours(), gap = h >= 6 && h < 19 ? 55e3 : 600e3;
+      if(Date.now() - clsPollAt < gap) return; clsPollAt = Date.now();
+      const r = await clsFetch(); if(r.err === "auth") location.reload(); if(!r.doc) return;
+      if(JSON.stringify(r.doc) !== JSON.stringify(CLS)){ const pl = r.doc.place; CLS = r.doc;
+        if(pl && (!CLS.place || pl.lat !== (ls.get("fd-wx-place", {}) || {}).lat)){ if(!clsPreview) ls.set("fd-wx-place", pl); fetchWeather(true); } render(); } }, 5e3); }
 }
 /* hold the clock for 3 seconds to take the classroom screen off this computer */
 (() => { let tm = 0; document.addEventListener("pointerdown", e => { if(!CLS || !e.target.closest("[data-cls-hold]")) return; tm = setTimeout(() => {
@@ -4230,10 +4306,12 @@ function clsDefaults(){
   return {name:pr.name || "", kana:pr.kana !== false, wx:pr.wx !== false, prog:pr.prog !== false, grid:pr.grid || own};
 }
 let clsEd = null;
+window.clsEdNow = () => clsEd;
 function clsEvPick(){
   const t = todayS(), evs = evAll().filter(e => e.date >= t && e.date <= addDays(t, 30) && evScope(e) !== "personal").sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || "")));
   const keep = ((S.prefs || {}).classroom || {}).evOff || [];
-  return evs.map(e => ({d:e.date, tm:e.time || "", t:e.title, on:!keep.includes(e.date + "|" + e.title) && (e.kind === "休み" || e.kind === "学校行事" || e.kind === "学年" || KIDS_EV.test(e.title))}));
+  const synced = new Set(personalEvents.map(x => x.id));
+  return evs.map(e => ({d:e.date, tm:e.time || "", t:e.title, sync:synced.has(e.id), on:!keep.includes(e.date + "|" + e.title) && (e.kind === "休み" || e.kind === "学校行事" || e.kind === "学年" || KIDS_EV.test(e.title))}));
 }
 let bigLive = false, bigTimer = 0;
 async function bigOpen(keepEd){
@@ -4255,22 +4333,30 @@ function bigClose(){
 function classPane(){
   clsEd = clsDefaults(); clsEd.evs = clsEvPick();
   const N = Math.max(...Object.values(OFFICIAL).map(M => (M.low || []).length), 5);
+  const live = !!clsPr().live && clsCanLive();
   openPane(`${paneHead("教室モニター")}
-    <p class="empty" style="margin-top:0">教室のモニター（ラズパイやパソコン）に、子ども向けの「今日」を出しっぱなしにします。時計・いまの授業と残り時間・時間割・授業の続き・学校の予定・天気が出ます。<b>タスク・メール・人・個人の予定は出ません</b>。教室のパソコンには、あなたのアカウントにつながる鍵は入りません。</p>
+    ${live ? `<div class="sec" style="margin-top:0">教室にお知らせ</div><div id="clsMsgBox">${clsMsgHTML()}</div>
+      <div class="btns" style="margin-top:4px"><button class="btn" data-cls-do="copylive">${ico("share2")} 教室用リンク</button><button class="btn" data-cls-do="big">${ico("tv")} この端末で大画面</button></div>
+      <div class="sec">教室の画面に出すもの</div>`
+    : clsCanLive() ? `<div class="cls-live"><b>いつも同じリンクにする（おすすめ）</b><span class="hint" style="display:block;margin:0 0 10px">教室のパソコンでリンクを1回開くだけ。あとは時間割を直したり、「今日の体育はグラウンド」のようなお知らせを出したりすると、教室の画面が1分ほどで変わります。</span><button class="btn primary" data-cls-do="live">はじめる</button></div>` : ""}
+    <p class="empty" style="margin-top:0">教室のモニター（ラズパイやパソコン）に、子ども向けの「今日」を出しっぱなしにします。時計・いまの授業と残り時間・時間割・授業の続き・学校の予定・天気${live ? "・お知らせ" : ""}が出ます。<b>タスク・メール・人・個人の予定は出ません</b>。教室のパソコンには、あなたのアカウントにつながる鍵は入りません（教室の画面だけを読む、別の鍵です）。</p>
     <div class="field"><label>クラスの名前（画面の上に出ます）</label><input class="input" data-cls-f="name" value="${esc(clsEd.name)}" placeholder="例：1ねん1くみ"></div>
     <div class="group">
       <div class="setrow"><span class="main"><b>ふりがなをつける</b><small>教科や「なかやすみ」などにふりがな。時刻の言葉もひらがなに</small></span><button class="switch" role="switch" aria-checked="${clsEd.kana}" data-cls-sw="kana"></button></div>
       <div class="setrow"><span class="main"><b>天気</b></span><button class="switch" role="switch" aria-checked="${clsEd.wx}" data-cls-sw="wx"></button></div>
       <div class="setrow"><span class="main"><b>授業の続き</b><small>「授業の進度」の次にやること（例：くじらぐも 音読発表）</small></span><button class="switch" role="switch" aria-checked="${clsEd.prog}" data-cls-sw="prog"></button></div></div>
     <div class="sec">クラスの時間割</div>
-    <p class="hint" style="margin-top:0">あなたの時間割から、自分のクラスの授業を入れてあります。ほかの先生の授業の時間も、教科を入れてください。</p>
+    <p class="hint" style="margin-top:0">あなたの時間割とは別に、クラスの時間割を持てます。はじめは、あなたが受け持つ授業だけ入っています。ほかの先生の授業（専科など）の時間も、教科を入れてください。あなたの時間割は変わりません。</p>
     <div class="cls-ed"><table><thead><tr><th></th>${["月","火","水","木","金"].map(x => `<th>${x}</th>`).join("")}</tr></thead><tbody>
       ${Array.from({length:N}, (_, i) => `<tr><th>${i + 1}</th>${DAYKEYS.map(dk => `<td><input class="input" list="ttsubs2" data-cls-g="${dk}.${i}" value="${esc((clsEd.grid[dk] || [])[i] || "")}"></td>`).join("")}</tr>`).join("")}</tbody></table>
       <datalist id="ttsubs2">${Object.keys(KANA).slice(0, 22).map(x => `<option value="${esc(x)}">`).join("")}</datalist></div>
     <div class="sec">子どもに見せる予定（30日先まで）</div>
     ${clsEd.evs.length ? `<div class="group">${clsEd.evs.map((e, i) => `<label class="setrow"><span class="main"><b>${esc(e.t)}</b><small>${esc(md(e.d))}${e.tm ? " " + esc(e.tm) : ""}</small></span><input type="checkbox" data-cls-ev="${i}" ${e.on ? "checked" : ""} style="width:22px;height:22px"></label>`).join("")}</div>` : `<p class="hint">学校・仕事の予定はありません。</p>`}
-    <p class="hint">時程（通常・短縮など）と、これから45日の時程の切りかえ・お休みの日も入ります。時間割や予定を変えたら、リンクを作り直して教室のパソコンで開き直してください。</p>
-    <div class="btns"><button class="btn" data-cls-do="big">${ico("tv")} このまま大画面</button><button class="btn primary" data-cls-do="link">${ico("share2")} リンクを作る</button></div>
+    ${live ? `<p class="hint">時程（通常・短縮など）と、これから45日の時程の切りかえ・お休みの日も入ります。このスマホの中だけにある予定（学校のアカウント・端末のカレンダー・読み込んだ学校の予定）は、教室の画面には送りません。</p>
+    <div class="btns"><button class="btn primary" data-cls-do="save">${ico("check")} 保存して教室に送る</button></div>
+    <button class="row" data-cls-do="rotate" style="grid-template-columns:1fr auto;width:100%;text-align:left;margin-top:10px"><span class="main"><b>鍵を作り直す</b><small>教室用リンクが外に出てしまったときに。古いリンクは使えなくなります</small></span><span class="when">${ico("right")}</span></button>`
+    : `<p class="hint">時程（通常・短縮など）と、これから45日の時程の切りかえ・お休みの日も入ります。時間割や予定を変えたら、リンクを作り直して教室のパソコンで開き直してください。</p>
+    <div class="btns"><button class="btn" data-cls-do="big">${ico("tv")} このまま大画面</button><button class="btn primary" data-cls-do="link">${ico("share2")} リンクを作る</button></div>`}
     <p class="hint">「このまま大画面」は、この端末でそのまま映します（Fold をモニターにつないだときや、パソコンのブラウザで）。今の予定がそのまま反映されます。</p>
     <button class="row" data-cls-do="guide" style="grid-template-columns:auto 1fr auto;width:100%;text-align:left;margin-top:10px"><span class="avatar" style="width:36px;height:36px">${ico("home")}</span><span class="main"><b>ラズパイの準備のしかた</b><small>電源を入れたら、この画面が全画面で出るようにする</small></span><span class="when">${ico("right")}</span></button>`);
 }
@@ -4278,24 +4364,135 @@ document.addEventListener("input", e => { if(!clsEd || !e.target.matches) return
   if(e.target.matches("[data-cls-f]")) clsEd[e.target.dataset.clsF] = e.target.value;
   if(e.target.matches("[data-cls-g]")){ const [dk, i] = e.target.dataset.clsG.split("."); (clsEd.grid[dk] = clsEd.grid[dk] || [])[+i] = e.target.value.trim(); } });
 document.addEventListener("change", e => { if(clsEd && e.target.matches && e.target.matches("[data-cls-ev]")) clsEd.evs[+e.target.dataset.clsEv].on = e.target.checked; });
-async function clsPayload(){
+async function clsPayload(ed0, live){
+  const clsEd = ed0 || window.clsEdNow();
   const t = todayS(), days = {}, holi = [];
   for(let i = 0; i < 45; i++){ const d = addDays(t, i); if(S.days && S.days[d]) days[d] = S.days[d]; else { const am = isWeekday(d) ? autoModeOf(d) : null; if(am) days[d] = am.mode; } if(holidayOf(d)) holi.push(d); }
   const off = {}; Object.entries(OFFICIAL).forEach(([k, M]) => { off[k] = {label:M.label, dismiss:M.dismiss || "", low:(M.low || []).map(x => x ? {start:x.start, end:x.end} : null), blocks:(M.blocks || []).map(b => ({label:b.label, start:b.start, end:b.end}))}; });
   const grid = {}; DAYKEYS.forEach(dk => { grid[dk] = (clsEd.grid[dk] || []).map(x => x ? {s:x} : {}); });
   const prog = {}; if(clsEd.prog) new Set(Object.values(clsEd.grid).flat().filter(Boolean)).forEach(sub => { const lp = lastProg(sub, ""); if(lp && (lp.next || lp.unit)) prog[sub] = lp.next || progLabel(lp); });
   const pl = wxPlace();
-  return {v:1, at:new Date().toISOString(), name:clsEd.name.trim().slice(0, 30), kana:clsEd.kana, wx:clsEd.wx, place:{name:pl.name, lat:pl.lat, lon:pl.lon}, grid, off, days, holi, prog, ev:clsEd.evs.filter(e => e.on).map(e => ({d:e.d, tm:e.tm, t:e.t.slice(0, 40)}))};
+  return {v:1, at:new Date().toISOString(), name:clsEd.name.trim().slice(0, 30), kana:clsEd.kana, wx:clsEd.wx, place:{name:pl.name, lat:pl.lat, lon:pl.lon}, grid, off, days, holi, prog, ev:clsEd.evs.filter(e => e.on && (!live || e.sync)).map(e => ({d:e.d, tm:e.tm, t:e.t.slice(0, 40)})), msgs:clsMsgList()};
 }
 async function clsDo(k){
   if(k === "guide"){ clsGuide(); return; }
-  try { await putPrefs({classroom:{name:clsEd.name, kana:clsEd.kana, wx:clsEd.wx, prog:clsEd.prog, grid:clsEd.grid, evOff:clsEd.evs.filter(e => !e.on).map(e => e.d + "|" + e.t)}}); } catch(e){}
+  if(/^(msg|del:|copylive|rotate|gas)/.test(k)) return clsLiveDo(k);
+  try { await putPrefs({classroom:{...clsPr(), name:clsEd.name, kana:clsEd.kana, wx:clsEd.wx, prog:clsEd.prog, grid:clsEd.grid, evOff:clsEd.evs.filter(e => !e.on).map(e => e.d + "|" + e.t)}}); } catch(e){}
+  if(k === "live" || k === "save") return clsLiveDo(k);
   const pay = await clsPayload();
   if(k === "big"){ bigOpen(true); return; }
   if(k === "preview"){ CLS = pay; clsPreview = true; document.body.classList.add("classroom"); closePane(); lastView = null; render(); return; }
   const url = (/github\.io$/.test(location.hostname) ? location.origin + location.pathname : "https://carno-eng.github.io/fold-desk/") + "#class=" + await clsEncode(pay);
   if(navigator.share){ try { await navigator.share({title:"教室モニター", url}); return; } catch(e){ if(e && e.name === "AbortError") return; } }
   try { await navigator.clipboard.writeText(url); toast("リンクをコピーしました。教室のパソコンで開いてください"); } catch(e){ toast("コピーできませんでした"); }
+}
+/* ---------- the same link, always: publish to your own Apps Script, the classroom reads it with its own key ---------- */
+const clsPr = () => (S.prefs || {}).classroom || {};
+const clsCanLive = () => paired() && !DEMO();
+function clsMsgList(){ const n = Date.now(); return (clsPr().msgs || []).filter(m => !m.until || Date.parse(m.until) > n); }
+let clsPubBusy = false;
+async function clsPublish(force){
+  if(!clsPr().live || !clsCanLive() || clsPubBusy) return false;
+  const ed = clsDefaults(); ed.evs = clsEvPick();
+  const pay = await clsPayload(ed, true), sig = JSON.stringify({...pay, at:0});
+  const last = ls.get("fd-cls-pub", {sig:"", at:0});
+  if(!force && last.sig === sig && Date.now() - last.at < 6 * 3600e3) return true;
+  clsPubBusy = true;
+  try { const r = await call({op:"classPut", doc:pay}); ls.set("fd-cls-pub", {sig, at:Date.now(), pub:r.pub || ""}); return true; }
+  finally { clsPubBusy = false; }
+}
+/* quietly keep the classroom up to date: on leaving the app, on coming back, and at least once a day */
+document.addEventListener("visibilitychange", () => { if(clsPr().live) setTimeout(() => clsPublish().catch(() => {}), document.hidden ? 0 : 3000); });
+setTimeout(() => { if(clsPr().live) clsPublish().catch(() => {}); }, 9000);
+setInterval(() => { if(clsPr().live && !document.hidden) clsPublish().catch(() => {}); }, 30 * 60e3);
+async function clsKey(renew){
+  const r = await call({op:"classKey", renew:!!renew});
+  if(!r.key) { const x = new Error("old"); x.code = "bad_request"; throw x; }
+  return r.key;
+}
+const clsBase = () => /github\.io$/.test(location.hostname) ? location.origin + location.pathname : "https://carno-eng.github.io/fold-desk/";
+const clsLiveLink = key => clsBase() + "#class=k" + b64u(new TextEncoder().encode(JSON.stringify({u:API.url, k:key})));
+const clsHm = d => `${d.getHours()}:${pad(d.getMinutes())}`;
+function clsWhenLabel(m){
+  const f = m.from ? new Date(m.from) : null, u = m.until ? new Date(m.until) : null, t = todayS();
+  if(!u) return "消すまで";
+  const ud = clsLD(u);
+  if(f && clsLD(f) > t) return `${md(clsLD(f))} の一日`;
+  if(u.getHours() === 23 && u.getMinutes() === 59) return ud === t ? "今日いっぱい" : `${md(ud)} まで`;
+  return (ud === t ? "" : md(ud) + " ") + clsHm(u) + " まで";
+}
+const clsLD = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+function clsMsgHTML(){
+  const ms = clsMsgList(), pub = ls.get("fd-cls-pub", {}).at;
+  return `<div class="field cls-msg"><label>子どもに伝えること（教室の画面の上に、大きく出ます）</label>
+      <textarea class="input" data-cls-msg maxlength="60" placeholder="例：きょうの たいいくは グラウンドです">${esc(clsEd.msgDraft || "")}</textarea></div>
+    <div class="cls-when" role="radiogroup" aria-label="出しておく時間">
+      ${[["today", "今日いっぱい"], ["until", "時刻まで"], ["tomorrow", "あした一日"], ["keep", "消すまで"]].map(([v, l]) => `<label><input type="radio" name="clsWhen" value="${v}" ${(clsEd.msgWhen || "today") === v ? "checked" : ""}>${l}${v === "until" ? ` <input type="time" data-cls-until value="${esc(clsEd.msgUntil || "12:00")}" aria-label="消える時刻">` : ""}</label>`).join("")}</div>
+    <div class="btns"><button class="btn primary" data-cls-do="msg">${ico("share2")} 教室に出す</button></div>
+    ${ms.length ? `<div class="group" style="margin-top:12px">${ms.map(m => `<div class="setrow"><span class="main"><b>${esc(m.text)}</b><small>${esc(clsWhenLabel(m))}</small></span><button class="chip" data-cls-do="del:${esc(m.id)}">消す</button></div>`).join("")}</div>` : ""}
+    <p class="hint">子どもの名前、家庭や体のことは書かないでください。お知らせは、あなたの Google ドライブを通って教室の画面に届き（1分ほど）、時間が過ぎると消えます。${pub ? `最後に教室へ送ったのは ${clsHm(new Date(pub))}。` : ""}</p>`;
+}
+function clsMsgRefresh(){ const b = document.getElementById("clsMsgBox"); if(b) b.innerHTML = clsMsgHTML(); }
+document.addEventListener("input", e => { if(!clsEd || !e.target.matches) return;
+  if(e.target.matches("[data-cls-msg]")) clsEd.msgDraft = e.target.value;
+  if(e.target.matches("[data-cls-until]")){ clsEd.msgUntil = e.target.value; clsEd.msgWhen = "until"; const r = document.querySelector('input[name=clsWhen][value=until]'); if(r) r.checked = true; } });
+document.addEventListener("change", e => { if(clsEd && e.target.matches && e.target.matches("input[name=clsWhen]")) clsEd.msgWhen = e.target.value; });
+function clsGasPane(){
+  openPane(`${paneHead("Apps Script の更新が必要です")}
+    <p class="empty" style="margin-top:0">「いつも同じリンク」を使うには、あなたの Apps Script を新しくします（1回だけ、5分ほど）。URL は変わらないので、スマホの接続はそのままです。</p>
+    <ol class="steps">
+      <li><span>パソコンで <b>script.google.com</b> を開き、Fold Desk のプロジェクトを開きます。</span></li>
+      <li><span>左の <b>Code.gs</b> を開き、中身をすべて消して、GitHub の <b>gas/Code.gs</b> の中身を貼り付けて保存します。</span></li>
+      <li><span>右上の <b>デプロイ → デプロイを管理</b> → 鉛筆のボタン → バージョンを <b>新バージョン</b> にして <b>デプロイ</b>。</span></li>
+      <li><span>このスマホに戻って、もう一度「いつも同じリンクにする」を押します。</span></li>
+    </ol>
+    <p class="hint">「新しいデプロイ」ではなく、「デプロイを管理」から更新してください。そうすると URL が変わりません。</p>`);
+}
+function clsLinkPane(key, fresh){
+  const link = clsLiveLink(key);
+  const cmd = `pkill -f chromium; sleep 2; DISPLAY=:0 nohup chromium-browser --kiosk --noerrdialogs --disable-infobars --no-first-run --password-store=basic '${link}' >/dev/null 2>&1 &`;
+  openPane(`${paneHead("教室用リンク")}
+    <p class="empty" style="margin-top:0">${fresh ? "<b>このリンクは、これからずっと同じです。</b>" : ""}教室のパソコンで<b>1回だけ</b>開けば、あとはスマホで時間割を直したり、お知らせを出したりするだけで、教室の画面が1分ほどで変わります。ラズパイの自動起動の設定は、そのままで大丈夫です。</p>
+    <div class="btns"><button class="btn primary" data-cls-copy="link">${ico("share2")} リンクをコピー</button></div>
+    <div class="sec">Mac から SSH で送るとき</div>
+    <p class="hint" style="margin-top:0">ラズパイにつないだターミナル（pi@toin）に、下を貼り付けて Enter。画面がこのリンクで開き直します。</p>
+    <div class="cmd"><code>${esc(cmd)}</code><button class="chip" data-cls-copy="cmd">コピー</button></div>
+    <p class="hint">このリンクで見られるのは、教室の画面の内容（時間割・時程・予定・お知らせ）だけです。あなたのデータや、ほかの情報は見られません。もし外に出てしまったら「鍵を作り直す」を押せば、古いリンクは使えなくなります。</p>`);
+  setTimeout(() => document.querySelectorAll("[data-cls-copy]").forEach(b => b.onclick = async () => {
+    const v = b.dataset.clsCopy === "cmd" ? cmd : link;
+    if(b.dataset.clsCopy === "link" && navigator.share){ try { await navigator.share({title:"教室モニター", url:link}); return; } catch(e){ if(e && e.name === "AbortError") return; } }
+    try { await navigator.clipboard.writeText(v); toast("コピーしました"); } catch(e){ toast("コピーできませんでした"); } }), 0);
+}
+async function clsLiveDo(k){
+  const fail = e => { if(e && e.code === "bad_request"){ clsGasPane(); return; } toast(e && e.code === "offline" ? "つながりません。電波のよいところで、もう一度" : "うまくいきませんでした"); };
+  if(k === "gas"){ clsGasPane(); return; }
+  if(k === "live"){
+    toast("準備しています…");
+    try { const key = await clsKey(false); await putPrefs({classroom:{...clsPr(), live:true}}); await clsPublish(true); ls.set("fd-cls-key", key); clsLinkPane(key, true); } catch(e){ fail(e); }
+    return; }
+  if(k === "save"){ try { await clsPublish(true); toast("教室に送りました。1分ほどで変わります"); closePane(); } catch(e){ fail(e); } return; }
+  if(k === "copylive"){ try { const key = await clsKey(false); ls.set("fd-cls-key", key); clsLinkPane(key, false); } catch(e){ fail(e); } return; }
+  if(k === "rotate"){
+    if(!confirm("鍵を作り直すと、今の教室用リンクは使えなくなります。教室のパソコンで、新しいリンクを1回開き直す必要があります。作り直しますか？")) return;
+    try { const key = await clsKey(true); await clsPublish(true); ls.set("fd-cls-key", key); clsLinkPane(key, true); } catch(e){ fail(e); }
+    return; }
+  if(k === "msg"){
+    const text = String(clsEd.msgDraft || "").replace(/\s+/g, " ").trim().slice(0, 60);
+    if(!text){ toast("伝えることを書いてください"); return; }
+    const now = new Date(), y = now.getFullYear(), mo = now.getMonth(), d = now.getDate(), w = clsEd.msgWhen || "today";
+    let from = now, until = new Date(y, mo, d, 23, 59, 0);
+    if(w === "until"){ const [h, mi] = String(clsEd.msgUntil || "12:00").split(":").map(Number); until = new Date(y, mo, d, h, mi, 0); if(until <= now){ toast("その時刻は、もう過ぎています"); return; } }
+    if(w === "tomorrow"){ from = new Date(y, mo, d + 1, 0, 0, 0); until = new Date(y, mo, d + 1, 23, 59, 0); }
+    const m = {id:"m" + Date.now().toString(36), text, from:from.toISOString(), until:w === "keep" ? "" : until.toISOString(), at:now.toISOString()};
+    const msgs = [m, ...clsMsgList()].slice(0, 8);
+    await putPrefs({classroom:{...clsPr(), msgs}}); clsEd.msgDraft = "";
+    clsMsgRefresh();
+    try { await clsPublish(true); toast(w === "tomorrow" ? "あしたの朝から出ます" : "教室に出しました（1分ほどで変わります）"); clsMsgRefresh(); } catch(e){ fail(e); }
+    return; }
+  if(k.startsWith("del:")){
+    const id = k.slice(4); await putPrefs({classroom:{...clsPr(), msgs:clsMsgList().filter(m => m.id !== id)}}); clsMsgRefresh();
+    try { await clsPublish(true); toast("消しました"); clsMsgRefresh(); } catch(e){ fail(e); }
+    return; }
 }
 function clsGuide(){
   const cmd = `mkdir -p ~/.config/labwc && echo 'chromium --kiosk --noerrdialogs --disable-infobars --no-first-run --password-store=basic https://carno-eng.github.io/fold-desk/#classroom &' >> ~/.config/labwc/autostart`;
@@ -5898,7 +6095,7 @@ document.addEventListener("click", async (ev) => {
   if(d.demo){ demoAct(d.demo); return; }
   if(d.face){ rollFace(d.face); return; }
   if(d.act === "classroom"){ classPane(); return; }
-  if(d.act === "bigscreen"){ bigOpen(); return; }
+  if(d.act === "bigscreen"){ if(clsPr().live && clsCanLive()) classPane(); else bigOpen(); return; }
   if(d.clsDo){ clsDo(d.clsDo); return; }
   if(d.clsSw){ const on = b.getAttribute("aria-checked") !== "true"; b.setAttribute("aria-checked", on); clsEd[d.clsSw] = on; return; }
   if(d.act === "checkbuild"){ toast("確認しています…"); checkBuild().then(() => { if(!updWaiting) toast("最新の版です"); }); return; }
